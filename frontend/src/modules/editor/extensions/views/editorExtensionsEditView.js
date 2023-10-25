@@ -98,7 +98,12 @@ define(function(require) {
           return Origin.Notify.alert({ type: 'error', text: Origin.l10n.t('app.errorgeneric') });
         }
         this.refreshData();
-      }, this));
+      }, this))
+      .fail(function(response, status, error) {
+        var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.errorgeneric');
+        if (typeof errorMessage == 'object' && errorMessage.message) errorMessage = errorMessage.message;
+        Origin.Notify.alert({ type: 'error', text: errorMessage });
+      });
     },
 
     refreshData: function() {

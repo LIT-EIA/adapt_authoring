@@ -3,6 +3,7 @@ define(function(require) {
   var Origin = require('core/origin');
   var ProjectsView = require('./views/projectsView');
   var ProjectsSidebarView = require('./views/projectsSidebarView');
+  var AllProjectCollection = require('./collections/allProjectCollection');
   var MyProjectCollection = require('./collections/myProjectCollection');
   var SharedProjectCollection = require('./collections/sharedProjectCollection');
   var TagsCollection = require('core/collections/tagsCollection');
@@ -52,7 +53,7 @@ define(function(require) {
     tagsCollection.fetch({
       success: function() {
         Origin.sidebar.addView(new ProjectsSidebarView({ collection: tagsCollection }).$el);
-        Origin.trigger('dashboard:loaded', { type: location || 'all' });
+        Origin.trigger('dashboard:loaded', { type: location || 'own' });
       },
       error: function() {
         console.log('Error occured getting the tags collection - try refreshing your page');
@@ -61,16 +62,35 @@ define(function(require) {
   });
 
   Origin.on('dashboard:loaded', function (options) {
-    var isMine = options.type === 'all';
-    var isShared = options.type === 'shared';
-    if(!isMine && !isShared) {
+    // Check if options exist and the type is valid
+    if (!options || !['all', 'own', 'shared'].includes(options.type)) {
       return;
     }
-    var titleKey = (isMine) ? 'myprojects' : 'sharedprojects';
-    var Coll = (isMine) ? MyProjectCollection : SharedProjectCollection;
 
-    Origin.trigger('location:title:update', { breadcrumbs: ['dashboard'], title: Origin.l10n.t('app.' + titleKey) });
-    Origin.contentPane.setView(ProjectsView, { collection: new Coll, _isShared: options.type === 'shared' });
+    const type = options.type;
+
+    // Map type to title key and collection
+    const typeMappings = {
+      all: { titleKey: 'allprojects', Coll: AllProjectCollection },
+      shared: { titleKey: 'sharedprojects', Coll: SharedProjectCollection },
+      default: { titleKey: 'myprojects', Coll: MyProjectCollection }
+    };
+    const { titleKey, Coll } = typeMappings[type] || typeMappings.default;
+
+    // Data for permissions check
+    const data = {
+      featurePermissions: ["{{tenantid}}/content/*:read"]
+    };
+
+    // Block user access if required permissions are not met
+    if (type === 'all' && !Origin.permissions.hasPermissions(data.featurePermissions)) {
+      Origin.router.blockUserAccess();
+      return;
+    }
+
+    // Set the view and update the title
+    Origin.contentPane.setView(ProjectsView, { collection: new Coll(), _isShared: type === 'shared' });
+    Origin.trigger('location:title:update', { breadcrumbs: ['dashboard'], title: Origin.l10n.t(`app.${titleKey}`) });
   });
 
   Origin.on('globalMenu:dashboard:open', function() {

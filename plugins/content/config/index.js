@@ -34,14 +34,8 @@ ConfigContent.prototype.hasPermission = function (action, userId, tenantId, cont
     if (err) {
       return next(err);
     }
-
-    if (!isAllowed) {
-      contentItem = JSON.parse(contentItem);
-      // Check the permissions string
-      var resource = permissions.buildResourceString(tenantId, '/api/content/course/' + contentItem._courseId);
-      permissions.hasPermission(userId, action, resource, next);
-    } else {
-      return next(null, isAllowed);
+    if (isAllowed) {
+      return next(null, true);
     }
   });
 };

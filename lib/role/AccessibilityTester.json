@@ -2,7 +2,10 @@
   "name": "Accessibility Tester",
   "version": "0.0.1",
   "statement" : [
-    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/*", "action":["create", "read", "update", "delete"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/all/course", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/course/own", "action":["read", "create", "update", "delete"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/themepreset/*", "action":["read", "create", "update", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/shared/*", "action":["create","read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/subscribed/*", "action":["create","read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/asset/*", "action":["create", "read", "update"], "effect":"allow" },
@@ -16,7 +19,8 @@
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/theme/*", "action":["create", "update", "read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/themepreset/*", "action":["create", "update", "read", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/menu/*", "action":["create", "update", "read"], "effect":"allow" },
-    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/*", "action":["create", "update", "read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/devtools", "action":["update"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/autocomplete/*", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/messages/*", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/clipboard/me", "action":["read"], "effect":"allow" }

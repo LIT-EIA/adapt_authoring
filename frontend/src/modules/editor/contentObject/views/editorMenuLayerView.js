@@ -94,12 +94,14 @@ define(function(require) {
       newMenuItemView.$el.addClass('syncing');
 
       newMenuItemModel.save(null, {
-        error: function(error) {
+        error: function(model, response) {
+          var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.errormenueditorbody');
+
           // fade out menu item and alert
           newMenuItemView.$el.removeClass('syncing').addClass('not-synced');
           Origin.Notify.alert({
             type: 'error',
-            text: Origin.l10n.t('app.errormenueditorbody'),
+            text: errorMessage,
           });
           _.delay(newMenuItemView.remove, 3000);
         },

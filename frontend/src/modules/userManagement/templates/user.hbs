@@ -134,6 +134,12 @@
               </select>
             </div>
           {{/ifUserNotMe}}
+          {{#ifUserNotMe _id}}
+            <div class="group">
+              <hr>
+              <button class="btn alert edit-input transfer">{{t 'app.transferallcoursesownershipto'}}</button>
+            </div>
+          {{/ifUserNotMe}}
         </div>
       </div>
     </div>

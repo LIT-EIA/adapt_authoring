@@ -131,8 +131,9 @@ define(function(require){
         success: _.bind(function(model, response, options) {
           this.addBlockView(model, true);
         }, this),
-        error: function() {
-          Origin.Notify.alert({ type: 'error', text: Origin.l10n.t('app.erroraddingblock') });
+        error: function(model, response) {
+          var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.erroraddingblock');
+          Origin.Notify.alert({ type: 'error', text: errorMessage });
         }
       });
     },
@@ -160,8 +161,9 @@ define(function(require){
 
       this.model.destroy({
         success: _.bind(this.remove, this),
-        error: function(error) {
-          Origin.Notify.alert({ type: 'error', text: Origin.l10n.t('app.errorgeneric') });
+        error: function (model, response) {
+          var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.errordelete');
+          Origin.Notify.alert({ type: 'error', text: errorMessage });
         }
       });
     },

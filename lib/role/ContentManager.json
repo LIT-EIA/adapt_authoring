@@ -1,7 +1,9 @@
 {
-  "name": "Communication Manager",
+  "name": "Content Manager",
   "version": "0.0.1",
   "statement" : [
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/*", "action":["read", "create", "update", "delete"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/all/course", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/course/own", "action":["read", "create", "update", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/themepreset/*", "action":["read", "create", "update", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/shared/*", "action":["create","read"], "effect":"allow" },
@@ -17,8 +19,10 @@
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/theme/*", "action":["create", "update", "read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/themepreset/*", "action":["create", "update", "read", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/menu/*", "action":["create", "update", "read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/*", "action":["create", "update", "read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/autocomplete/*", "action":["read"], "effect":"allow" },
-    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/messages/*", "action":["read", "create", "update"], "effect":"allow" },
-    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/clipboard/me", "action":["read"], "effect":"allow" }
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/messages/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/clipboard/me", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/transfer_all_courses_ownership/*", "action":["update"], "effect":"allow" }
   ]
 }

@@ -6,6 +6,7 @@ define(function(require) {
   var OriginView = require('core/views/originView');
   var Origin = require('core/origin');
   var Helpers = require('core/helpers');
+  var CourseTransferFieldsView = require('plugins/courseTransfer/views/courseTransferFieldsView');
 
   var ProjectView = OriginView.extend({
     className: 'project-list-item',
@@ -27,7 +28,8 @@ define(function(require) {
         'contextMenu:course:edit': this.editProject,
         'contextMenu:course:delete': this.deleteProjectPrompt,
         'contextMenu:course:copy': this.duplicateProject,
-        'contextMenu:course:copyID': this.copyIdToClipboard
+        'contextMenu:course:copyID': this.copyIdToClipboard,
+        'contextMenu:course:transferCourse': this.transferCourse
       });
       this.listenTo(Origin, {
         'dashboard:dashboardView:removeSubViews': this.remove,
@@ -128,6 +130,45 @@ define(function(require) {
         return;
       }
       Origin.Notify.alert({ type: 'warning', text: Origin.l10n.t('app.app.copyidtoclipboarderror', { id: id }) });
+    },
+
+    transferCourse: function() {
+      var self = this;
+      var courseTransferFieldsView = CourseTransferFieldsView({model: this.model, single_course: true});
+      Origin.Notify.alert({
+        type: 'warning',
+        html: courseTransferFieldsView.el,
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: Origin.l10n.t('app.confirmdefaultyes'),
+        cancelButtonText: Origin.l10n.t('app.cancel'),
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+        preConfirm: function(e) {
+          var transferTo = self.model.get('transferTo');
+          if (!transferTo) {
+            self.model.trigger('invalid', self.model, {"courseTransfer": `${Origin.l10n.t('app.userrequired')}`});
+            return false;
+          }
+        },
+        callback: function(confirmed) {
+          if(confirmed) {
+            $.ajax({
+              url: `api/transfer/course/${self.model.get('_id')}/to_user/${self.model.get('transferTo')}`,
+              method: 'POST',
+              async: false,
+              success: function () {
+                Origin.trigger('dashboard:refresh');
+                Origin.Notify.alert({ type: 'success', text: Origin.l10n.t('app.transfersuccess') });
+              },
+              error: function (response) {
+                var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.errorgeneric');
+                Origin.Notify.alert({ type: 'error', text: errorMessage });
+              }
+            });
+          }
+        }
+      });
     },
 
     onProjectShowTagsButtonClicked: function(event) {

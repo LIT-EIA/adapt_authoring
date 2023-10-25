@@ -29,31 +29,35 @@ server.get('/preview/:tenant/:course/*', (req, res, next) => {
   const previewKey = `${tenantId}-${courseId}`;
 
   if (!user) {
-    return onAuthError();
+    if (validateIP()) {
+      return sendFile(file);
+    } else {
+      return onAuthError();
+    }
   }
-  (file === Constants.Filenames.Main) ? handleIndexFile() : handleNonIndexFile();
-  function onAuthError() {
-    //logger.log('warn', `Preview: user '${user._id}' does not have permission to view course '${courseId}' on tenant '${tenantId}'`);
+
+  function validateIP() {
     var ip = (req.headers['x-forwarded-for'] || req.connection.remoteAddress).replace('::ffff:', '');
     //regex expression goes in previewAllowIps property in /conf/config.json
-    if(config.previewAllowIps){
-     console.log(config.previewAllowIps)
-      var regex = new RegExp(config.previewAllowIps, 'g');
-      console.log(regex)
-      if(ip.match(regex)){
-        sendFile(file);
-      }else {
-        next(new PreviewPermissionError());
+    var regex = new RegExp(config.previewAllowIps, 'g');
+    if (config.previewAllowIps) {
+      if (ip.match(regex)) {
+        return true
+      } else {
+        return false
       }
-    } else {
-      next(new PreviewPermissionError());
     }
+  }
+
+  (file === Constants.Filenames.Main) ? handleIndexFile() : handleNonIndexFile();
+  function onAuthError() {
+    next(new PreviewPermissionError());
   }
   function sendFile(filename) {
     res.sendFile(filename, {
       root: path.join(configuration.serverRoot, Constants.Folders.Temp, masterTenantId, Constants.Folders.Framework, Constants.Folders.AllCourses, tenantId, courseId, Constants.Folders.Build)
     }, error => {
-      if(error) res.status(error.status || 500).end();
+      if (error) res.status(error.status || 500).end();
     });
   }
 
@@ -65,15 +69,20 @@ server.get('/preview/:tenant/:course/*', (req, res, next) => {
     if (tenantId !== user.tenant._id.toString() && tenantId !== masterTenantId) {
       return onAuthError();
     }
-    helpers.hasCoursePermission('*', user._id, tenantId, { _id: courseId }, (error, hasPermission) => {
-      if(error) {
+    helpers.hasCoursePermission('read', user._id, tenantId, { _id: courseId, _type: 'course' }, (error, hasPermission) => {
+      if (error) {
         logger.log('error', error);
         next(new PreviewPermissionError());
       }
-      if(!hasPermission) { // Remove this course from the cached sessions.
-        const position = req.session.previews.indexOf(previewKey);
-        if (position > -1) req.session.previews.splice(position, 1);
-        return onAuthError();
+      if (!hasPermission) { // Remove this course from the cached sessions.
+        if (validateIP()) {
+          req.session.previews.push(previewKey);
+          return sendFile(file);
+        } else {
+          const position = req.session.previews.indexOf(previewKey);
+          if (position > -1) req.session.previews.splice(position, 1);
+          return onAuthError();
+        }
       }
       req.session.previews.push(previewKey);
       return sendFile(file);

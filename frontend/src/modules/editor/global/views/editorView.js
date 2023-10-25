@@ -76,11 +76,12 @@ define(function(require) {
       var url = 'api/output/'+Origin.constants.outputPlugin+'/preview/'+this.currentCourseId+'?force='+(forceRebuild === true);
       $.get(url, function(data, textStatus, jqXHR) {
         if (!data.success) {
+          var errorMessage = jqXHR && typeof jqXHR == 'object' && jqXHR.responseJSON && jqXHR.responseJSON.message ? jqXHR.responseJSON.message : Origin.l10n.t('app.errorpermission');
           this.resetPreviewProgress();
           Origin.Notify.alert({
             type: 'error',
             text: Origin.l10n.t('app.errorgeneratingpreview') +
-              Origin.l10n.t('app.debuginfo', { message: jqXHR.responseJSON.message })
+              Origin.l10n.t('app.debuginfo', { message: errorMessage })
           });
           previewWindow.close();
           return;
@@ -130,11 +131,13 @@ define(function(require) {
           self.showExportAnimation(false, $btn);
           self.exporting = false;
 
+          var errorMessage = jqXHR && typeof jqXHR == 'object' && jqXHR.responseJSON && jqXHR.responseJSON.message ? jqXHR.responseJSON.message : Origin.l10n.t('app.errorpermission');
+
           Origin.Notify.alert({
             type: 'error',
             title: Origin.l10n.t('app.exporterrortitle'),
             text: Origin.l10n.t('app.errorgeneric') +
-              Origin.l10n.t('app.debuginfo', { message: jqXHR.responseJSON.message })
+              Origin.l10n.t('app.debuginfo', { message: errorMessage })
           });
         }
       });
@@ -160,10 +163,11 @@ define(function(require) {
       var url = 'api/output/' + Origin.constants.outputPlugin + '/publish/' + this.currentCourseId;
       $.get(url, function(data, textStatus, jqXHR) {
         if (!data.success) {
+          var errorMessage = jqXHR && typeof jqXHR == 'object' && jqXHR.responseJSON && jqXHR.responseJSON.message ? jqXHR.responseJSON.message : Origin.l10n.t('app.errorpermission');
           Origin.Notify.alert({
             type: 'error',
             text: Origin.l10n.t('app.errorgeneric') +
-              Origin.l10n.t('app.debuginfo', { message: jqXHR.responseJSON.message })
+              Origin.l10n.t('app.debuginfo', { message: errorMessage })
           });
           this.resetDownloadProgress();
           return;

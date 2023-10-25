@@ -60,8 +60,12 @@ define(function(require){
           this.remove();
           Origin.trigger('editorView:removeComponent:' + model.get('_parentId'));
         }, this),
-        error: function(response) {
-          console.error(response);
+        error: function (model, response) {
+          var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.erroraddingarticle');
+          Origin.Notify.alert({
+            type: 'error',
+            text: errorMessage
+          });
         }
       })
     },

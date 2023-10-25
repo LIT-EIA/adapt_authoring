@@ -104,7 +104,8 @@ define(function(require){
     appendProjectItem: function(model) {
       var creator = model.get('createdBy') || { email: Origin.l10n.t('app.unknownuser') };
       var name = creator.firstName ? creator.firstName + ' ' + creator.lastName : creator.email;
-      if(this._isShared && name) model.set('creatorName', name);
+      var currentUser = Origin.sessionModel;
+      if ((this._isShared || creator._id != currentUser.get('id')) && name) model.set('creatorName', name);
       this.getProjectsContainer().append(new ProjectView({ model: model }).$el);
     },
 

@@ -35,12 +35,12 @@ define(function(require) {
   };
 
   function setUpMenuItems() {
-    ContextMenu.addItem('article', getDefaultItems());
-    ContextMenu.addItem('block', getDefaultItems());
-    ContextMenu.addItem('component', getDefaultItems());
-    ContextMenu.addItem('page', getDefaultItems());
-    ContextMenu.addItem('menu', getDefaultItems(['copy']));
-    ContextMenu.addItem('page-min', getDefaultItems(['copy','delete','colorLabel']));
+    ContextMenu.addItem('article', getDefaultItems(['transferCourse']));
+    ContextMenu.addItem('block', getDefaultItems(['transferCourse']));
+    ContextMenu.addItem('component', getDefaultItems(['transferCourse']));
+    ContextMenu.addItem('page', getDefaultItems(['transferCourse']));
+    ContextMenu.addItem('menu', getDefaultItems(['copy','transferCourse']));
+    ContextMenu.addItem('page-min', getDefaultItems(['copy','delete','colorLabel','transferCourse']));
     ContextMenu.addItem('course', getDefaultItems(['colorLabel']));
   };
 
@@ -73,6 +73,11 @@ define(function(require) {
         title: Origin.l10n.t('app.colourLabel'),
         className: 'context-menu-item',
         callbackEvent: "colorLabel"
+      },
+      {
+        title: Origin.l10n.t('app.transfersinglecourseownershipto'),
+        className: 'context-menu-item',
+        callbackEvent: "transferCourse"
       }
     ];
     if(!blacklist) {

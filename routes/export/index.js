@@ -59,8 +59,7 @@ server.get('/export/:tenant/:course', function (req, res, next) {
   var course = req.params.course;
   var tenant = req.params.tenant;
   var currentUser = usermanager.getCurrentUser();
-
-  helpers.hasCoursePermission('', currentUser._id, tenant, {_id: course}, function(err, hasPermission) {
+  helpers.hasCoursePermission('read', currentUser._id, tenant, {_id: course, _type: 'course'}, function(err, hasPermission) {
     if (err || !hasPermission) {
       return handleError(err || new ExportPermissionError(), res);
     }

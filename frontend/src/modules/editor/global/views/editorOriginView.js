@@ -229,7 +229,9 @@ define(function(require){
 
     onSaveError: function(pTitle, pText) {
       var title = _.isString(pTitle) ? pTitle : Origin.l10n.t('app.errordefaulttitle');
-      var text = _.isString(pText) ? pText : Origin.l10n.t('app.errorsave');
+      var errorMessage = pText && typeof pText == 'object' && pText.responseJSON && pText.responseJSON.message ? pText.responseJSON.message : Origin.l10n.t('app.errorsave');
+
+      var text = _.isString(pText) ? pText : errorMessage;
       Origin.Notify.alert({ type: 'error', title: title, text: text });
 
       Origin.trigger('sidebar:resetButtons');

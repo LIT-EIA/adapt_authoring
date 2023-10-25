@@ -135,10 +135,11 @@ define(function(require){
           articleView._skipRender = true; // prevent render of blocks in postRender
           articleView.addBlock();
         }, this),
-        error: function() {
+        error: function (model, response) {
+          var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.erroraddingarticle');
           Origin.Notify.alert({
             type: 'error',
-            text: Origin.l10n.t('app.erroraddingarticle')
+            text: errorMessage
           });
         }
       });

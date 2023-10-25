@@ -24,6 +24,14 @@ define(function(require) {
         _id: this.model.get('_id'),
         _courseId: this.model.get('_courseId')
       });
+    },
+    onSaveError: function(model, response, options) {
+      if(arguments.length === 2) {
+        EditorOriginView.prototype.onSaveError.apply(this, arguments);
+        return;
+      }
+      var messageText = typeof response.responseJSON == 'object' && response.responseJSON.message;
+      EditorOriginView.prototype.onSaveError.call(this, null, messageText);
     }
   }, {
     template: 'editorConfigEdit'

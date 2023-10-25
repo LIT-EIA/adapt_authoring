@@ -2,9 +2,11 @@
 define(function(require){
   var OriginView = require('core/views/originView');
   var Origin = require('core/origin');
+  var CHelpers = require('core/helpers');
   var Helpers = require('../helpers');
   var PasswordFieldsView = require('plugins/passwordChange/views/passwordFieldsView');
   var PasswordHelpers = require('plugins/passwordChange/passwordHelpers');
+  var CourseTransferFieldsView = require('plugins/courseTransfer/views/courseTransferFieldsView');
 
   var UserView = OriginView.extend({
     tagName: 'div',
@@ -35,6 +37,7 @@ define(function(require){
 
       'click button.disable': 'onDisableClicked',
       'click button.delete': 'onDeleteClicked',
+      'click button.transfer': 'onTransferClicked',
       'click button.restore': 'onRestoreClicked'
     },
 
@@ -239,8 +242,8 @@ define(function(require){
         showCancelButton: true,
         cancelButtonText: Origin.l10n.t('app.cancel'),
         preConfirm: function(e) {
-          var passwordVal = $(this.html).find(`#password${genericId}`)[0].value;
-          var confirmPasswordVal = $(this.html).find(`#confirmPassword${genericId}`)[0].value;
+          var passwordVal = passwordFieldsView.$el.find(`#password${genericId}`)[0].value;
+          var confirmPasswordVal = passwordFieldsView.$el.find(`#confirmPassword${genericId}`)[0].value;
 
           var passwordErrors = PasswordHelpers.validatePassword(passwordVal);
           var isConfirmPasswordValid = PasswordHelpers.validateConfirmationPassword(passwordVal, confirmPasswordVal);
@@ -252,30 +255,47 @@ define(function(require){
 
           var errorHash = {};
 
-          if (passwordErrors.length > 0) {
-            errorHash['password'] = `${Origin.l10n.t('app.passwordindicatormedium')}`;
-          }
+          errorHash['password'] = passwordErrors.length > 0 ? `${Origin.l10n.t('app.passwordindicatormedium')}` : '';
 
-          if (!isConfirmPasswordValid) {
-            errorHash['confirmPassword'] = `${Origin.l10n.t('app.confirmpasswordnotmatch')}`;
-          }
+          errorHash['confirmPassword'] = !isConfirmPasswordValid ? `${Origin.l10n.t('app.confirmpasswordnotmatch')}` : '';
+
           self.model.trigger('invalid', self.model, errorHash);
 
-          return shouldConfirm;
-        },
-        callback: function (isConfirm) {
-          if (isConfirm) {
-            var postData = {
-              "email": self.model.get('email'),
-              "password": passwordToSave,
-              "confirmPassword": confirmPasswordToSave
-            };
-            Helpers.ajax('api/user/resetpassword', postData, 'POST', function () {
-              self.model.fetch();
+          if (!shouldConfirm) return false;
+
+          var toChange = {
+            email: self.model.get('email'),
+            password: passwordVal
+          };
+
+          $.ajax({
+            url: 'api/user/resetpassword',
+            method: 'POST',
+            data: toChange,
+            async: false,
+            success: function () {
               Origin.Notify.alert({
                 type: 'success',
                 text: Origin.l10n.t('app.changepasswordtext', { email: self.model.get('email') })
               });
+              shouldConfirm = true;
+            },
+            error: function (error) {
+              // for server error messages - will remove in future
+              var errMsg = CHelpers.translateData(error);
+              passwordFieldsView.$el.find(`#passwordError${genericId}`).html(errMsg);
+              passwordFieldsView.$el.find(`#confirmPasswordError${genericId}`).html('');
+              shouldConfirm = false;
+            }
+          });
+
+          return shouldConfirm;
+        },
+        callback: function(isConfirm) {
+          if (isConfirm) {
+            Origin.Notify.alert({
+              type: 'success',
+              text: Origin.l10n.t('app.changepasswordtext', { email: self.model.get('email') })
             });
           }
         }
@@ -335,6 +355,43 @@ define(function(require){
               },
               processData: true,
               error: self.onError
+            });
+          }
+        }
+      });
+    },
+
+    onTransferClicked: function() {
+      var self = this;
+      var courseTransferFieldsView = CourseTransferFieldsView({model: this.model});
+      Origin.Notify.alert({
+        type: 'warning',
+        html: courseTransferFieldsView.el,
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: Origin.l10n.t('app.confirmdefaultyes'),
+        cancelButtonText: Origin.l10n.t('app.cancel'),
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+        preConfirm: function(e) {
+          var transferTo = self.model.get('transferTo');
+          if (!transferTo) {
+            self.model.trigger('invalid', self.model, {"courseTransfer": `${Origin.l10n.t('app.userrequired')}`});
+            return false;
+          }
+        },
+        callback: function(confirmed) {
+          if(confirmed) {
+            $.ajax({
+              url: `api/transfer_all_courses_ownership/from_user/${self.model.get('_id')}/to_user/${self.model.get('transferTo')}`,
+              method: 'PATCH',
+              async: false,
+              success: function () {
+                Origin.Notify.alert({ type: 'success', text: Origin.l10n.t('app.transfersuccess') });
+              },
+              error: function (error) {
+                Origin.Notify.alert({ type: 'error', text: error.responseText});
+              }
             });
           }
         }

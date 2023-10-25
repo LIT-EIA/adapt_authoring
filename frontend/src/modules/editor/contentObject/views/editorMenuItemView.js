@@ -121,13 +121,15 @@ define(function(require){
 
       this.model.destroy({
         success: _.bind(function(model) {
+          console.log('success: ', model);
           Origin.trigger('editorView:itemDeleted', model);
           this.remove()
         }, this),
-        error: function() {
+        error: function(model, response) {
+          var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.errordelete');
           Origin.Notify.alert({
             type: 'error',
-            text: 'app.errordelete'
+            text: errorMessage
           });
         }
       });

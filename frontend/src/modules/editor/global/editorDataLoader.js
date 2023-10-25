@@ -186,8 +186,8 @@ define(function(require) {
           data[collection._type] = true;
           if(callback && isAllDataLoaded(data)) callback.apply(this);
         },
-        error: function(error) {
-          onFetchError();
+        error: function(model, error) {
+          onFetchError(model, error);
           callback(error);
         }
       });
@@ -225,9 +225,10 @@ define(function(require) {
   */
 
   function onFetchError(model, response, options) {
+    var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.errorgeneric');
     Origin.Notify.alert({
       type: 'error',
-      text: Origin.l10n.t('app.errorgeneric')
+      text: errorMessage
     });
     Origin.router.navigateTo('dashboard');
   }

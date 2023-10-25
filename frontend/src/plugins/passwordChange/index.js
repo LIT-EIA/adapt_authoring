@@ -1,13 +1,11 @@
 define(function (require) {
     var Origin = require('core/origin');
+    var Helpers = require('core/helpers');
     var UserInfoModel = require('./models/userInfoModel');
     var PasswordFieldsView = require('./views/passwordFieldsView');
     var PasswordHelpers = require('plugins/passwordChange/passwordHelpers');
 
-    console.log(PasswordFieldsView);
-
-    Origin.once('origin:dataReady login:changed location:change', function (e) {
-        if (!e) return;
+    Origin.once('dashboard:loaded', function (e) {
         var user = new UserInfoModel();
         user.fetch({
             success: function (model) {
@@ -38,49 +36,50 @@ define(function (require) {
                             passwordToSave = passwordVal;
                             confirmPasswordToSave = confirmPasswordVal;
 
-                            var shouldConfirm = passwordErrors.length == 0 && isConfirmPasswordValid;
+                            var shouldConfirm = (passwordErrors.length == 0 && isConfirmPasswordValid);
 
                             var errorHash = {};
 
-                            if (passwordErrors.length > 0) {
-                                errorHash['password'] = `${Origin.l10n.t('app.passwordindicatormedium')}`;
-                            }
+                            errorHash['password'] = passwordErrors.length > 0 ? `${Origin.l10n.t('app.passwordindicatormedium')}` : '';
 
-                            if (!isConfirmPasswordValid) {
-                                errorHash['confirmPassword'] = `${Origin.l10n.t('app.confirmpasswordnotmatch')}`;
-                            }
+                            errorHash['confirmPassword'] = !isConfirmPasswordValid ? `${Origin.l10n.t('app.confirmpasswordnotmatch')}` : '';
+
                             model.trigger('invalid', model, errorHash);
 
-                            if (Object.keys(errorHash).length > 0) return false;
+                            if (!shouldConfirm) return false;
 
                             var toChange = {
                                 _id: model.get('_id'),
                                 _isNewPassword: true,
+                                email: model.get('email'),
                                 email_prev: model.get('email'),
-                                password: passwordVal
+                                password: passwordVal,
+                                lastPasswordChange: new Date().toISOString()
                             };
 
-                            shouldConfirm = $.ajax({
+                            $.ajax({
                                 url: 'api/user/me',
                                 method: 'PUT',
                                 data: toChange,
-                                async: false
+                                async: false,
+                                success: function() {
+                                    shouldConfirm = true;
+                                },
+                                error: function(error) {
+                                    // for server error messages - will remove in future
+                                    var errMsg = Helpers.translateData(error);
+                                    passwordFieldsView.$el.find(`#passwordError${genericId}`).html(errMsg);
+                                    passwordFieldsView.$el.find(`#confirmPasswordError${genericId}`).html('');
+                                    shouldConfirm = false;
+                                }
                             });
-                            if (shouldConfirm && ['500', 500].includes(shouldConfirm.status)) {
-                                passwordFieldsView.$el.find('.server-errors-container').html(shouldConfirm.responseText);
-                                return false;
-                            }
-                            else if (shouldConfirm && ['200', 200].includes(shouldConfirm.status)) {
-                                passwordFieldsView.$el.find('.server-errors-container').html();
-                                return true;
-                            }
+                            return shouldConfirm;
                         }
                     });
                 }
                 if (user.attributes.lastPasswordChange) {
-                    var policyChange = new Date('2023-10-26T01:12:06.510Z')
-                    console.log(user.attributes.lastPasswordChange);
-                    var changeDate = new Date(user.attributes.lastPasswordChange)
+                    var policyChange = new Date('2023-09-20T19:25:46.936Z');
+                    var changeDate = new Date(user.attributes.lastPasswordChange);
                     if ((changeDate < policyChange)) {
                        openPopup();
                     }

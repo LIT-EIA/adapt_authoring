@@ -78,6 +78,7 @@ function initialize () {
   var self = this;
   var app = origin();
   app.once('serverStarted', function(server) {
+    rest.get('/all/course', (req, res, next) => doQuery(req, res, [{}], next));
     // force search to use only courses created by current user
     rest.get('/my/course', (req, res, next) => doQuery(req, res, [{ createdBy: req.user._id }], next));
     // Only return courses which have been shared
@@ -232,8 +233,6 @@ CourseContent.prototype.hasPermission = function (action, userId, tenantId, cont
     if (isAllowed) {
       return next(null, true);
     }
-    var resource = permissions.buildResourceString(tenantId, `/api/content/course/${contentItem._courseId || '*'}`);
-    permissions.hasPermission(userId, action, resource, next);
   });
 };
 
@@ -302,7 +301,11 @@ CourseContent.prototype.destroy = function (search, force, next) {
     next = force;
     force = false;
   }
-  self.hasPermission('delete', user._id, tenantId, search, function (err, isAllowed) {
+
+  var permissionQuery = _.clone(search);
+  permissionQuery._type = permissionQuery._type || this.getModelName();
+
+  helpers.hasOwnerPermission('delete', user._id, tenantId, permissionQuery, function (err, isAllowed) {
     if (!isAllowed && !force) {
       return next(new ContentPermissionError());
     }
@@ -314,19 +317,12 @@ CourseContent.prototype.destroy = function (search, force, next) {
       if (!docs || !docs.length) {
         return next(null);
       }
-      var resource = permissions.buildResourceString(tenantId, '/api/content/course/*');
-      permissions.hasPermission(user._id, 'delete', resource, function(error, canDeleteAll) {
-        // Final check before deletion
-        if(!canDeleteAll) {
-          return next(new ContentPermissionError());
-        }
         // Courses use cascading delete
         async.eachSeries(docs, function(doc, cb) {
           self.destroyChildren(doc._id, '_courseId', cb);
         }, function (err) {
           ContentPlugin.prototype.destroy.call(self, search, true, next);
         });
-      });
     });
   });
 };

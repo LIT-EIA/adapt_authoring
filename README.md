@@ -11,6 +11,11 @@ Installation instructions as follows a similar pattern than [official Adapt Auth
 
 Adapt requires [Node.js](https://nodejs.org/) v10+ to run.
 
+Check that you have python2 for installing NVM, if you don't run
+```sh
+apt-get install python2
+```
+
 Download and install prerequisites
 
 ```sh
@@ -38,8 +43,8 @@ sudo systemctl status mongod
 
 Copy the repository
 ```sh
-git clone https://github.com/MeD-DMC/adapt_authoring_college.git adapt_authoring_college
-cd adapt_authoring_college
+git clone https://github.com/LIT-EIA/adapt_authoring.git adapt_authoring
+cd adapt_authoring
 ```
 Install the application
 ```sh
@@ -50,7 +55,7 @@ node install
 ```
 
 Git repository URL to be used for the authoring tool source code should be: <br>
-https://<span></span>github.com/MeD-DMC/adapt_authoring_college.git <br>
+https://<span></span>github.com/LIT-EIA/adapt_authoring.git <br>
 ##
 Git repository URL to be used for the framework source code:  <br>
 https://<span></span>github.com/adaptlearning/adapt_framework.git <br>
@@ -62,9 +67,9 @@ tags/v4.4.1 <br>
 
 ## Optional but recommended plugins made tweaked by College@ESDC
 
-[Adapt ESDC College Theme](https://github.com/MeD-DMC/adapt-esdc-college-theme)
+[Adapt ESDC College Theme](https://github.com/LIT-EIA/adapt-esdc-college-theme)
 
-[Adapt output Accessibility fixes for v4.4.1](https://github.com/MeD-DMC/Adapt-accessibilityfixes)
+[Adapt output Accessibility fixes for v4.4.1](https://github.com/LIT-EIA/Adapt-accessibilityfixes)
 
 ## Docker
 
@@ -89,8 +94,12 @@ Les instructions d'installation suivent sensiblement les mêmes étapes que [l'O
 
 Adapt nécessite [Node.js](https://nodejs.org/) v10+ pour fonctionner.
 
-Télécharger et installer les prérequis
+Vérifier que python2 est disponible pour l'installation de NVM, si ce n'est pas le cas
+```sh
+apt-get install python2
+```
 
+Télécharger et installer les prérequis
 ```sh
 apt-get install git
 apt install curl
@@ -116,8 +125,8 @@ sudo systemctl status mongod
 
 Copier le projet
 ```sh
-git clone https://github.com/MeD-DMC/adapt_authoring_college.git adapt_authoring_college
-cd adapt_authoring_college
+git clone https://github.com/LIT-EIA/adapt_authoring.git adapt_authoring
+cd adapt_authoring
 ```
 Installer l'application
 ```sh
@@ -139,9 +148,9 @@ tags/v4.4.1 <br>
 
 ## Ajouts facultatifs mais recommandés et modifiés par College@ESDC
 
-[Thème Adapt du College@ESDC](https://github.com/MeD-DMC/adapt-esdc-college-theme)
+[Thème Adapt du College@ESDC](https://github.com/LIT-EIA/adapt-esdc-college-theme)
 
-[Correctifs d'accessibilité d'Adapt pour la version 4.4.1](https://github.com/MeD-DMC/Adapt-accessibilityfixes)
+[Correctifs d'accessibilité d'Adapt pour la version 4.4.1](https://github.com/LIT_EIA/Adapt-accessibilityfixes)
 
 ## Docker
 
