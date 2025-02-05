@@ -1,0 +1,36 @@
+<div class="login-navigation-bar-bg">
+  <div class="login-navigation-right">
+    <a href="#" class="langspot login-navigation-item aut" onclick="togglelang()">
+      {{! ESDC - added translation handler for language name}}
+      <span lang="{{t 'app.langswitcherCode'}}">{{t 'app.langswitcher'}}</span>
+    </a>
+  </div>
+</div>
+
+<div class="login-mfa-inner">
+    <div class="login-mfa-logo"></div>
+
+    <form class="login-mfa-form" autocomplete="off">
+        {{#if isAuthenticated}}
+            {{t 'app.alreadyloggedin'}}
+            <button class="dash btn small secondary">{{t 'app.gotodashboard'}}</button>
+        {{else}}
+            <p class="login-mfa-text">{{{mfaText}}}</p>
+            <p><em>{{t 'app.validationTime'}}</em></p>
+            <div class="login-mfa-fields">
+                <div id="loginError" class="display-none" role="alert" aria-live="polite">
+                    <i class="fa fa-times"></i><span id="loginErrorMessage"/>
+                </div>
+                <label for="login-mfa-input-verificationcode" class="sr-only">{{ 'app.verificationcode' }}</label>
+                <input type="text" class="login-mfa-input-verificationcode" value="" id="login-mfa-input-verificationcode" placeholder="{{t 'app.verificationcode'}}" />
+                <div class="login-skip-mfa">
+                  <input id="skip-mfa" class="skip-mfa-checkbox" name="skip-mfa" type="checkbox"/>
+                  <label for="skip-mfa" class="skip-mfa-label">{{t 'app.skipverificationcode'}}</label>
+                </div>
+                <button type="submit" class="btn secondary login-mfa-form-submit">{{t 'app.verify'}}</button>
+                <button class="btn primary resend-mfatoken-btn">{{ t 'app.resendverificationcode' }}</button>
+                <button class="cancel btn white-hollow">{{t 'app.cancel'}}</button>
+            </div>
+        {{/if}}
+    </form>
+</div>

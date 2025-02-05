@@ -25,11 +25,11 @@ var superUser = false;
 var configResults = {};
 var configOverrides = {};
 
-installHelpers.checkPrimaryDependencies(function(error) {
-  if(error) return handleError(null, 1, error);
+installHelpers.checkPrimaryDependencies(function (error) {
+  if (error) return handleError(null, 1, error);
   // we need the framework version for the config items, so let's go
-  installHelpers.getLatestFrameworkVersion(function(error, latestFrameworkTag) {
-    if(error) {
+  installHelpers.getLatestFrameworkVersion(function (error, latestFrameworkTag) {
+    if (error) {
       return handleError(error, 1, 'Failed to get the latest framework version. Check package.json.');
     }
     inputData = {
@@ -260,19 +260,19 @@ installHelpers.checkPrimaryDependencies(function(error) {
         }
       ]
     };
-    if(!IS_INTERACTIVE) {
+    if (!IS_INTERACTIVE) {
       if (installHelpers.inputHelpers.toBoolean(optimist.argv.useJSON)) {
         USE_CONFIG = true;
       }
       return start();
     }
     console.log('');
-    if(!fs.existsSync('conf/config.json')) {
+    if (!fs.existsSync('conf/config.json')) {
       fs.ensureDirSync('conf');
       return start();
     }
     console.log('Found an existing config.json file. Do you want to use the values in this file during install?');
-    installHelpers.getInput(inputData.useConfigJSON, configOverrides, function(result) {
+    installHelpers.getInput(inputData.useConfigJSON, configOverrides, function (result) {
       console.log('');
       USE_CONFIG = result.useJSON;
       start();
@@ -283,7 +283,7 @@ installHelpers.checkPrimaryDependencies(function(error) {
 // we need the framework version for the config items, so let's go
 
 function generatePromptOverrides() {
-  if(USE_CONFIG) {
+  if (USE_CONFIG) {
     var configJson = require('./conf/config.json');
     var configData = JSON.parse(JSON.stringify(configJson));
     addConfig(configData);
@@ -295,30 +295,50 @@ function generatePromptOverrides() {
   return Object.assign({}, configData, optimist.argv);
 }
 
+function generateExtraConfigs(callback) {
+  addConfig({
+    useMFA: false,
+    useMailService: false,
+    mailServiceKeys: {
+      notificationUrl: "",
+      apiKey: "",
+      templates: {
+        resetPassword: "",
+        adminResetPassword: "",
+        inviteUser: "",
+        loginMfa: ""
+      }
+    },
+    printMailService: false
+  });
+  callback();
+}
+
 function start() {
   // set overrides from command line arguments and config.json
   configOverrides = generatePromptOverrides();
   // Prompt the user to begin the install
-  if(!IS_INTERACTIVE || USE_CONFIG) {
+  if (!IS_INTERACTIVE || USE_CONFIG) {
     console.log('This script will install the application. Please wait ...');
   } else {
     console.log('This script will install the application. \nWould you like to continue?');
   }
-  installHelpers.getInput(inputData.startInstall, configOverrides, function(result) {
-    if(!result.install) {
+  installHelpers.getInput(inputData.startInstall, configOverrides, function (result) {
+    if (!result.install) {
       return handleError(null, 0, 'User cancelled the install');
     }
     async.series([
       configureServer,
       configureDatabase,
+      generateExtraConfigs,
       configureFeatures,
       configureMasterTenant,
       createMasterTenant,
       createSuperUser,
       buildFrontend,
       syncMigrations
-    ], function(error, results) {
-      if(error) {
+    ], function (error, results) {
+      if (error) {
         console.error('ERROR: ', error);
         return exit(1, 'Install was unsuccessful. Please check the console output.');
       }
@@ -329,16 +349,16 @@ function start() {
 
 function configureServer(callback) {
   console.log('');
-  if(!IS_INTERACTIVE || USE_CONFIG) {
+  if (!IS_INTERACTIVE || USE_CONFIG) {
     console.log('Now setting configuration items.');
   } else {
     console.log('We need to configure the tool before install. \nTip: just press ENTER to accept the default value in brackets.');
   }
-  installHelpers.getLatestFrameworkVersion(function(error, latestFrameworkTag) {
-    if(error) {
+  installHelpers.getLatestFrameworkVersion(function (error, latestFrameworkTag) {
+    if (error) {
       return handleError(error, 1, 'Failed to get latest framework version');
     }
-    installHelpers.getInput(inputData.server, configOverrides, function(result) {
+    installHelpers.getInput(inputData.server, configOverrides, function (result) {
       addConfig(result);
       callback();
     });
@@ -346,13 +366,13 @@ function configureServer(callback) {
 }
 
 function configureDatabase(callback) {
-  installHelpers.getInput(inputData.database.dbConfig, configOverrides, function(result) {
+  installHelpers.getInput(inputData.database.dbConfig, configOverrides, function (result) {
     addConfig(result);
 
     var isStandard = !installHelpers.inputHelpers.toBoolean(result.useConnectionUri);
     var config = inputData.database[isStandard ? 'configureStandard' : 'configureUri'];
 
-    installHelpers.getInput(config, configOverrides, function(result) {
+    installHelpers.getInput(config, configOverrides, function (result) {
       addConfig(result);
       callback();
     });
@@ -362,13 +382,13 @@ function configureDatabase(callback) {
 function configureFeatures(callback) {
   async.series([
     function smtp(cb) {
-      installHelpers.getInput(inputData.features.smtp.confirm, configOverrides, function(result) {
+      installHelpers.getInput(inputData.features.smtp.confirm, configOverrides, function (result) {
         addConfig(result);
         if (!installHelpers.inputHelpers.toBoolean(result.useSmtp)) {
           return cb();
         }
         // prompt user if custom connection url or well-known-service should be used
-        installHelpers.getInput(inputData.features.smtp.confirmConnectionUrl, configOverrides, function(result) {
+        installHelpers.getInput(inputData.features.smtp.confirmConnectionUrl, configOverrides, function (result) {
           addConfig(result);
           var smtpConfig;
           if (installHelpers.inputHelpers.toBoolean(result.useSmtpConnectionUrl)) {
@@ -376,46 +396,46 @@ function configureFeatures(callback) {
           } else {
             smtpConfig = inputData.features.smtp.configure.concat(inputData.features.smtp.configureService);
           }
-          for(var i = 0, count = smtpConfig.length; i < count; i++) {
-            if(smtpConfig[i].name === 'rootUrl') {
+          for (var i = 0, count = smtpConfig.length; i < count; i++) {
+            if (smtpConfig[i].name === 'rootUrl') {
               smtpConfig[i].default = `http://${configResults.serverName}:${configResults.serverPort}`;
             }
           }
-          installHelpers.getInput(smtpConfig, configOverrides, function(result) {
+          installHelpers.getInput(smtpConfig, configOverrides, function (result) {
             addConfig(result);
             cb();
           });
         });
       });
     }
-  ], function() {
+  ], function () {
     saveConfig(configResults, callback);
   });
 }
 
 function configureMasterTenant(callback) {
-  var onError = function(error) {
+  var onError = function (error) {
     console.error('ERROR: ', error);
     return exit(1, 'Failed to configure master tenant. Please check the console output.');
   };
-  if(!IS_INTERACTIVE || USE_CONFIG) {
+  if (!IS_INTERACTIVE || USE_CONFIG) {
     console.log('Now configuring the master tenant. \n');
   } else {
     console.log('Now we need to configure the master tenant. \nTip: just press ENTER to accept the default value in brackets.\n');
   }
-  logger.level('console','error');
+  logger.level('console', 'error');
   // run the app
   app.run({ skipVersionCheck: true, skipDependencyCheck: true });
-  app.on('serverStarted', function() {
+  app.on('serverStarted', function () {
 
-    if(USE_CONFIG && configOverrides.masterTenantName) {
+    if (USE_CONFIG && configOverrides.masterTenantName) {
       /**
       * remove the masterTenantDisplayName, as we can use the existing value
       * (which isn't in config.json so can't be used as an auto override)
       */
       inputData.tenant = inputData.tenant.filter(item => item.name !== 'masterTenantDisplayName');
     }
-    installHelpers.getInput(inputData.tenant, configOverrides, function(result) {
+    installHelpers.getInput(inputData.tenant, configOverrides, function (result) {
       console.log('');
       // add the input to our cached config
       addConfig({
@@ -425,27 +445,27 @@ function configureMasterTenant(callback) {
         }
       });
       // check if the tenant name already exists
-      app.tenantmanager.retrieveTenant({ name: result.masterTenantName }, function(error, tenant) {
-        if(error) {
+      app.tenantmanager.retrieveTenant({ name: result.masterTenantName }, function (error, tenant) {
+        if (error) {
           return onError(error);
         }
-        if(!tenant) {
+        if (!tenant) {
           return callback();
         }
-        if(!IS_INTERACTIVE) {
+        if (!IS_INTERACTIVE) {
           return exit(1, `Tenant '${tenant.name}' already exists, automatic install cannot continue.`);
         }
-        if(!configResults.masterTenant.displayName) {
+        if (!configResults.masterTenant.displayName) {
           configResults.masterTenant.displayName = tenant.displayName;
         }
         console.log(chalk.yellow(`Tenant '${tenant.name}' already exists. ${chalk.underline('It must be deleted for install to continue.')}`));
-        installHelpers.getInput(inputData.tenantDelete, configOverrides, function(result) {
+        installHelpers.getInput(inputData.tenantDelete, configOverrides, function (result) {
           console.log('');
-          if(!result.confirm) {
+          if (!result.confirm) {
             return exit(1, 'Exiting install.');
           }
           // delete tenant
-          async.eachSeries(app.db.getModelNames(), function(modelName, cb) {
+          async.eachSeries(app.db.getModelNames(), function (modelName, cb) {
             app.db.destroy(modelName, null, cb);
           }, callback);
         });
@@ -466,8 +486,8 @@ function createMasterTenant(callback) {
       dbPass: app.configuration.getConfig('dbPass'),
       dbPort: app.configuration.getConfig('dbPort')
     }
-  }, function(error, tenant) {
-    if(error) {
+  }, function (error, tenant) {
+    if (error) {
       return handleError(error, 1, 'Failed to create master tenant. Please check the console output.');
     }
     console.log('Master tenant created successfully.');
@@ -479,28 +499,28 @@ function createMasterTenant(callback) {
 }
 
 function createSuperUser(callback) {
-  var onError = function(error) {
+  var onError = function (error) {
     handleError(error, 1, 'Failed to create admin user account. Please check the console output.');
   };
   console.log(`\nNow we need to set up a 'Super Admin' account. This account can be used to manage everything on your authoring tool instance.`);
-  installHelpers.getInput(inputData.superUser, configOverrides, function(result) {
+  installHelpers.getInput(inputData.superUser, configOverrides, function (result) {
     console.log('');
-    app.usermanager.deleteUser({ email: result.suEmail }, function(error, userRec) {
-      if(error) return onError(error);
+    app.usermanager.deleteUser({ email: result.suEmail }, function (error, userRec) {
+      if (error) return onError(error);
       // add a new user using default auth plugin
       new localAuth().internalRegisterUser(true, {
         email: result.suEmail,
         password: result.suPassword,
         retypePassword: result.suRetypePassword,
         _tenantId: masterTenant._id
-      }, function(error, user) {
+      }, function (error, user) {
         // TODO should we allow a retry if the passwords don't match?
-        if(error) {
+        if (error) {
           return onError(error);
         }
         superUser = user;
-        helpers.grantSuperPermissions(user._id, function(error) {
-          if(error) return onError(error);
+        helpers.grantSuperPermissions(user._id, function (error) {
+          if (error) return onError(error);
           return callback();
         });
       });
@@ -509,8 +529,8 @@ function createSuperUser(callback) {
 }
 
 function buildFrontend(callback) {
-  installHelpers.buildAuthoring(function(error) {
-    if(error) {
+  installHelpers.buildAuthoring(function (error) {
+    if (error) {
       return callback(`Failed to build the web application, (${error}) \nInstall will continue. Try again after installation completes using 'grunt build:prod'.`);
     }
     callback();
@@ -519,12 +539,12 @@ function buildFrontend(callback) {
 
 //As this is a fresh install we dont need to run the migrations so add them to the db and set them to up
 function syncMigrations(callback) {
-  installHelpers.syncMigrations(function(err, migrations) {
-    database.getDatabase(function(err, db) {
-      if(err) {
+  installHelpers.syncMigrations(function (err, migrations) {
+    database.getDatabase(function (err, db) {
+      if (err) {
         return callback(err);
       }
-      db.update('migration', {}, {'state': 'up'}, callback)
+      db.update('migration', {}, { 'state': 'up' }, callback)
     }, masterTenant._id)
   });
 }
@@ -556,7 +576,7 @@ function saveConfig(configItems, callback) {
       }
     }
   }
-  fs.ensureDir('conf', function(error) {
+  fs.ensureDir('conf', function (error) {
     if (error) {
       return handleError(`Failed to create configuration directory.\n${error}`, 1, 'Install Failed.');
     }
@@ -568,8 +588,8 @@ function saveConfig(configItems, callback) {
       root: process.cwd()
     }, configItems);
 
-    fs.writeJson(path.join('conf', 'config.json'), config, { spaces: 2 }, function(error) {
-      if(error) {
+    fs.writeJson(path.join('conf', 'config.json'), config, { spaces: 2 }, function (error) {
+      if (error) {
         return handleError(`Failed to write configuration file to ${chalk.underline('conf/config.json')}.\n${error}`, 1, 'Install Failed.');
       }
       callback();
@@ -578,10 +598,10 @@ function saveConfig(configItems, callback) {
 }
 
 function handleError(error, exitCode, exitMessage) {
-  if(error) {
+  if (error) {
     console.error(`ERROR: ${error}`);
   }
-  if(exitCode) {
+  if (exitCode) {
     exit(exitCode, exitMessage);
   }
 }
@@ -594,13 +614,13 @@ function handleError(error, exitCode, exitMessage) {
  */
 
 function exit(code, msg) {
-  installHelpers.exit(code, msg, function(callback) {
-    if(0 === code || app && !app.db || !masterTenant) {
+  installHelpers.exit(code, msg, function (callback) {
+    if (0 === code || app && !app.db || !masterTenant) {
       return callback();
     }
     // handle borked tenant, users, in case of a non-zero exit
-    app.db.destroy('tenant', { _id: masterTenant._id }, function(error) {
-      if(!superUser) return callback();
+    app.db.destroy('tenant', { _id: masterTenant._id }, function (error) {
+      if (!superUser) return callback();
       app.db.destroy('user', { _id: superUser._id }, callback);
     });
   });

@@ -64,18 +64,10 @@
         {{/unless}}{{/ifUserNotMe}}
       </div>
     </div>
-    <div class="col-10 col-centered">
+    <div class="col-20">
       <div class="tb-col-inner">
-        {{failedLoginCount}}
+        {{accountStatus}}
         {{#if _isLocked}}
-          <i class="fa fa-lock"></i>
-        {{/if}}
-      </div>
-    </div>
-    <div class="col-10 col-centered">
-      <div class="tb-col-inner">
-        {{passwordResetCount}}
-        {{#if _isLockedReset}}
           <i class="fa fa-lock"></i>
         {{/if}}
       </div>
@@ -97,8 +89,10 @@
               {{#ifMailEnabled}}
                 <button class="btn primary invite">{{t 'app.inviteuser'}}</button>
                 <button class="btn primary resetPassword">{{t 'app.resetpassword'}}</button>
-              {{/ifMailEnabled}}
+                {{#ifUserNotMe _id}}
                 <button class="btn tertiary changePassword">{{t 'app.changepassword'}}</button>
+                {{/ifUserNotMe}}
+              {{/ifMailEnabled}}
             </div>
             {{#if _isLocked}}
               <div class="group">
@@ -111,11 +105,6 @@
                   <button class="btn secondary unlock">{{t 'app.resetlogins'}}</button>
                 </div>
               {{/ifValueEquals}}
-            {{/if}}
-            {{#if _isLockedReset}}
-                  <div class="group">
-                    <button class="btn secondary unlock-reset-password">{{t 'app.unlockPasswordReset'}}</button>
-                  </div>
             {{/if}}
           {{/if}}
           {{#ifUserNotMe _id}}
