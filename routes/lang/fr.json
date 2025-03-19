@@ -1168,7 +1168,7 @@
   "app.accountislocked": "Ce compte a été verrouillé en raison d’un trop grand nombre de tentatives de connexion infructueuses.",
   "app.validationpasswordmatch": "Les mots de passe ne correspondent pas",
   "app.passwordindicatorweak": "Faible – essayez d’utiliser des chiffres et des lettres majuscules",
-  "app.passwordindicatormedium": "Renforcez votre mot de passe à l’aide de majuscules, de chiffres et de caractères spéciaux.",
+  "app.passwordindicatormedium": "Renforcez votre mot de passe avec au moins 12 caractères.",
   "app.passwordindicatorstrong": "Mot de passe fort!",
   "app.fixerrors": "Veuillez corriger les erreurs ci-dessous avant de continuer.",
   "app.manageextensions": "Gérer les extensions",

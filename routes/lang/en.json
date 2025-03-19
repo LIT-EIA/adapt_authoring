@@ -180,7 +180,7 @@
   "app.accountislocked": "This account has been locked because of too many failed login attempts.",
   "app.validationpasswordmatch": "Passwords do not match",
   "app.passwordindicatorweak": "Weak – try using numbers and capital letters",
-  "app.passwordindicatormedium": "Make your password stronger with more capital letters, more numbers and special characters",
+  "app.passwordindicatormedium": "Make your password stronger with at least 12 characters",
   "app.passwordindicatorstrong": "Strong password!",
   "app.fixerrors": "Please fix the below errors before continuing.",
   "app.manageextensions": "Manage extensions",
