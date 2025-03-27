@@ -3,6 +3,7 @@ define(function(require) {
 
   var Origin = require('core/origin');
   var LoginView = require('./views/loginView');
+  var LoginMfaView = require('./views/loginMfaView');
   var UserProfileView = require('./views/userProfileView');
   var UserProfileSidebarView = require('./views/userProfileSidebarView');
   var UserProfileModel = require('./models/userProfileModel');
@@ -32,6 +33,11 @@ define(function(require) {
       case 'login':
         Origin.trigger('location:title:hide');
         currentView = LoginView;
+        break;
+      case 'loginMfa':
+        Origin.trigger('location:title:hide');
+        Origin.trigger('sidebar:sidebarContainer:hide');
+        currentView = LoginMfaView;
         break;
       case 'logout':
         Origin.sessionModel.logout();

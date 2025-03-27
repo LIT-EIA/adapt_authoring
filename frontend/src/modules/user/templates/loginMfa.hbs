@@ -1,0 +1,30 @@
+<div class="login-navigation-bar-bg">
+  <div class="login-navigation-right">
+    <a href="#" class="langspot login-navigation-item aut" onclick="togglelang()">
+      {{! ESDC - added translation handler for language name}}
+      <span lang="{{t 'app.langswitcherCode'}}">{{t 'app.langswitcher'}}</span>
+    </a>
+  </div>
+</div>
+
+<div class="login-mfa-inner">
+    <div class="login-mfa-logo"></div>
+
+    <form class="login-mfa-form" autocomplete="off">
+        <div class="login-mfa-title">{{t 'app.checkemail'}}</div>
+        {{#if isAuthenticated}}
+            {{t 'app.alreadyloggedin'}}
+            <button class="dash btn small secondary">{{t 'app.gotodashboard'}}</button>
+        {{else}}
+            <div class="login-mfa-fields">
+                <div id="loginError" class="display-none" role="alert" aria-live="polite">
+                    <i class="fa fa-times"></i><span id="loginErrorMessage"/>
+                </div>
+                <label for="login-mfa-input-verificationcode" class="sr-only">{{ 'app.verificationcode' }}</label>
+                <input type="text" class="login-mfa-input-verificationcode" value="" id="login-mfa-input-verificationcode" placeholder="{{t 'app.verificationcode'}}" />
+                <button type="submit" class="btn secondary login-mfa-form-submit">{{t 'app.verify'}}</button>
+            </div>
+        {{/if}}
+    </form>
+    <button class="resend-mfatoken-btn">{{ t 'app.resendverificationcode' }}</button>
+</div>

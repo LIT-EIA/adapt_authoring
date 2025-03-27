@@ -21,20 +21,49 @@ define(['require', 'backbone', 'core/origin'], function(require, Backbone, Origi
         shouldPersist: shouldPersist
       };
       $.post('api/login', postData, _.bind(function (jqXHR, textStatus, errorThrown) {
-        console.log('jqXHR: ', jqXHR);
         this.set({
           id: jqXHR.id,
           tenantId: jqXHR.tenantId,
           email: jqXHR.email,
           firstName: jqXHR.firstName,
           lastName: jqXHR.lastName,
-          isAuthenticated: true,
+          isAuthenticated: false,
           permissions: jqXHR.permissions
+        });
+        // Origin.trigger('login:changed');
+        // Origin.trigger('schemas:loadData', Origin.router.navigateToHome);
+        Origin.trigger('schemas:loadData', Origin.router.navigateToLoginMfaPage);
+      }, this)).fail(function(jqXHR, textStatus, errorThrown) {
+        Origin.trigger('login:failed', (jqXHR.responseJSON && jqXHR.responseJSON.errorCode) || 1);
+      });
+    },
+
+    verifyCode: function(code) {
+      var postData = {
+        email: this.get('email'),
+        token: code
+      };
+
+      $.post('api/loginMfa', postData, _.bind(function (jqXHR, textStatus, errorThrown) {
+        this.set({
+          validationDate: jqXHR.validationDate,
+          isAuthenticated: true
         });
         Origin.trigger('login:changed');
         Origin.trigger('schemas:loadData', Origin.router.navigateToHome);
       }, this)).fail(function(jqXHR, textStatus, errorThrown) {
         Origin.trigger('login:failed', (jqXHR.responseJSON && jqXHR.responseJSON.errorCode) || 1);
+      });
+    },
+
+    resendLoginMfaToken: function() {
+      var postData = {
+        email: this.get('email')
+      };
+      $.post('api/newLoginMfaToken', postData, _.bind(function (jqXHR, textStatus, errorThrown) {
+        Origin.trigger('schemas:loadData', Origin.router.navigateToLoginMfaPage);
+      }, this)).fail(function(jqXHR, textStatus, errorThrown) {
+        console.log('failed jqXHR: ', jqXHR);
       });
     },
 

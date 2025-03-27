@@ -8,7 +8,7 @@ define(function(require){
     isClosedRoute: function(){
       var fragments = Backbone.history.getFragment().split('/');
         var route = fragments[0] + '/' + fragments[1];
-        if(route && route !== 'user/login' && route !== 'user/logout' && route !== 'user/forgot' && route !== 'user/reset'){
+        if(route && route !== 'user/login' && route !== 'user/loginMfa' && route !== 'user/logout' && route !== 'user/forgot' && route !== 'user/reset'){
           return true
         }
         return false

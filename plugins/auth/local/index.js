@@ -111,10 +111,14 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
     if(!user) {
       return res.status(401).json({ errorCode: info.errorCode});
     }
+
     // check user is not deleted
     if (user._isDeleted) {
       return res.status(401).json({ errorCode: ERROR_CODES.ACCOUNT_INACTIVE });
     }
+
+    user.validationDate = null;
+
     // check tenant is enabled
     self.isTenantEnabled(user, function (err, isEnabled) {
       if (!isEnabled) {
@@ -129,29 +133,85 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
           if (error) {
             return next(error);
           }
-          //Used to get the users permissions
-          permissions.getUserPermissions(user._id, function(error, userPermissions) {
+
+          self.generateMfaToken(user, function(error, userRecord){
             if (error) {
               return next(error);
             }
-            if (req.body.shouldPersist && req.body.shouldPersist == 'true') {
-              // Session is persisted for 2 weeks if the user has set 'Remember me'
-              req.session.cookie.maxAge = 14 * 24 * 3600000;
-            } else {
-              req.session.cookie.expires = false;
-            }
-            return res.status(200).json({
-              id: user._id,
-              email: user.email,
-              tenantId: user._tenantId,
-              tenantName: req.session.passport.user.tenant.name,
-              permissions: userPermissions
+            //Used to get the users permissions
+            permissions.getUserPermissions(user._id, function(error, userPermissions) {
+              if (error) {
+                return next(error);
+              }
+              if (req.body.shouldPersist && req.body.shouldPersist == 'true') {
+                // Session is persisted for 2 weeks if the user has set 'Remember me'
+                req.session.cookie.maxAge = 14 * 24 * 3600000;
+              } else {
+                req.session.cookie.expires = false;
+              }
+              return res.status(200).json({
+                id: user._id,
+                email: user.email,
+                validationDate: user.validationDate,
+                tenantId: user._tenantId,
+                tenantName: req.session.passport.user.tenant.name,
+                permissions: userPermissions
+              });
             });
           });
         });
       });
     });
+
   })(req, res, next);
+};
+
+LocalAuth.prototype.validateMfaToken = function (req, res, next) {
+  let MAX_TOKEN_AGE = 0.1; // in hours
+  const xHoursAgo = function (hours) {
+    var now = new Date();
+    return now.getTime() - (1000 * 60 * 60 * hours);
+  };
+
+  let timestampMinAge = xHoursAgo(MAX_TOKEN_AGE);
+
+  usermanager.retrieveUser({ email: req.body.email, auth: 'local' }, function (error, userRecord) {
+    if (error) {
+      logger.log('error', error);
+      res.statusCode = 400;
+      return res.json({ success: false });
+    }
+
+    if (userRecord) {
+      if (userRecord.validationToken === req.body.token && userRecord.validationTokenIssueDate.getTime() > timestampMinAge) {
+        let delta = {
+          validationDate: new Date()
+        }
+        usermanager.updateUser({email: req.body.email}, delta, function (error, userRecord) {
+          if (error) {
+            logger.log('error', error);
+            return next(error);
+          }
+
+          if (req.session && req.session.passport && req.session.passport.user) {
+            req.session.passport.user.validationDate = userRecord.validationDate;
+          }
+
+          // Success
+          return res.status(200).json({
+            id: userRecord._id,
+            email: userRecord.email,
+            validationDate: userRecord.validationDate
+          });
+        });
+      }
+      else {
+        return next(new auth.errors.UserRegistrationError('Invalid validation token!'));
+      }
+    } else {
+      return next(new auth.errors.UserRegistrationError('Cannot find user email!'));
+    }
+  });
 };
 
 LocalAuth.prototype.disavow = function (req, res, next) {
@@ -349,6 +409,36 @@ LocalAuth.prototype.internalGenerateResetToken = function (user, next) {
 
       // Success
       return next(null, user);
+    });
+  });
+};
+
+LocalAuth.prototype.generateMfaToken = function (user, next) {
+  if (!user.email) {
+    return next(new auth.errors.UserGenerateTokenError('email is required!'));
+  }
+
+  auth.createMfaToken(function (error, token) {
+    if (error) {
+      return next(error);
+    }
+
+    console.log('createMfaToken token: ', token);
+
+    var delta = {
+      validationToken: token,
+      validationTokenIssueDate: new Date(),
+      validationDate: null
+    };
+
+    usermanager.updateUser({email: user.email}, delta, function (error, userRecord) {
+      if (error) {
+        logger.log('error', error);
+        return next(error);
+      }
+
+      // Success
+      return next(null, userRecord);
     });
   });
 };
