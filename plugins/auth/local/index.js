@@ -437,6 +437,21 @@ LocalAuth.prototype.generateMfaToken = function (user, next) {
         return next(error);
       }
 
+      emailTemplate = {
+        email: userRecord.email,
+        template: 'loginMfa',
+        personalisation: {
+          name: userRecord.firstName,
+          verificationCode: token
+        }
+      }
+      app.mailservice.send(emailTemplate, function(error) {
+        if (error) {
+          logger.log('error', error.message)
+        }
+        logger.log('info', 'Verification code for ' + user.email);
+      });
+
       // Success
       return next(null, userRecord);
     });
