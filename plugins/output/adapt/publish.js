@@ -72,6 +72,13 @@ function publishCourse(courseId, mode, request, response, next) {
     },
     //
     function(callback) {
+          // deactivate devtools in outputJson if present
+          if(outputJson['config'][0] && outputJson['config'][0]._devtools){
+            outputJson['config'][0]._devtools._isEnabled = false
+          }
+          callback(null);
+    },
+    function(callback) {
       var temporaryThemeFolder = path.join(SRC_FOLDER, Constants.Folders.Theme, customPluginName);
       self.applyTheme(tenantId, courseId, outputJson, temporaryThemeFolder, function(err, appliedThemeName) {
         if (err) {
