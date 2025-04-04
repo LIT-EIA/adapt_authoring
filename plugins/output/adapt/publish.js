@@ -73,7 +73,7 @@ function publishCourse(courseId, mode, request, response, next) {
     //
     function(callback) {
           // deactivate devtools in outputJson if present
-          if(outputJson['config'][0] && outputJson['config'][0]._devtools){
+          if(mode === Constants.Modes.Publish && outputJson['config'][0] && outputJson['config'][0]._devtools){
             outputJson['config'][0]._devtools._isEnabled = false
           }
           callback(null);
