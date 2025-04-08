@@ -117,6 +117,7 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
       return res.status(401).json({ errorCode: ERROR_CODES.ACCOUNT_INACTIVE });
     }
 
+    // NEEDS MFA REFACTOR
     var requireMfa = app.mailservice.useMailService && !req.cookies.skipMfa;
 
     user.validationDate = requireMfa ? null : new Date();
@@ -151,6 +152,7 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
               return res.status(200).json({
                 id: user._id,
                 email: user.email,
+                // NEEDS MFA REFACTOR
                 validationDate: user.validationDate,
                 requireMfa: requireMfa,
                 tenantId: user._tenantId,
@@ -193,7 +195,7 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
       httpOnly: false
     });
   }
-
+  // NEEDS MFA REFACTOR
   usermanager.retrieveUser({ email: req.body.email, auth: 'local' }, function (error, userRecord) {
     if (error) {
       logger.log('error', error);
@@ -450,6 +452,7 @@ LocalAuth.prototype.generateMfaToken = function (user, next) {
       validationDate: null
     };
 
+    // NEEDS MFA REFACTOR
     usermanager.updateUser({email: user.email}, delta, function (error, userRecord) {
       if (error) {
         logger.log('error', error);
