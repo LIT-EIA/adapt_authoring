@@ -51,6 +51,7 @@ define(function(require) {
       e && e.preventDefault();
 
       var inputVerificationCode = $.trim(this.$("#login-mfa-input-verificationcode").val());
+      var shouldSkipMfa = this.$('#skip-mfa').prop('checked');
 
       // Validation
       if (inputVerificationCode === '') {
@@ -62,7 +63,7 @@ define(function(require) {
 
       var userModel = this.model;
 
-      userModel.verifyCode(inputVerificationCode);
+      userModel.verifyCode(inputVerificationCode, shouldSkipMfa);
     },
 
     resendLoginMfaToken: function() {

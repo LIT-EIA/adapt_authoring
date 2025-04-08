@@ -1063,6 +1063,7 @@
   "app.login": "Ouvrir une session",
   "app.logout": "Fermer une session",
   "app.signin": "Se connecter",
+  "app.skipverificationcode": "Sauter cette étape pendant 30 jours sur cet appareil.",
   "app.verificationcode": "Code de vérification",
   "app.resendverificationcode": "Renvoyer le code de vérification",
   "app.invalidverificationcode": "Code de vérification non valide",

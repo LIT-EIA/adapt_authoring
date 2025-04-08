@@ -22,9 +22,13 @@
                 </div>
                 <label for="login-mfa-input-verificationcode" class="sr-only">{{ 'app.verificationcode' }}</label>
                 <input type="text" class="login-mfa-input-verificationcode" value="" id="login-mfa-input-verificationcode" placeholder="{{t 'app.verificationcode'}}" />
+                <div class="login-skip-mfa">
+                  <input id="skip-mfa" class="skip-mfa-checkbox" name="skip-mfa" type="checkbox"/>
+                  <label for="skip-mfa" class="skip-mfa-label">{{t 'app.skipverificationcode'}}</label>
+                </div>
                 <button type="submit" class="btn secondary login-mfa-form-submit">{{t 'app.verify'}}</button>
+                <button class="btn action-secondary resend-mfatoken-btn">{{ t 'app.resendverificationcode' }}</button>
             </div>
         {{/if}}
     </form>
-    <button class="resend-mfatoken-btn">{{ t 'app.resendverificationcode' }}</button>
 </div>

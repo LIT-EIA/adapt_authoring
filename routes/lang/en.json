@@ -75,6 +75,7 @@
   "app.login": "Log in",
   "app.logout": "Log out",
   "app.signin": "Sign in",
+  "app.skipverificationcode": "Skip this step for 30 days on this device",
   "app.verificationcode": "Verification code",
   "app.resendverificationcode": "Resend verification code",
   "app.invalidverificationcode": "Invalid verification code",

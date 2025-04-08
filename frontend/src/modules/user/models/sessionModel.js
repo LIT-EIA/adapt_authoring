@@ -27,21 +27,27 @@ define(['require', 'backbone', 'core/origin'], function(require, Backbone, Origi
           email: jqXHR.email,
           firstName: jqXHR.firstName,
           lastName: jqXHR.lastName,
-          isAuthenticated: false,
+          isAuthenticated: jqXHR && jqXHR.requireMfa !== true ? true : false,
           permissions: jqXHR.permissions
         });
-        // Origin.trigger('login:changed');
-        // Origin.trigger('schemas:loadData', Origin.router.navigateToHome);
-        Origin.trigger('schemas:loadData', Origin.router.navigateToLoginMfaPage);
+
+        if (jqXHR && jqXHR.requireMfa !== true) {
+          Origin.trigger('login:changed');
+          Origin.trigger('schemas:loadData', Origin.router.navigateToHome);
+        }
+        else {
+          Origin.trigger('schemas:loadData', Origin.router.navigateToLoginMfaPage);
+        }
       }, this)).fail(function(jqXHR, textStatus, errorThrown) {
         Origin.trigger('login:failed', (jqXHR.responseJSON && jqXHR.responseJSON.errorCode) || 1);
       });
     },
 
-    verifyCode: function(code) {
+    verifyCode: function(code, shouldSkipMfa) {
       var postData = {
         email: this.get('email'),
-        token: code
+        token: code,
+        shouldSkipMfa: shouldSkipMfa
       };
 
       $.post('api/loginMfa', postData, _.bind(function (jqXHR, textStatus, errorThrown) {

@@ -117,7 +117,9 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
       return res.status(401).json({ errorCode: ERROR_CODES.ACCOUNT_INACTIVE });
     }
 
-    user.validationDate = null;
+    var requireMfa = app.mailservice.useMailService && !req.cookies.skipMfa;
+
+    user.validationDate = requireMfa ? null : new Date();
 
     // check tenant is enabled
     self.isTenantEnabled(user, function (err, isEnabled) {
@@ -134,10 +136,7 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
             return next(error);
           }
 
-          self.generateMfaToken(user, function(error, userRecord){
-            if (error) {
-              return next(error);
-            }
+          const authenticateCbFn = function () {
             //Used to get the users permissions
             permissions.getUserPermissions(user._id, function(error, userPermissions) {
               if (error) {
@@ -153,12 +152,25 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
                 id: user._id,
                 email: user.email,
                 validationDate: user.validationDate,
+                requireMfa: requireMfa,
                 tenantId: user._tenantId,
                 tenantName: req.session.passport.user.tenant.name,
                 permissions: userPermissions
               });
             });
-          });
+          }
+
+          if (requireMfa) {
+            self.generateMfaToken(user, function(error, userRecord){
+              if (error) {
+                return next(error);
+              }
+              authenticateCbFn();
+            });
+          }
+          else {
+            authenticateCbFn();
+          }
         });
       });
     });
@@ -167,13 +179,20 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
 };
 
 LocalAuth.prototype.validateMfaToken = function (req, res, next) {
-  let MAX_TOKEN_AGE = 0.1; // in hours
-  const xHoursAgo = function (hours) {
+  let MAX_TOKEN_AGE = 10; // in minutes
+  const xMinutesAgo = function (minutes) {
     var now = new Date();
-    return now.getTime() - (1000 * 60 * 60 * hours);
+    return now.getTime() - (1000 * 60 * minutes);
   };
 
-  let timestampMinAge = xHoursAgo(MAX_TOKEN_AGE);
+  let timestampMinAge = xMinutesAgo(MAX_TOKEN_AGE);
+
+  if (req.body.shouldSkipMfa && req.body.shouldSkipMfa == 'true') {
+    res.cookie('skipMfa', true, {
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
+      httpOnly: false
+    });
+  }
 
   usermanager.retrieveUser({ email: req.body.email, auth: 'local' }, function (error, userRecord) {
     if (error) {
