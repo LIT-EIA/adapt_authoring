@@ -45,18 +45,6 @@
       "type": "date",
       "required": false
     },
-    "validationToken": {
-      "type": "string",
-      "required": false
-    },
-    "validationTokenIssueDate": {
-      "type": "date",
-      "required": false
-    },
-    "validationDate": {
-      "type": "date",
-      "required": false
-    },
     "failedLoginCount": {
       "type" : "number",
       "required": true,
