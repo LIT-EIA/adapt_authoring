@@ -21,21 +21,25 @@ define(['require', 'backbone', 'core/origin'], function(require, Backbone, Origi
         shouldPersist: shouldPersist
       };
       $.post('api/login', postData, _.bind(function (jqXHR, textStatus, errorThrown) {
-        this.set({
-          id: jqXHR.id,
-          tenantId: jqXHR.tenantId,
-          email: jqXHR.email,
-          firstName: jqXHR.firstName,
-          lastName: jqXHR.lastName,
-          isAuthenticated: jqXHR && jqXHR.requireMfa !== true ? true : false,
-          permissions: jqXHR.permissions
-        });
-
-        if (jqXHR && jqXHR.requireMfa !== true) {
+        if (jqXHR && jqXHR.isAuthenticated) {
+          this.set({
+            id: jqXHR.id,
+            tenantId: jqXHR.tenantId,
+            email: jqXHR.email,
+            firstName: jqXHR.firstName,
+            lastName: jqXHR.lastName,
+            isAuthenticated: jqXHR.isAuthenticated,
+            permissions: jqXHR.permissions
+          });
           Origin.trigger('login:changed');
           Origin.trigger('schemas:loadData', Origin.router.navigateToHome);
         }
         else {
+          this.set({
+            id: jqXHR.id,
+            email: jqXHR.email,
+            isAuthenticated: jqXHR.isAuthenticated
+          });
           Origin.trigger('schemas:loadData', Origin.router.navigateToLoginMfaPage);
         }
       }, this)).fail(function(jqXHR, textStatus, errorThrown) {
@@ -52,8 +56,11 @@ define(['require', 'backbone', 'core/origin'], function(require, Backbone, Origi
 
       $.post('api/loginMfa', postData, _.bind(function (jqXHR, textStatus, errorThrown) {
         this.set({
-          validationDate: jqXHR.validationDate,
-          isAuthenticated: true
+          id: jqXHR.id,
+          tenantId: jqXHR.tenantId,
+          email: jqXHR.email,
+          isAuthenticated: jqXHR.isAuthenticated,
+          permissions: jqXHR.permissions
         });
         Origin.trigger('login:changed');
         Origin.trigger('schemas:loadData', Origin.router.navigateToHome);

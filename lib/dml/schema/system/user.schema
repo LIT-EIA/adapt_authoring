@@ -58,7 +58,8 @@
     "previousPasswords": {
       "type": "array",
       "default": [],
-      "required": false
+      "required": false,
+      "protect": true
     },
      "metadata": {
       "type" : "object"

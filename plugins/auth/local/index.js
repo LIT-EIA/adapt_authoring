@@ -157,7 +157,7 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
             return res.status(200).json({
               id: user._id,
               email: user.email,
-              requireMfa: requireMfa,
+              isAuthenticated: false
             });
           } else {
             req.logIn(user, function (error) {
@@ -170,6 +170,7 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
                 }
                 return res.status(200).json({
                   id: user._id,
+                  isAuthenticated: true,
                   email: user.email,
                   tenantId: user._tenantId,
                   tenantName: req.session.passport.user.tenant.name,
@@ -266,6 +267,7 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
                         }
                         return res.status(200).json({
                           id: user._id,
+                          isAuthenticated: true,
                           email: user.email,
                           tenantId: user._tenantId,
                           tenantName: req.session.passport.user.tenant.name,
