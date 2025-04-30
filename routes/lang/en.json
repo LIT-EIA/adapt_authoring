@@ -63,6 +63,7 @@
   "app.invalidempty": "You need to write something!",
   "app.changeadminaccounts": "Please log in as another admin for full access.",
   "app.failedlogins": "Failed logins",
+  "app.accountstatus": "Account status",
   "app.lastaccess": "Last access",
   "app.duplicateuservalueerror": "Couldn't save user data. A user already exists with %{key}: <strong>%{value}</strong>",
   "app.uservalueerror": "Couldn't save user data.",
