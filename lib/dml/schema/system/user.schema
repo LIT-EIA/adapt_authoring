@@ -55,6 +55,16 @@
       "required": true,
       "default": 0
     },
+    "failedMfaCount": {
+      "type" : "number",
+      "required": true,
+      "default": 0
+    },
+    "mfaResetCount": {
+      "type" : "number",
+      "required": true,
+      "default": 0
+    },
     "previousPasswords": {
       "type": "array",
       "default": [],

@@ -53,8 +53,7 @@ LocalAuth.prototype.verifyUser = function (email, password, done) {
         errorCode: ERROR_CODES.INVALID_USERNAME_OR_PASSWORD
       });
     }
-
-    if (user.failedLoginCount < configuration.getConfig('maxLoginAttempts')) {
+    if (user.failedLoginCount < configuration.getConfig('maxLoginAttempts') && user.failedMfaCount < 3 && user.mfaResetCount < 3) {
       // Validate the user's password
       auth.validatePassword(password, user.password, function (error, valid) {
         if (error) {
@@ -104,38 +103,8 @@ LocalAuth.prototype.verifyUser = function (email, password, done) {
 
 LocalAuth.prototype.authenticate = function (req, res, next) {
   var self = this;
-  return passport.authenticate('local', function (error, user, info) {
-    if (error) {
-      return next(error);
-    }
-    if (!user) {
-      return res.status(401).json({ errorCode: info.errorCode });
-    }
-
-    // check user is not deleted
-    if (user._isDeleted) {
-      return res.status(401).json({ errorCode: ERROR_CODES.ACCOUNT_INACTIVE });
-    }
-    var requireMfa = true;
-    var tokenId = req.cookies['connect.fid'];
-    if (tokenId) {
-      usermanager.retrieveMfaToken({ tokenId: tokenId }, function (error, data) {
-        if (error) {
-          logger.log('error', error);
-          requireMfa = true;
-        }
-        if (data && data.length) {
-          var result = data[0];
-          var currentDate = new Date();
-          var THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-          var tokenExpired = result.validationDate === null ? true : (currentDate - result.validationDate) > THIRTY_DAYS;
-          if (result.verified === true && !tokenExpired) {
-            requireMfa = false;
-          }
-        }
-      });
-    }
-
+  var requireMfa = true;
+  const continueAuthentication = function (user) {
     // check tenant is enabled
     self.isTenantEnabled(user, function (err, isEnabled) {
       if (!isEnabled) {
@@ -164,7 +133,7 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
               if (error) {
                 return next(error);
               }
-              usermanager.logAccess(user, function(error) {
+              usermanager.logAccess(user, function (error) {
                 if (error) {
                   return next(error);
                 }
@@ -193,6 +162,40 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
         authenticateCbFn();
       }
     });
+  }
+  return passport.authenticate('local', function (error, user, info) {
+    if (error) {
+      return next(error);
+    }
+    if (!user) {
+      return res.status(401).json({ errorCode: info.errorCode });
+    }
+
+    // check user is not deleted
+    if (user._isDeleted) {
+      return res.status(401).json({ errorCode: ERROR_CODES.ACCOUNT_INACTIVE });
+    }
+    var tokenId = req.cookies['connect.fid'];
+    if (tokenId) {
+      usermanager.retrieveMfaToken({ tokenId: tokenId }, function (error, data) {
+        if (error) {
+          logger.log('error', error);
+          requireMfa = true;
+        }
+        if (data && data.length) {
+          var result = data[0];
+          var currentDate = new Date();
+          var THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+          var tokenExpired = result.validationDate === null ? true : (currentDate - result.validationDate) > THIRTY_DAYS;
+          if (result.verified === true && !tokenExpired) {
+            requireMfa = false;
+            continueAuthentication(user);
+          }
+        }
+      });
+    } else {
+      continueAuthentication(user);
+    }
   })(req, res, next);
 };
 
@@ -213,78 +216,95 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
     }
 
     if (user) {
-      usermanager.retrieveMfaToken({ userId: user._id, verified: false }, function (error, data) {
-        if (error) {
-          logger.log('error', error);
-          res.statusCode = 400;
-          return res.json({ success: false });
-        }
-        if (data && data.length) {
-          var result = data[0];
-          if (result.validationToken === req.body.token && result.validationTokenIssueDate.getTime() > timestampMinAge) {
-            var delta = {
-              verified: true,
-              validationDate: new Date()
-            };
-            usermanager.updateMfaToken({ _id: result._id }, delta, function (error, data) {
-              if (error) {
-                logger.log('error', error);
-                res.statusCode = 400;
-                return res.json({ success: false });
-              }
-              if (req.body.shouldSkipMfa && req.body.shouldSkipMfa == 'true') {
-                res.cookie('connect.fid', result.tokenId, {
-                  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
-                  httpOnly: true,
-                  secure: true
-                });
-              }
-              self.isTenantEnabled(user, function (err, isEnabled) {
-                if (!isEnabled) {
-                  return res.status(401).json({ errorCode: ERROR_CODES.TENANT_DISABLED });
+      if (user.failedMfaCount >= 3) {
+        logger.log('error', 'mfa verification failed more than 3 times, mfa locked!');
+        res.statusCode = 401;
+        return res.json({ success: false, errorCode: 'failedMfaCount' });
+      } else {
+        usermanager.retrieveMfaToken({ userId: user._id, verified: false, sessionId: req.sessionID }, function (error, data) {
+          if (error) {
+            logger.log('error', error);
+            res.statusCode = 400;
+            return res.json({ success: false });
+          }
+          if (data && data.length) {
+            var result = data[0];
+            if (result.validationToken === req.body.token && result.validationTokenIssueDate.getTime() > timestampMinAge) {
+              var delta = {
+                verified: true,
+                validationDate: new Date()
+              };
+              usermanager.updateMfaToken({ _id: result._id }, delta, function (error, data) {
+                if (error) {
+                  logger.log('error', error);
+                  res.statusCode = 400;
+                  return res.json({ success: false });
                 }
-                // Store the login details
-                req.logIn(user, function (error) {
-                  if (error) {
-                    return next(error);
+                if (req.body.shouldSkipMfa && req.body.shouldSkipMfa == 'true') {
+                  res.cookie('connect.fid', result.tokenId, {
+                    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
+                    httpOnly: true,
+                    secure: true
+                  });
+                }
+                self.isTenantEnabled(user, function (err, isEnabled) {
+                  if (!isEnabled) {
+                    return res.status(401).json({ errorCode: ERROR_CODES.TENANT_DISABLED });
                   }
-                  usermanager.logAccess(user, function (error) {
+                  // Store the login details
+                  req.logIn(user, function (error) {
                     if (error) {
                       return next(error);
                     }
+                    usermanager.logAccess(user, function (error) {
+                      if (error) {
+                        return next(error);
+                      }
 
-                    const authenticateCbFn = function () {
-                      //Used to get the users permissions
-                      permissions.getUserPermissions(user._id, function (error, userPermissions) {
-                        if (error) {
-                          return next(error);
-                        }
-                        if (req.body.shouldPersist && req.body.shouldPersist == 'true') {
-                          // Session is persisted for 2 weeks if the user has set 'Remember me'
-                          req.session.cookie.maxAge = 14 * 24 * 3600000;
-                        } else {
-                          req.session.cookie.expires = false;
-                        }
-                        return res.status(200).json({
-                          id: user._id,
-                          isAuthenticated: true,
-                          email: user.email,
-                          tenantId: user._tenantId,
-                          tenantName: req.session.passport.user.tenant.name,
-                          permissions: userPermissions
+                      const authenticateCbFn = function () {
+                        //Used to get the users permissions
+                        permissions.getUserPermissions(user._id, function (error, userPermissions) {
+                          if (error) {
+                            return next(error);
+                          }
+                          if (req.body.shouldPersist && req.body.shouldPersist == 'true') {
+                            // Session is persisted for 2 weeks if the user has set 'Remember me'
+                            req.session.cookie.maxAge = 14 * 24 * 3600000;
+                          } else {
+                            req.session.cookie.expires = false;
+                          }
+                          return res.status(200).json({
+                            id: user._id,
+                            isAuthenticated: true,
+                            email: user.email,
+                            tenantId: user._tenantId,
+                            tenantName: req.session.passport.user.tenant.name,
+                            permissions: userPermissions
+                          });
                         });
-                      });
-                    }
-                    authenticateCbFn();
+                      }
+                      authenticateCbFn();
+                    });
                   });
                 });
               });
-            });
+            } else {
+              user.failedMfaCount++;
+              usermanager.updateUser({ _id: user.id }, { failedMfaCount: user.failedMfaCount }, function (err) {
+                if (err) {
+                  logger.log('error', 'Failed to update user mfa validation count for user: ', user);
+                  return next(err)
+                }
+              });
+              logger.log('error', 'Invalid token!');
+              res.statusCode = 403;
+              return res.json({ success: false, errorCode: user.failedMfaCount >= 3 ? 'failedMfaCount' : 'invalidMfaToken' });
+            }
           } else {
-            return next(new auth.errors.UserRegistrationError('Invalid token!'));
+            return next(new auth.errors.UserRegistrationError('No token to validate!'));
           }
-        }
-      });
+        });
+      }
     } else {
       return next(new auth.errors.UserRegistrationError('Cannot find user email!'));
     }
@@ -394,10 +414,6 @@ LocalAuth.prototype.generateResetToken = function (req, res, next) {
     }
 
     if (userRecord) {
-      // var currentDate = Date();
-      // if (){
-      //   return next({ success: false });
-      // }
 
       var user = {
         email: req.body.email,
@@ -495,22 +511,18 @@ LocalAuth.prototype.generateMfaToken = function (user, req, next) {
     return next(new auth.errors.UserGenerateTokenError('email is required!'));
   }
 
-  auth.createMfaToken(function (error, token) {
-    if (error) {
-      return next(error);
-    }
-
-    auth.createToken(function (error, tokenId) {
+    auth.createMfaToken(function (error, token) {
       if (error) {
         return next(error);
       }
-      console.log('createMfaToken token: ', token);
-      usermanager.createMfaToken(user, req, token, tokenId, next);
+
+      auth.createToken(function (error, tokenId) {
+        if (error) {
+          return next(error);
+        }
+        usermanager.createMfaToken(user, req, token, tokenId, next);
+      });
     });
-  });
-
-
-
 };
 
 // module exports

@@ -1951,5 +1951,7 @@
   "app.erroritemtoremoveinuse": "L'élément que vous souhaitez supprimer est en cours d'utilisation.",
   "app.clone": "Cloner",
   "app.adapt-esdc-talk.displayName": "Dialogue",
-  "app.adapt-esdc-talk.description": "Composant de dialogue"
+  "app.adapt-esdc-talk.description": "Composant de dialogue",
+  "app.failedmfacount": "Vous avez dépassé le nombre maximum de tentatives d'authentification à deux facteurs. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
+  "app.mfaResetCount": "Vous avez dépassé le nombre maximum de demandes pour générer un code d'authentification à deux facteurs. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? »."
 }

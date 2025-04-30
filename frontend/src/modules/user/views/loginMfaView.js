@@ -66,13 +66,23 @@ define(function(require) {
       userModel.verifyCode(inputVerificationCode, shouldSkipMfa);
     },
 
-    resendLoginMfaToken: function() {
+    resendLoginMfaToken: function(e) {
+      e && e.preventDefault();
+      console.log(e);
       var userModel = this.model;
-      userModel.resendLoginMfaToken();
+      userModel.resendLoginMfaToken(function(){
+        console.log('sent!');
+      });
     },
 
-    loginFailed: function() {
-      var errorMessage = Origin.l10n.t('app.invalidverificationcode');
+    loginFailed: function(errorCode) {
+      if(errorCode === 'invalidMfaToken') {
+        var errorMessage = Origin.l10n.t('app.invalidverificationcode');
+      } else if (errorCode === 'failedMfaCount'){
+        var errorMessage = Origin.l10n.t('app.failedmfacount');
+      } else if (errorCode === 'mfaResetCount'){
+        var errorMessage = Origin.l10n.t('app.mfaresetcount');
+      }
 
       $('#login-mfa-input-verificationcode').addClass('input-error');
       $('#loginErrorMessage').text(errorMessage);
