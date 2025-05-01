@@ -74,9 +74,10 @@ define(['require', 'backbone', 'core/origin'], function (require, Backbone, Orig
         email: this.get('email')
       };
       $.post('api/newLoginMfaToken', postData).done(function (jqXHR, textStatus, errorThrown) {
-        callback();
+        callback('success');
       }).fail(function (jqXHR, textStatus, errorThrown) {
         Origin.trigger('login:failed', (jqXHR.responseJSON && jqXHR.responseJSON.errorCode) || 1);
+        callback('failure');
       });
     },
 

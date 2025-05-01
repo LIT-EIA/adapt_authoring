@@ -86,6 +86,14 @@ define(function(require){
       return options.fallback;
     },
 
+    translateKey: function(key) {
+      if (!key) return;
+
+      if(Origin.l10n.has(key)) {
+        return Origin.l10n.t(key);
+      }
+    },
+
     momentFormat: function(date, format) {
       if (typeof date == 'undefined') {
         return '-';

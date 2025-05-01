@@ -1,8 +1,10 @@
 // LICENCE https://github.com/adaptlearning/adapt_authoring/blob/master/LICENSE
-define(function(require) {
+define(function (require) {
   var Backbone = require('backbone');
   var Origin = require('core/origin');
   var OriginView = require('core/views/originView');
+  var Helpers = require('core/helpers');
+
 
   var LoginMfaView = OriginView.extend({
 
@@ -17,21 +19,21 @@ define(function(require) {
       'click button.resend-mfatoken-btn': 'resendLoginMfaToken'
     },
 
-    preRender: function() {
+    preRender: function () {
       this.listenTo(Origin, 'login:failed', this.loginFailed, this);
     },
 
-    postRender: function() {
+    postRender: function () {
       this.setViewToReady();
       Origin.trigger('login:loaded');
     },
 
-    goHome: function(e) {
+    goHome: function (e) {
       e && e.preventDefault();
       Origin.router.navigateToHome();
     },
 
-    handleEnterKey: function(e) {
+    handleEnterKey: function (e) {
       var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
 
       if (key == 13) {
@@ -40,14 +42,14 @@ define(function(require) {
       }
     },
 
-    clearErrorStyling: function(e) {
+    clearErrorStyling: function (e) {
       $('#login-input-username').removeClass('input-error');
       $('#loginError').addClass('display-none');
 
       this.handleEnterKey(e);
     },
 
-    submitLoginDetails: function(e) {
+    submitLoginDetails: function (e) {
       e && e.preventDefault();
 
       var inputVerificationCode = $.trim(this.$("#login-mfa-input-verificationcode").val());
@@ -55,7 +57,7 @@ define(function(require) {
 
       // Validation
       if (inputVerificationCode === '') {
-        this.loginFailed();
+        this.loginFailed('invalidMfaToken');
         return false;
       } else {
         $('#login-mfa-input-verificationcode').removeClass('input-error');
@@ -66,21 +68,43 @@ define(function(require) {
       userModel.verifyCode(inputVerificationCode, shouldSkipMfa);
     },
 
-    resendLoginMfaToken: function(e) {
+    resendLoginMfaToken: function (e) {
       e && e.preventDefault();
-      console.log(e);
+
+      var resendCodeString = Helpers.translateKey('app.resendverificationcode');
+      var sendingCodeString = Helpers.translateKey('app.sending');
+      var checkmark = '&#10003;';
+
+      var returnToDefault = function () {
+          button.hide().html(resendCodeString).fadeIn('fast');
+      }
+
+      var button = $(e.target);
+      button.hide().html(`${sendingCodeString} <span class="loading-spinner"></span>`).fadeIn('fast');
       var userModel = this.model;
-      userModel.resendLoginMfaToken(function(){
-        console.log('sent!');
+      userModel.resendLoginMfaToken(function (status) {
+        if (status === 'success') {
+          setTimeout(function () {
+            button.html(`${sendingCodeString} ${checkmark}`);
+            setTimeout(function(){
+              returnToDefault();
+            }, 500);
+          }, 1000);
+        } else {
+          button.attr('disabled', true);
+          returnToDefault();
+        }
       });
     },
 
-    loginFailed: function(errorCode) {
-      if(errorCode === 'invalidMfaToken') {
+    loginFailed: function (errorCode) {
+      if (errorCode === 'invalidMfaToken') {
         var errorMessage = Origin.l10n.t('app.invalidverificationcode');
-      } else if (errorCode === 'failedMfaCount'){
+      } else if (errorCode === 'failedMfaCount') {
         var errorMessage = Origin.l10n.t('app.failedmfacount');
-      } else if (errorCode === 'mfaResetCount'){
+        var button = $('.resend-mfatoken-btn');
+        button.attr('disabled', true);
+      } else if (errorCode === 'mfaResetCount') {
         var errorMessage = Origin.l10n.t('app.mfaresetcount');
       }
 

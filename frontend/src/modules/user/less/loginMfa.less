@@ -151,3 +151,50 @@
 .skip-mfa-checkbox {
     vertical-align: middle;
 }
+
+.location-loginMfa {
+
+    .resend-mfatoken-btn:hover .loading-spinner, .resend-mfatoken-btn:focus .loading-spinner {
+        display: inline-block;
+        margin: -2px 2px;
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+        border: 3px solid #742727;
+        border-top-color: transparent;
+        -webkit-animation: spin 800ms infinite linear;
+        animation: spin 800ms infinite linear;
+    }
+    .loading-spinner {
+        display: inline-block;
+        margin: -2px 2px;
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+        border: 3px solid #F4F5F0;
+        border-top-color: transparent;
+        -webkit-animation: spin 800ms infinite linear;
+        animation: spin 800ms infinite linear;
+    }
+
+    @-webkit-keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+}
