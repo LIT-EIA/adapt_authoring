@@ -1952,8 +1952,8 @@
   "app.clone": "Cloner",
   "app.adapt-esdc-talk.displayName": "Dialogue",
   "app.adapt-esdc-talk.description": "Composant de dialogue",
-  "app.failedmfacount": "Vous avez dépassé le nombre maximum de tentatives d'authentification à deux facteurs. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
-  "app.mfaresetcount": "Vous avez dépassé le nombre maximum de demandes pour générer un code d'authentification à deux facteurs. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
+  "app.failedmfacount": "Vous avez dépassé le nombre maximum de tentatives d'authentification de votre mot de passe à usage unique. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
+  "app.mfaresetcount": "Vous avez dépassé le nombre maximum de demandes pour générer un mot de passe à usage unique. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
   "app.sending": "Envoi en cours",
   "app.validationTime": "Le mot de passe à usage unique sera valide pendant 10 minutes.",
   "app.accountstatus": "Statut Compte"

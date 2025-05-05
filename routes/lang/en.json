@@ -595,8 +595,8 @@
   "app.height": "Height",
   "app.erroritemtoremoveinuse": "The item you wish to delete is in use.",
   "app.clone": "Clone",
-  "app.failedmfacount": "You have exceeded the maximum number of attempts to enter your two-factor authentication code. For your security, please reset your password by selecting the \"Forgot Password?\" option.",
-  "app.mfaresetcount": "You have exceeded the maximum number of requests to generate a two-factor authentication code. For your security, please reset your password by selecting the \"Forgot Password?\" option.",
+  "app.failedmfacount": "You have exceeded the maximum number of attempts to enter your one-time password. For your security, please reset your password by selecting the \"Forgot Password?\" option.",
+  "app.mfaresetcount": "You have exceeded the maximum number of requests to generate a one-time password. For your security, please reset your password by selecting the \"Forgot Password?\" option.",
   "app.sending": "Sending",
   "app.validationTime": "The one-time password will be valid for 10 minutes.",
   "app.accountstatus": "Account Status"
