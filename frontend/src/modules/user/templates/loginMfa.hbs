@@ -11,11 +11,12 @@
     <div class="login-mfa-logo"></div>
 
     <form class="login-mfa-form" autocomplete="off">
-        <div class="login-mfa-title">{{t 'app.checkemail'}}</div>
         {{#if isAuthenticated}}
             {{t 'app.alreadyloggedin'}}
             <button class="dash btn small secondary">{{t 'app.gotodashboard'}}</button>
         {{else}}
+            <p class="login-mfa-text">{{{mfaText}}}</p>
+            <p><em>{{t 'app.validationTime'}}</em></p>
             <div class="login-mfa-fields">
                 <div id="loginError" class="display-none" role="alert" aria-live="polite">
                     <i class="fa fa-times"></i><span id="loginErrorMessage"/>
@@ -27,7 +28,8 @@
                   <label for="skip-mfa" class="skip-mfa-label">{{t 'app.skipverificationcode'}}</label>
                 </div>
                 <button type="submit" class="btn secondary login-mfa-form-submit">{{t 'app.verify'}}</button>
-                <button class="btn action-secondary resend-mfatoken-btn">{{ t 'app.resendverificationcode' }}</button>
+                <button class="btn primary resend-mfatoken-btn">{{ t 'app.resendverificationcode' }}</button>
+                <button class="cancel btn white-hollow">{{t 'app.cancel'}}</button>
             </div>
         {{/if}}
     </form>

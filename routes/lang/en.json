@@ -76,10 +76,10 @@
   "app.logout": "Log out",
   "app.signin": "Sign in",
   "app.skipverificationcode": "Skip this step for 30 days on this device",
-  "app.verificationcode": "Verification code",
-  "app.resendverificationcode": "Resend verification code",
-  "app.invalidverificationcode": "Invalid verification code",
-  "app.checkemail": "Check your email",
+  "app.verificationcode": "One-Time Password",
+  "app.resendverificationcode": "Resend one-time password",
+  "app.invalidverificationcode": "Invalid one-time password",
+  "app.checkemail": "To finish logging in, please enter the one-time password sent to your email address: <em>%{email}</em>. If you do not receive an email, look into your spam/junk email. If your email address has changed, contact an administrator for help with restoring access to your account.",
   "app.verify": "Verify",
   "app.help": "Help",
   "app.invalidusernameoremail": "Invalid email address",
@@ -597,5 +597,7 @@
   "app.clone": "Clone",
   "app.failedmfacount": "You have exceeded the maximum number of attempts to enter your two-factor authentication code. For your security, please reset your password by selecting the \"Forgot Password?\" option.",
   "app.mfaresetcount": "You have exceeded the maximum number of requests to generate a two-factor authentication code. For your security, please reset your password by selecting the \"Forgot Password?\" option.",
-  "app.sending": "Sending"
+  "app.sending": "Sending",
+  "app.validationTime": "The one-time password will be valid for 10 minutes.",
+  "app.accountstatus": "Account Status"
 }

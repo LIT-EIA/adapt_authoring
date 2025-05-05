@@ -15,17 +15,25 @@ define(function (require) {
     events: {
       'keydown #login-mfa-input-verificationcode': 'clearErrorStyling',
       'click .login-mfa-form-submit': 'submitLoginDetails',
+      'click button.cancel': 'goToLogin',
       'click button.dash': 'goHome',
       'click button.resend-mfatoken-btn': 'resendLoginMfaToken'
     },
 
     preRender: function () {
       this.listenTo(Origin, 'login:failed', this.loginFailed, this);
+      var email = this.model.get('email');
+      this.model.set('mfaText', Origin.l10n.t('app.checkemail', { email: email }))
     },
 
     postRender: function () {
       this.setViewToReady();
       Origin.trigger('login:loaded');
+    },
+
+    goToLogin: function (e) {
+      e && e.preventDefault();
+      Origin.router.navigateToLogin();
     },
 
     goHome: function (e) {
@@ -76,7 +84,7 @@ define(function (require) {
       var checkmark = '&#10003;';
 
       var returnToDefault = function () {
-          button.hide().html(resendCodeString).fadeIn('fast');
+        button.hide().html(resendCodeString).fadeIn('fast');
       }
 
       var button = $(e.target);
@@ -86,7 +94,7 @@ define(function (require) {
         if (status === 'success') {
           setTimeout(function () {
             button.html(`${sendingCodeString} ${checkmark}`);
-            setTimeout(function(){
+            setTimeout(function () {
               returnToDefault();
             }, 500);
           }, 1000);

@@ -1064,10 +1064,10 @@
   "app.logout": "Fermer une session",
   "app.signin": "Se connecter",
   "app.skipverificationcode": "Sauter cette étape pendant 30 jours sur cet appareil.",
-  "app.verificationcode": "Code de vérification",
-  "app.resendverificationcode": "Renvoyer le code de vérification",
-  "app.invalidverificationcode": "Code de vérification non valide",
-  "app.checkemail": "Vérifier votre courriel",
+  "app.verificationcode": "Mot de passe à usage unique",
+  "app.resendverificationcode": "Renvoyer le mot de passe à usage unique",
+  "app.invalidverificationcode": "Mot de passe à usage unique non valide",
+  "app.checkemail": "Pour terminer la connexion, veuillez saisir le mot de passe à usage unique envoyé à votre adresse courriel: <em>%{email}</em>. Si vous ne recevez pas de courriel, regardez dans vos courriers indésirables. Si votre courriel a changé, veuillez contacter l’équipe de soutien pour obtenir de l’aide afin de réinitialiser l’accès à votre compte.",
   "app.verify": "Vérifier",
   "app.help": "Aide",
   "app.invalidusernameoremail": "Adresse courriel non valide",
@@ -1954,5 +1954,7 @@
   "app.adapt-esdc-talk.description": "Composant de dialogue",
   "app.failedmfacount": "Vous avez dépassé le nombre maximum de tentatives d'authentification à deux facteurs. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
   "app.mfaresetcount": "Vous avez dépassé le nombre maximum de demandes pour générer un code d'authentification à deux facteurs. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
-  "app.sending": "Envoi en cours"
+  "app.sending": "Envoi en cours",
+  "app.validationTime": "Le mot de passe à usage unique sera valide pendant 10 minutes.",
+  "app.accountstatus": "Statut Compte"
 }

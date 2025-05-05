@@ -2,13 +2,9 @@
 
 .module-user {
 
-    &.location-login,
-    &.location-loginMfa,
-    &.location-forgot,
-    &.location-reset {
+    &.location-loginMfa {
         .no-ui;
-
-        max-width: 450px;
+        width: 100%;
         margin: 0 auto;
         color: @white;
         background-color: @adapt-primary-color;
@@ -45,6 +41,10 @@
         text-align: center;
         font-size: 32px;
         margin-bottom: 40px;
+    }
+
+    .login-mfa-text {
+        margin-bottom: 15px;
     }
 
     #login-mfaError {
@@ -104,21 +104,23 @@
         }
 
         .login-mfa-input-verificationcode {
-            width: 405px;
+            width: calc(100% - 40px);
         }
 
         button {
             margin-bottom: 5px;
-            width: 445px;
+            width: 100%;
             height: 45px;
             font-size: 17px;
+        }
+        #loginError {
+            width: calc(100% - 20px);
         }
     }
 
 }
 
 .resend-mfatoken-btn {
-    margin-top: 5px;
     width: 445px;
     height: 65px !important;
     font-size: 17px;
@@ -134,18 +136,22 @@
 }
 
 .login-mfa {
-    margin-top: 50px;
+    max-width: 450px;
+    margin: 50px auto;
 }
 
 .login-skip-mfa {
+    display: flex;
+    align-items: center;
     float: left;
     font-size: 15px;
-    margin: 5px 0 25px 0px;
+    margin: 10px 0 15px 0px;
 }
 
 .skip-mfa-label {
     padding-left: 10px;
     display: inline;
+    margin-bottom: 0;
 }
 
 .skip-mfa-checkbox {
@@ -154,17 +160,19 @@
 
 .location-loginMfa {
 
-    .resend-mfatoken-btn:hover .loading-spinner, .resend-mfatoken-btn:focus .loading-spinner {
+    .resend-mfatoken-btn:hover .loading-spinner,
+    .resend-mfatoken-btn:focus .loading-spinner {
         display: inline-block;
         margin: -2px 2px;
         height: 8px;
         width: 8px;
         border-radius: 50%;
-        border: 3px solid #742727;
+        border: 3px solid #ffffff;
         border-top-color: transparent;
         -webkit-animation: spin 800ms infinite linear;
         animation: spin 800ms infinite linear;
     }
+
     .loading-spinner {
         display: inline-block;
         margin: -2px 2px;
@@ -175,6 +183,10 @@
         border-top-color: transparent;
         -webkit-animation: spin 800ms infinite linear;
         animation: spin 800ms infinite linear;
+    }
+
+    .help-dialog {
+        display: none;
     }
 
     @-webkit-keyframes spin {
