@@ -53,7 +53,7 @@ LocalAuth.prototype.verifyUser = function (email, password, done) {
         errorCode: ERROR_CODES.INVALID_USERNAME_OR_PASSWORD
       });
     }
-    if (user.failedLoginCount < configuration.getConfig('maxLoginAttempts') && user.failedMfaCount < 3 && user.mfaResetCount < 3) {
+    if (user.failedLoginCount < configuration.getConfig('maxLoginAttempts') && user.failedMfaCount < configuration.getConfig('maxLoginAttempts') && user.mfaResetCount < configuration.getConfig('maxLoginAttempts')) {
       // Validate the user's password
       auth.validatePassword(password, user.password, function (error, valid) {
         if (error) {
@@ -216,7 +216,7 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
     }
 
     if (user) {
-      if (user.failedMfaCount >= 3) {
+      if (user.failedMfaCount >= configuration.getConfig('maxLoginAttempts')) {
         logger.log('error', 'mfa verification failed more than 3 times, mfa locked!');
         res.statusCode = 401;
         return res.json({ success: false, errorCode: 'failedMfaCount' });
@@ -298,7 +298,7 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
               });
               logger.log('error', 'Invalid token!');
               res.statusCode = 403;
-              return res.json({ success: false, errorCode: user.failedMfaCount >= 3 ? 'failedMfaCount' : 'invalidMfaToken' });
+              return res.json({ success: false, errorCode: user.failedMfaCount >= configuration.getConfig('maxLoginAttempts') ? 'failedMfaCount' : 'invalidMfaToken' });
             }
           } else {
             return next(new auth.errors.UserRegistrationError('No token to validate!'));
@@ -386,7 +386,7 @@ LocalAuth.prototype.internalResetPassword = function (user, req, next) {
       return cb(error);
     }
     // Update user details with hashed password
-    usermanager.updateUser({ _id: user.id }, { password: hash, failedLoginCount: 0, passwordResetCount: 0, lastPasswordChange: new Date().toISOString() }, function (err) {
+    usermanager.updateUser({ _id: user.id }, { password: hash, failedLoginCount: 0, passwordResetCount: 0, failedMfaCount: 0, mfaResetCount: 0, lastPasswordChange: new Date().toISOString() }, function (err) {
       if (error) {
         return next(error)
       }
