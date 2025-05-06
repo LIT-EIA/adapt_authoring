@@ -206,15 +206,17 @@ define(function(require){
     },
 
     onResetPasswordClicked: function(e) {
+      var self = this;
       Origin.Notify.confirm({
         text: Origin.l10n.t('app.confirmsendreset', { email: this.model.get('email') }),
         callback: function(confirmed) {
           if (!confirmed) {
             return;
-          }
+          };
           var $btn = $(e.currentTarget);
           $btn.addClass('submitted');
           Helpers.ajax('api/createtoken', { email: this.model.get('email') }, 'POST', function() {
+            self.model.fetch();
             $btn.removeClass('submitted');
           });
         }.bind(this)
@@ -293,6 +295,8 @@ define(function(require){
               type: 'success',
               text: Origin.l10n.t('app.changepasswordtext', { email: self.model.get('email') })
             });
+            // should update the userManagement interface
+            //self.model.fetch();
           }
         }
       });
