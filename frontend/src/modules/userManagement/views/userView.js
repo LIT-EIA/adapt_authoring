@@ -295,8 +295,7 @@ define(function(require){
               type: 'success',
               text: Origin.l10n.t('app.changepasswordtext', { email: self.model.get('email') })
             });
-            // should update the userManagement interface
-            //self.model.fetch();
+            self.model.fetch();
           }
         }
       });
