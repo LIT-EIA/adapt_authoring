@@ -60,6 +60,7 @@ define(function(require) {
       this.models.forEach(function(model) {
         this.filterTenants(model);
         this.filterRoleNames(model);
+        this.filterNotDeleted(model);
       }, this);
     },
 
@@ -73,6 +74,13 @@ define(function(require) {
     filterRoleNames: function(model) {
       var roleNames = this.filterGroups.roleNames;
       if (roleNames && roleNames.indexOf(model.get('roleNames')[0]) < 0) {
+        model.set('_isHidden', true);
+      }
+    },
+
+    filterNotDeleted: function(model) {
+      var notDeleted = this.filterGroups.notDeleted;
+      if (notDeleted && model.get('_isDeleted')) {
         model.set('_isHidden', true);
       }
     },

@@ -30,6 +30,10 @@ define(function(require){
         this.renderChildViews();
       });
 
+      this.listenTo(Origin, {
+        'userManagement:exportEmails' : this.exportEmails 
+      })
+
       Origin.trigger('location:title:update', { title: Origin.l10n.t('app.usermanagementtitle') });
       this.initData();
       this.render();
@@ -45,6 +49,27 @@ define(function(require){
       this.removeChildViews();
       OriginView.prototype.render.apply(this, arguments);
       this.renderChildViews();
+    },
+
+    exportEmails: function() {
+      var emailList = '';
+      var users = this.users.models;
+      users.forEach(function(user){
+        if(!user.get('_isHidden')){
+          console.log(user.get('email'));
+          emailList += user.get('email') + ';';
+        }
+      });
+      console.log(emailList)
+      const blob = new Blob([emailList], { type: 'text/plain;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `adapt-emails-${Date.now()}.txt`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     },
 
     renderChildViews: function() {

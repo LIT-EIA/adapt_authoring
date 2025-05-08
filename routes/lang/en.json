@@ -599,5 +599,7 @@
   "app.mfaresetcount": "You have exceeded the maximum number of requests to generate a one-time password. For your security, please reset your password by selecting the \"Forgot Password?\" option.",
   "app.sending": "Sending",
   "app.validationTime": "The one-time password will be valid for 10 minutes.",
-  "app.accountstatus": "Account Status"
+  "app.accountstatus": "Account Status",
+  "app.notDeletedfilter": "Active",
+  "app.exportemails": "Export Emails"
 }

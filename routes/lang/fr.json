@@ -1956,5 +1956,7 @@
   "app.mfaresetcount": "Vous avez dépassé le nombre maximum de demandes pour générer un mot de passe à usage unique. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
   "app.sending": "Envoi en cours",
   "app.validationTime": "Le mot de passe à usage unique sera valide pendant 10 minutes.",
-  "app.accountstatus": "Statut Compte"
+  "app.accountstatus": "Statut Compte",
+  "app.notDeletedfilter": "Actif",
+  "app.exportemails": "Exporter les courriels"
 }
