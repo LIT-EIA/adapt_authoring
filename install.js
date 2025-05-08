@@ -291,6 +291,11 @@ function generatePromptOverrides() {
   }
   const sessionSecret = USE_CONFIG && configData.sessionSecret || crypto.randomBytes(64).toString('hex');
   addConfig({ sessionSecret: sessionSecret });
+  
+  const randomNumber = Math.floor(100000 + Math.random() * 900000);
+  addConfig({ devEnv: randomNumber });
+
+
   // NOTE config.json < cmd args
   return Object.assign({}, configData, optimist.argv);
 }
