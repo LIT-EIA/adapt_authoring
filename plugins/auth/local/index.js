@@ -189,9 +189,9 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
           var tokenExpired = result.validationDate === null ? true : (currentDate - result.validationDate) > THIRTY_DAYS;
           if (result.verified === true && !tokenExpired) {
             requireMfa = false;
-            continueAuthentication(user);
           }
         }
+        continueAuthentication(user);
       });
     } else {
       continueAuthentication(user);
