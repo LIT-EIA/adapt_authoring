@@ -1958,5 +1958,6 @@
   "app.validationTime": "Le mot de passe à usage unique sera valide pendant 10 minutes.",
   "app.accountstatus": "Statut Compte",
   "app.notDeletedfilter": "Actif",
-  "app.exportemails": "Exporter les courriels"
+  "app.exportemails": "Exporter les courriels",
+  "app.deletedFilter": "Inactif"
 }

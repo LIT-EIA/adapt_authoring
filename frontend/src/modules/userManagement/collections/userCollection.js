@@ -61,6 +61,7 @@ define(function(require) {
         this.filterTenants(model);
         this.filterRoleNames(model);
         this.filterNotDeleted(model);
+        this.filterisDeleted(model);
       }, this);
     },
 
@@ -81,6 +82,12 @@ define(function(require) {
     filterNotDeleted: function(model) {
       var notDeleted = this.filterGroups.notDeleted;
       if (notDeleted && model.get('_isDeleted')) {
+        model.set('_isHidden', true);
+      }
+    },
+    filterisDeleted: function(model) {
+      var isDeleted = this.filterGroups.isDeleted;
+      if (isDeleted !== undefined && model.get('_isDeleted') === false) {
         model.set('_isHidden', true);
       }
     },
