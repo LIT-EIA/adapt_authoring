@@ -23,7 +23,14 @@
   <div class="sidebar-row">
     <label class="sidebar-tag">
       <span>{{t 'app.notDeletedfilter'}}</span>
-      <input type="checkbox" name="notDeleted" value="{{t 'app.notDeletedfilter'}}">
+      <input type="checkbox" name="notDeleted" value="{{t 'app.notDeletedfilter'}}" checked>
+      <i class="fa fa-toggle-off"></i>
+    </label>
+  </div>
+    <div class="sidebar-row">
+    <label class="sidebar-tag">
+      <span>{{t 'app.deletedFilter'}}</span>
+      <input type="checkbox" name="isDeleted" value="{{t 'app.deletedFilter'}}">
       <i class="fa fa-toggle-off"></i>
     </label>
   </div>

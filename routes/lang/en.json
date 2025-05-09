@@ -601,5 +601,6 @@
   "app.validationTime": "The one-time password will be valid for 10 minutes.",
   "app.accountstatus": "Account Status",
   "app.notDeletedfilter": "Active",
-  "app.exportemails": "Export Emails"
+  "app.exportemails": "Export Emails",
+  "app.deletedFilter": "Inactive"
 }
