@@ -175,23 +175,32 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
     if (user._isDeleted) {
       return res.status(401).json({ errorCode: ERROR_CODES.ACCOUNT_INACTIVE });
     }
-    var tokenId = req.cookies['connect.fid'];
+    var cookieKey = app.configuration.getConfig('devEnv') ? `connect-${app.configuration.getConfig('devEnv')}.fid` : 'connect.fid'
+    var tokenId = req.cookies[cookieKey];
     if (tokenId) {
-      usermanager.retrieveMfaToken({ tokenId: tokenId }, function (error, data) {
+      auth.validateTokenIdSignature(tokenId, function (error, token) {
         if (error) {
           logger.log('error', error);
           requireMfa = true;
+          continueAuthentication(user);
+        } else {
+          usermanager.retrieveMfaToken({ tokenId: token }, function (error, data) {
+            if (error) {
+              logger.log('error', error);
+              requireMfa = true;
+            }
+            if (data && data.length) {
+              var result = data[0];
+              var currentDate = new Date();
+              var THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+              var tokenExpired = result.validationDate === null ? true : (currentDate - result.validationDate) > THIRTY_DAYS;
+              if (result.verified === true && !tokenExpired) {
+                requireMfa = false;
+              }
+            }
+            continueAuthentication(user);
+          });
         }
-        if (data && data.length) {
-          var result = data[0];
-          var currentDate = new Date();
-          var THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-          var tokenExpired = result.validationDate === null ? true : (currentDate - result.validationDate) > THIRTY_DAYS;
-          if (result.verified === true && !tokenExpired) {
-            requireMfa = false;
-          }
-        }
-        continueAuthentication(user);
       });
     } else {
       continueAuthentication(user);
@@ -241,7 +250,9 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
                   return res.json({ success: false });
                 }
                 if (req.body.shouldSkipMfa && req.body.shouldSkipMfa == 'true') {
-                  res.cookie('connect.fid', result.tokenId, {
+                  var cookieKey = app.configuration.getConfig('devEnv') ? `connect-${app.configuration.getConfig('devEnv')}.fid` : 'connect.fid';
+                  var signedTokenId = auth.signTokenId(result.tokenId);
+                  res.cookie(cookieKey, signedTokenId, {
                     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
                     httpOnly: true,
                     secure: true
@@ -511,18 +522,17 @@ LocalAuth.prototype.generateMfaToken = function (user, req, next) {
     return next(new auth.errors.UserGenerateTokenError('email is required!'));
   }
 
-    auth.createMfaToken(function (error, token) {
+  auth.createMfaToken(function (error, token) {
+    if (error) {
+      return next(error);
+    }
+    auth.generateTokenId(function (error, tokenId) {
       if (error) {
         return next(error);
       }
-
-      auth.createToken(function (error, tokenId) {
-        if (error) {
-          return next(error);
-        }
-        usermanager.createMfaToken(user, req, token, tokenId, next);
-      });
+      usermanager.createMfaToken(user, req, token, tokenId, next);
     });
+  });
 };
 
 // module exports
