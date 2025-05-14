@@ -29,6 +29,16 @@ var ERROR_CODES = {
   ACCOUNT_INACTIVE: 5
 };
 
+var blocklist;
+try {
+  blocklist = require('../../../conf/blocklist.json');
+}
+catch (error) {
+  console.log(error);
+  blocklist = [];
+};
+
+
 function LocalAuth() {
   this.strategy = new LocalStrategy({ usernameField: 'email' }, this.verifyUser);
   passport.use(this.strategy);
@@ -367,8 +377,7 @@ LocalAuth.prototype.resetPassword = function (req, res, next) {
     }
     self.internalResetPassword({ id: usrReset.user, password: req.body.password }, req, function (error, user) {
       if (error) {
-        logger.log('error', error);
-        return res.status(500).end();
+        return res.status(500).json(error);
       }
       res.status(200).json(user);
     });
@@ -376,31 +385,71 @@ LocalAuth.prototype.resetPassword = function (req, res, next) {
 };
 
 LocalAuth.prototype.internalResetPassword = function (user, req, next) {
+
+  var delta = req.body
+
+  if (!delta || 'object' !== typeof delta) {
+    //return res.status(400).json({ success: false, message: 'request body was not a valid object' });
+    return next(new auth.errors.UserRegistrationError('request body was not a valid object'));
+    
+  }
+
   if (!user.id || !user.password) {
     return next(new auth.errors.UserResetPasswordError('User ID and password are required!'));
   }
 
-  // Hash the password
-  auth.hashPassword(user.password, function (error, hash) {
-    if (error) {
-      return cb(error);
-    }
-    // Update user details with hashed password
-    usermanager.updateUser({ _id: user.id }, { password: hash, failedLoginCount: 0, passwordResetCount: 0, failedMfaCount: 0, mfaResetCount: 0, lastPasswordChange: new Date().toISOString() }, function (err) {
-      if (error) {
-        return next(error)
+  if (delta.password) {
+    usermanager.validatePassword(delta.password, user, function (result) {
+      if (result.length > 0 && delta.password.length < 12) {
+        return next('app.passwordindicatormedium');
       }
-      usermanager.clearOtherSessions(null, user.id);
-      usermanager.deleteUserPasswordReset({ user: user.id }, function (error, user) {
-        if (error) {
-          return next(error);
+      else if (result.length > 0) {
+        return next('app.passwordreused');
+      }
+      if (blocklist.includes(delta.password)) {
+        return next('app.passwordtoocommon')
+      }
+
+      auth.hashPassword(delta.password, function (err, hash) {
+        if (err) {
+          return next(err);
         }
 
-        //Request deleted, password successfully reset
-        return next(null, user);
+        delta.password = hash;
+        delta.lastPasswordChange = new Date().toISOString();
+        delta.failedloginCount = 0;
+        delta.passwordResetCount = 0;
+        delta.failedMfaCount = 0;
+        delta.mfaResetCount = 0;
+        usermanager.getUserDetails(user, function (err, result) {
+          
+          if (err) {
+            return next(err);
+          }
+
+          var user = result[0];
+
+          var previousPasswords = result && result.length > 0 ? result[0].previousPasswords : [];
+          var currentPassword = result && result.length > 0 ? result[0].password : user.password;
+          if (currentPassword) previousPasswords.unshift(currentPassword);
+          if (previousPasswords.length > 3) {
+            previousPasswords.pop();
+          }
+          delta.previousPasswords = previousPasswords;
+
+          usermanager.updateUser({ email: user.email }, delta, function (err) {
+            if (err) {
+              return next(err);
+            }
+            usermanager.clearOtherSessions(req);
+            return next(null, user);
+          });
+        });
+
       });
     });
-  });
+  }
+
 };
 
 LocalAuth.prototype.generateResetToken = function (req, res, next) {
