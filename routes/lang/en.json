@@ -602,5 +602,6 @@
   "app.accountstatus": "Account Status",
   "app.notDeletedfilter": "Active",
   "app.exportemails": "Export Emails",
-  "app.deletedFilter": "Inactive"
+  "app.deletedFilter": "Inactive",
+  "app.passwordreused": "Your password cannot be the same as your previous passwords"
 }
