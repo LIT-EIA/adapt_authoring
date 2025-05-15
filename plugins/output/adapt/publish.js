@@ -72,6 +72,12 @@ function publishCourse(courseId, mode, request, response, next) {
     },
     //
     function(callback) {
+
+          // make sure scrolling container is enabled
+          if(outputJson['config'][0]){
+            outputJson['config'][0]._scrollingContainer = { _isEnabled: true, _limitToSelector: '' };
+          }
+
           // deactivate devtools in outputJson if present
           if(mode === Constants.Modes.Publish && outputJson['config'][0] && outputJson['config'][0]._devtools){
             outputJson['config'][0]._devtools._isEnabled = false
