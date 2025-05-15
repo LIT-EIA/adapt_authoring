@@ -34,7 +34,6 @@ try {
   blocklist = require('../../../conf/blocklist.json');
 }
 catch (error) {
-  console.log(error);
   blocklist = [];
 };
 
@@ -402,7 +401,7 @@ LocalAuth.prototype.internalResetPassword = function (user, req, next) {
   if (!delta || 'object' !== typeof delta) {
     //return res.status(400).json({ success: false, message: 'request body was not a valid object' });
     return next(new auth.errors.UserRegistrationError('request body was not a valid object'));
-    
+
   }
 
   if (!user.id || !user.password) {
@@ -433,7 +432,7 @@ LocalAuth.prototype.internalResetPassword = function (user, req, next) {
         delta.failedMfaCount = 0;
         delta.mfaResetCount = 0;
         usermanager.getUserDetails(user, function (err, result) {
-          
+
           if (err) {
             return next(err);
           }
