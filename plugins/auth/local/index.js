@@ -112,7 +112,7 @@ LocalAuth.prototype.verifyUser = function (email, password, done) {
 
 LocalAuth.prototype.authenticate = function (req, res, next) {
   var self = this;
-  var requireMfa = true;
+  var requireMfa = app.configuration.getConfig('useMFA') || false;
   const continueAuthentication = function (user) {
     // check tenant is enabled
     self.isTenantEnabled(user, function (err, isEnabled) {
@@ -131,7 +131,7 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
           } else {
             req.session.cookie.expires = false;
           }
-          if (requireMfa) {
+          if (requireMfa === true) {
             return res.status(200).json({
               id: user._id,
               email: user.email,
@@ -159,7 +159,7 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
           }
         });
       }
-      if (requireMfa) {
+      if (requireMfa === true) {
         self.generateMfaToken(user, req, function (error, userRecord) {
           if (error) {
             return next(error);
@@ -190,13 +190,11 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
       auth.validateTokenIdSignature(tokenId, function (error, token) {
         if (error) {
           logger.log('error', error);
-          requireMfa = true;
           continueAuthentication(user);
         } else {
           usermanager.retrieveMfaToken({ tokenId: token }, function (error, data) {
             if (error) {
               logger.log('error', error);
-              requireMfa = true;
             }
             if (data && data.length) {
               var result = data[0];
