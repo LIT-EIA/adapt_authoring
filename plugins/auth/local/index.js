@@ -425,7 +425,7 @@ LocalAuth.prototype.internalResetPassword = function (user, req, next) {
 
         delta.password = hash;
         delta.lastPasswordChange = new Date().toISOString();
-        delta.failedloginCount = 0;
+        delta.failedLoginCount = 0;
         delta.passwordResetCount = 0;
         delta.failedMfaCount = 0;
         delta.mfaResetCount = 0;
