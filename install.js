@@ -299,7 +299,6 @@ function generateExtraConfigs(callback) {
   addConfig({
     useMFA: false,
     useMailService: false,
-    useMfa: false,
     mailServiceKeys: {
       notificationUrl: "",
       apiKey: "",
