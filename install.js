@@ -245,6 +245,21 @@ installHelpers.checkPrimaryDependencies(function (error) {
           validate: installHelpers.inputHelpers.requiredValidator
         },
         {
+          name: 'suFirstName',
+          firstName: 'suFirstName',
+          type: 'input',
+          message: 'First Name',
+          validate: installHelpers.inputHelpers.requiredValidator
+        },
+        {
+          name: 'sulastName',
+          lastName: 'sulastName',
+          type: 'input',
+          message: 'Last Name',
+          validate: installHelpers.inputHelpers.requiredValidator
+        },
+        
+        {
           name: 'suPassword',
           type: 'password',
           message: 'Password',
@@ -299,6 +314,7 @@ function generateExtraConfigs(callback) {
   addConfig({
     useMFA: false,
     useMailService: false,
+    printMailService: false,
     mailServiceKeys: {
       notificationUrl: "",
       apiKey: "",
@@ -309,7 +325,11 @@ function generateExtraConfigs(callback) {
         loginMfa: ""
       }
     },
-    printMailService: false
+    mimeTypesCustomUploadSize : {
+      video : "100MB",
+      audio : "50MB",
+      image : "3MB"
+    },
   });
   callback();
 }
@@ -511,6 +531,8 @@ function createSuperUser(callback) {
       new localAuth().internalRegisterUser(true, {
         email: result.suEmail,
         password: result.suPassword,
+        firstName : result.suFirstName,
+        lastName : result.sulastName,
         retypePassword: result.suRetypePassword,
         _tenantId: masterTenant._id
       }, function (error, user) {
