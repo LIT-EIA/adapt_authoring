@@ -114,23 +114,25 @@ it('should accept requests to create a password reset token', function(done) {
     });
 });
 
-it('should accept requests to reset a user\'s password', function(done) {
-  usermanager.createUserPasswordReset(getUserResetData(), function (error, reset) {
-    should.not.exist(error);
-    should.exist(reset);
-    helper.userAgent
-      .put('/api/userpasswordreset/' + reset.token)
-      .set('Accept', 'application/json')
-      .send({
-        'user': authUser._id,
-        'password': authUser.newPassword,
-        'token': reset.token
-      })
-      .expect(200)
-      .end(function(error, res) {
-        should.not.exist(error);
-        done();
-      });
+it('should accept requests to reset a user\'s password', function (done) {
+  usermanager.retrieveUser({ email: getUserResetData().email, auth: 'local' }, function (error, userObject) {
+    usermanager.retrieveUserPasswordReset({user: userObject._id}, function (error, reset) {
+      should.not.exist(error);
+      should.exist(reset);
+      helper.userAgent
+        .get('/api/userpasswordreset/' + reset.token)
+        .set('Accept', 'application/json')
+        .send({
+          'user': authUser._id,
+          'password': authUser.newPassword,
+          'token': reset.token
+        })
+        .expect(200)
+        .end(function (error, res) {
+          should.not.exist(error);
+          done();
+        });
+    });
   });
 });
 

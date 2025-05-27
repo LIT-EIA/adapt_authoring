@@ -25,6 +25,7 @@
 
 /temp
 /test/.testcache
+/test/frontend/output/
 /tmp
 
 /.settings
@@ -34,5 +35,6 @@ package-lock.json
 .idea
 .project
 .vscod
+.env
 /routes/preview/index.js
 nohup.out
