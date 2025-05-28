@@ -31,15 +31,8 @@ before(function (done) {
     .end(function (error, res) {
       if (error) return done(error);
       userId = res.body.id;
-      usermanager.retrieveUser({ email: testData.testUser.email, auth: 'local' }, function (error, userObject) {
-        should.not.exist(error);
-        should.exist(userObject);
-        usermanager.retrieveMfaToken({ userId: userObject._id }, function (error, mfaToken) {
-          should.not.exist(error);
-          should.exist(mfaToken);
-          done()
-        });
-      });
+      should.not.exist(error);
+      done();
     });
 });
 
@@ -56,46 +49,33 @@ after(function (done) {
 
 it('should accept requests to create content', function (done) {
   agent
-    .post('/api/login')
+    .post('/api/content/course')
     .set('Accept', 'application/json')
     .send({
-      email: testData.testUser.email,
-      password: testData.testUser.plainPassword
+      title: 'some name',
+      body: 'lorem ispum',
     })
     .expect(200)
     .expect('Content-Type', /json/)
     .end(function (error, res) {
-      if (error) return done(error);
-      userId = res.body.id;
+      should.not.exist(error);
+      contentObj = res.body;
+      should.exist(contentObj._id);
+      // create some more content
       agent
         .post('/api/content/course')
         .set('Accept', 'application/json')
         .send({
-          title: 'some name',
-          body: 'lorem ispum',
+          title: 'a title',
+          body: 'no body here',
         })
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function (error, res) {
           should.not.exist(error);
-          contentObj = res.body;
-          should.exist(contentObj._id);
-          // create some more content
-          agent
-            .post('/api/content/course')
-            .set('Accept', 'application/json')
-            .send({
-              title: 'a title',
-              body: 'no body here',
-            })
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end(function (error, res) {
-              should.not.exist(error);
-              otherContentObj = res.body;
-              should.exist(otherContentObj._id);
-              return done();
-            });
+          otherContentObj = res.body;
+          should.exist(otherContentObj._id);
+          return done();
         });
     });
 });

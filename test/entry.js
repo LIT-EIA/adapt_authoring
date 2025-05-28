@@ -149,7 +149,8 @@ function createCacheData(done) {
     if(!error) return _copyFramework();
     installHelpers.cloneRepo({
       directory: src,
-      repository: 'https://github.com/adaptlearning/adapt_framework.git'
+      repository: 'https://github.com/adaptlearning/adapt_framework.git',
+      revision: 'v4.4.1'
     }, function(error) {
       if(error) return done(error);
       _copyFramework();
