@@ -22,7 +22,8 @@
   "auth": {
     "email": "auth@adaptlearning.org",
     "plainPassword": "thisismypassword",
-    "newPassword": "newpassword",
+    "newPassword": "mynewpasswordfortesting",
+    "secondNewPassword": "thisnewpasswordfortesting",
     "token": "testtokentesttokentesttokentest1",
     "auth": "local"
   },

@@ -450,7 +450,14 @@ LocalAuth.prototype.internalResetPassword = function (user, req, next) {
               return next(err);
             }
             usermanager.clearOtherSessions(req);
-            return next(null, user);
+            usermanager.deleteUserPasswordReset({ user: user.id }, function (error, res) {
+              if (error) {
+                return next(error);
+              }
+
+              //Request deleted, password successfully reset
+              return next(null, user);
+            });
           });
         });
 
