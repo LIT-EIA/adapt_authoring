@@ -14,5 +14,7 @@
   "fromAddress": "",
   "outputPlugin": "adapt",
   "auth": "local",
-  "isTestEnvironment": true
+  "isTestEnvironment": true,
+  "useMFA": false,
+  "devEnv": "testing"
 }

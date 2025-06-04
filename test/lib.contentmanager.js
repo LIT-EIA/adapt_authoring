@@ -7,32 +7,53 @@ var auth = require('../lib/auth');
 var database = require('../lib/database');
 var usermanager = require('../lib/usermanager');
 
-var testData = require('./testData.json');
+var testUser = require('./testData.json').testUser;
 var app = origin();
 
 var agent = {};
-var userId = false;
 var contentObj = {};
 var otherContentObj = {};
 var content = app.contentmanager;
+var userId;
 
-before(function (done) {
+before(function(done) {
   agent = request.agent(app.getServerURL());
   // need to authenticate
   agent
     .post('/api/login')
     .set('Accept', 'application/json')
     .send({
-      email: testData.testUser.email,
-      password: testData.testUser.plainPassword
+      email: testUser.email,
+      password: testUser.plainPassword
     })
     .expect(200)
     .expect('Content-Type', /json/)
     .end(function (error, res) {
-      if (error) return done(error);
-      userId = res.body.id;
       should.not.exist(error);
-      done();
+      should.exist(res.body.id);
+      res.body.email.should.equal(testUser.email);
+      res.body.isAuthenticated.should.equal(false);
+      userId = res.body.id;
+      usermanager.retrieveMfaToken({ userId: res.body.id, verified: false }, function (error, tokens) {
+        var token = tokens[0];
+        agent
+          .post('/api/loginMfa')
+          .send({
+            'email': testUser.email,
+            'token': token.validationToken,
+            'shouldSkipMfa': false
+          })
+          .expect(200)
+          .end(function (error, res) {
+            should.not.exist(error);
+            res.body.email.should.equal(testUser.email);
+            res.body.isAuthenticated.should.equal(true);
+            should.exist(res.body.tenantId);
+            should.exist(res.body.tenantName);
+            should.exist(res.body.permissions);
+            done();
+          });
+      });
     });
 });
 

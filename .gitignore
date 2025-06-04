@@ -25,7 +25,10 @@
 
 /temp
 /test/.testcache
-/test/frontend/output/
+/test/output/assets
+/test/output/frontend
+/test/output/unit
+/test/temp
 /tmp
 
 /.settings

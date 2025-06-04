@@ -130,8 +130,13 @@ module.exports = function(grunt) {
     mochaTest: {
       src: ['test/*.js'],
       options: {
-        reporter: 'spec',
-        timeout: 3500
+        reporter: 'mochawesome',
+        noFail: true,
+        timeout: 3500,
+        reporterOptions: {
+          reportDir: 'test/output/unit', // Set your desired directory
+          reportFilename: 'unit-report.json' // Optional: Customize the report name
+        }
       }
     },
     requireBundle: {

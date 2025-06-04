@@ -2,6 +2,8 @@ var async = require('async');
 var fs = require('fs-extra');
 var path = require('path');
 var mongodb = require('mongodb');
+var Nightwatch = require('nightwatch');
+const spawn = require('child_process').spawn;
 
 var origin = require('../');
 var auth = require('../lib/auth');
@@ -20,26 +22,27 @@ var Folders = require('../lib/outputmanager').Constants.Folders;
 var TEST_CACHE_DIR = path.join(__dirname, '.testcache');
 var EXTENDED_TIMEOUT = 600000;
 
-before(function(done) {
+before(function (done) {
   this.timeout(EXTENDED_TIMEOUT);
+  console.log('Starting unit tests')
   process.env.SILENT = true;
   async.series([
     removeTestData,
     createCacheData,
     function startApp(cb) {
-      logger.level('console','error'); // only show errors
+      logger.level('console', 'error'); // only show errors
       app.use({ configFile: path.join('test', 'testConfig.json') });
-      app.once('modulesReady', function() {
+      app.once('modulesReady', function () {
         app.configuration.setConfig('masterTenantID', testData.testTenant._id);
       });
-      app.on('serverStarted', function(server) {
+      app.on('serverStarted', function (server) {
         cb();
       });
       app.run({ skipVersionCheck: true });
     },
     function createTenant(cb) {
-      createTestTenant(testData.testTenant, function(error, tenant) {
-        if(error) {
+      createTestTenant(testData.testTenant, function (error, tenant) {
+        if (error) {
           return cb(error);
         }
         testData.testTenant = tenant;
@@ -48,8 +51,8 @@ before(function(done) {
       });
     },
     function createUser(cb) {
-      createTestUser(testData.testUser, function(error, user) {
-        if(error) {
+      createTestUser(testData.testUser, function (error, user) {
+        if (error) {
           return cb(error);
         }
         testData.testUser._id = user._id;
@@ -59,46 +62,64 @@ before(function(done) {
   ], done);
 });
 
-after(function(done) {
+after(function (done) {
   this.timeout(EXTENDED_TIMEOUT);
+  console.log('Starting e2e tests')
 
-  async.parallel([
-    function removePolicies(cb) {
-      permissions.clearPolicies(testData.testUser._id, cb);
-    },
-    function removeUser(cb) {
-      usermanager.deleteUser({ _id: testData.testUser._id }, cb);
-    },
-    function removeTenant(cb) {
-      tenantmanager.deleteTenant({ _id: testData.testTenant._id }, cb);
-    },
-    function removeRoles(cb) {
-      app.rolemanager.retrieveRoles({}, {}, function(error, roles) {
-        async.each(roles, function(role, cb2) {
-          app.rolemanager.destroyRole(role._id, cb2);
-        }, cb);
-      });
-    },
-    removeTestData
-  ], done);
+  var options = {
+    config: './test/nightwatch.conf.js',
+    env: 'default'
+  };
+
+  Nightwatch.runner(options, function (success) {
+    destroyInstance();
+    done();
+  }, function (err) {
+    console.error('Error running Nightwatch:', err);
+    destroyInstance();
+    done();
+  });
+
+  function destroyInstance() {
+    async.parallel([
+      function removePolicies(cb) {
+        permissions.clearPolicies(testData.testUser._id, cb);
+      },
+      function removeUser(cb) {
+        usermanager.deleteUser({ _id: testData.testUser._id }, cb);
+      },
+      function removeTenant(cb) {
+        tenantmanager.deleteTenant({ _id: testData.testTenant._id }, cb);
+      },
+      function removeRoles(cb) {
+        app.rolemanager.retrieveRoles({}, {}, function (error, roles) {
+          async.each(roles, function (role, cb2) {
+            app.rolemanager.destroyRole(role._id, cb2);
+          }, cb);
+        });
+      },
+      removeTestData
+    ], done);
+  }
+
 });
 
-function createTestTenant (tenantDetails, cb) {
-  tenantmanager.createTenant(tenantDetails, function(error, tenant) {
-    if(error && error instanceof tenantmanager.errors.DuplicateTenantError) {
-      return tenantmanager.retrieveTenant({name: tenantDetails.name}, cb);
+function createTestTenant(tenantDetails, cb) {
+  tenantmanager.createTenant(tenantDetails, function (error, tenant) {
+    if (error && error instanceof tenantmanager.errors.DuplicateTenantError) {
+      return tenantmanager.retrieveTenant({ name: tenantDetails.name }, cb);
     }
     return cb(error, tenant);
   });
 }
 
-function createTestUser (userDetails, cb) {
-  auth.hashPassword(userDetails.plainPassword, function(error, hash) {
-    if(error) return cb(error);
+function createTestUser(userDetails, cb) {
+  auth.hashPassword(userDetails.plainPassword, function (error, hash) {
+    if (error) return cb(error);
     userDetails.password = hash;
-    usermanager.createUser(userDetails, function(error, user) {
-      if(error && error instanceof usermanager.errors.DuplicateUserError) {
-        return usermanager.retrieveUser({email: userDetails.email}, cb);
+    usermanager.createUser(userDetails, function (error, user) {
+      if (error && error instanceof usermanager.errors.DuplicateUserError) {
+        return usermanager.retrieveUser({ email: userDetails.email }, cb);
       }
       return cb(error, user);
     });
@@ -114,13 +135,13 @@ function removeTestData(done) {
         domainsEnabled: true,
         useNewUrlParser: true,
         useUnifiedTopology: true
-      }, function(error, client) {
-        if(error) return cb(error);
+      }, function (error, client) {
+        if (error) return cb(error);
 
         var db = client.db(testConfig.dbName);
 
-        db.dropDatabase(function(error, result) {
-          if(error) return cb(error);
+        db.dropDatabase(function (error, result) {
+          if (error) return cb(error);
           client.close();
           return cb();
         });
@@ -145,14 +166,14 @@ function createCacheData(done) {
     ], done);
   }
   // make sure we've got the framework, and copy it into place
-  fs.stat(src, function(error, stats) {
-    if(!error) return _copyFramework();
+  fs.stat(src, function (error, stats) {
+    if (!error) return _copyFramework();
     installHelpers.cloneRepo({
       directory: src,
       repository: 'https://github.com/adaptlearning/adapt_framework.git',
       revision: 'v4.4.1'
-    }, function(error) {
-      if(error) return done(error);
+    }, function (error) {
+      if (error) return done(error);
       _copyFramework();
     });
   });
@@ -163,14 +184,14 @@ function createCacheData(done) {
 function testLoader() {
   var contents = fs.readdirSync(__dirname);
 
-  for(var i = 0, count = contents.length; i < count; i++) {
+  for (var i = 0, count = contents.length; i < count; i++) {
     var item = contents[i];
-    if(path.join(__dirname, item) === __filename) continue;
+    if (path.join(__dirname, item) === __filename) continue;
 
     var parts = item.split('.');
-    if(parts.pop() !== 'js') continue;
+    if (parts.pop() !== 'js') continue;
 
-    describe(parts.pop(), function() { require('./' + item) });
+    describe(parts.pop(), function () { require('./' + item) });
   }
 }
 

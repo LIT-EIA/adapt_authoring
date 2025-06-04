@@ -1,19 +1,20 @@
 var mongo = require('mongodb');
 var MongoClient = mongo.MongoClient;
 var url = "mongodb://localhost:27017/";
-var config = require('../../conf/config.json');
+var config = require('../testConfig.json');
+var testData = require('../testData.json');
 
 describe('login process', function () {
 
   before(function (browser) {
-    browser.navigateTo('http://localhost:5000');
+    browser.navigateTo(`http://localhost:${config.serverPort}`);
   });
 
   it('should complete successful login', function (browser) {
     browser.assert.elementPresent('#login-input-username');
-    browser.sendKeys('#login-input-username', process.env.TEST_USER_NAME);
+    browser.sendKeys('#login-input-username', testData.testUser.email);
     browser.assert.elementPresent('#login-input-password');
-    browser.sendKeys('#login-input-password', [process.env.TEST_USER_PASSWORD, browser.Keys.ENTER]);
+    browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
     browser.assert.urlContains('#user/loginMfa');
     var devEnv = config.devEnv;
     var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
@@ -25,7 +26,7 @@ describe('login process', function () {
         if (err) {
           browser.assert.fail("Database connection failed: " + err.message);
         }
-        var dbo = db.db("adapt-tenant-master");
+        var dbo = db.db(config.dbName);
         var mfa_db = dbo.collection("mfatokens");
 
         mfa_db.findOne({ sessionId: sessionID, verified: false }, function(err, result) {
