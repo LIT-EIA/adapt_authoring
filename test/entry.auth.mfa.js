@@ -29,6 +29,14 @@ after(function (done) {
   removeUser(authUser, done);
 });
 
+it('should be able to generate a random token', function (done) {
+  auth.createToken(function (error, token) {
+    should.not.exist(error);
+    token.should.have.lengthOf(24);
+    done();
+  });
+});
+
 it('should be able to hash a password', function (done) {
   auth.hashPassword(authUser.plainPassword, function (error, hash) {
     should.not.exist(error);
@@ -51,6 +59,99 @@ it('should not validate an incorrect password', function (done) {
     valid.should.not.be.true;
     done();
   });
+});
+
+it('should be able to generate an mfa token', function (done) {
+  auth.createMfaToken(function (error, token) {
+    should.not.exist(error);
+    token.should.have.lengthOf(6);
+    done();
+  });
+});
+
+var sharedTokenId;
+
+it('should be able to generate an mfa tokenId', function (done) {
+  auth.generateTokenId(function (error, tokenId) {
+    sharedTokenId = tokenId;
+    should.not.exist(error);
+    should.exist(sharedTokenId);
+    sharedTokenId.should.have.lengthOf(32);
+    done();
+  });
+});
+
+var sharedSignedToken;
+
+it('should be able to sign tokenId signature', function (done) {
+  sharedSignedToken = auth.signTokenId(sharedTokenId);
+  should.exist(sharedSignedToken);
+  sharedSignedToken.should.have.lengthOf(80);
+  done();
+});
+
+it('should accept valid tokenId signature', function (done) {
+  auth.validateTokenIdSignature(sharedSignedToken, function (error, validatedTokenId) {
+    should.not.exist(error);
+    should.exist(validatedTokenId);
+    validatedTokenId.should.equal(sharedTokenId);
+    done();
+  });
+});
+
+it('should reject invalid tokenId signature', function (done) {
+  auth.validateTokenIdSignature('s%3Abz9ewb_AK7Tq_W3rDlJcxUskp4BKPxNw.ozxklshvzpXmA08vLuEGXawARyAZGj_nujyQsOGsDBg', function (error, validatedTokenId) {
+    should.exist(error);
+    should.not.exist(validatedTokenId);
+    done();
+  });
+});
+
+it('should reject a user with an incorrect login', function (done) {
+  helper.userAgent
+    .post('/api/login')
+    .set('Accept', 'application/json')
+    .send({
+      'email': 'nobody@nowhere.com',
+      'password': '12345'
+    })
+    .expect(401)
+    .expect('Content-Type', /json/)
+    .end(function (error, res) {
+      should.not.exist(error);
+      done();
+    });
+});
+
+it('should reject a user with an incorrect mfa token', function (done) {
+  helper.userAgent
+    .post('/api/login')
+    .set('Accept', 'application/json')
+    .send({
+      'email': authUser.email,
+      'password': authUser.plainPassword
+    })
+    .expect(200)
+    .end(function (error, res) {
+      should.not.exist(error);
+      should.exist(res.body.id);
+      res.body.email.should.equal(authUser.email);
+      res.body.isAuthenticated.should.equal(false);
+        helper.userAgent
+          .post('/api/loginMfa')
+          .send({
+            'email': authUser.email,
+            'token': 123456,
+            'shouldSkipMfa': false
+          })
+          .expect(403)
+          .end(function (error, res) {
+            should.not.exist(error);
+            res.body.errorCode.should.equal('invalidMfaToken');
+            done();
+          });
+
+    });
 });
 
 it('should accept authenticated requests to create a user session', function (done) {
@@ -90,22 +191,6 @@ it('should accept authenticated requests to create a user session', function (do
     });
 });
 
-it('should reject a user with an incorrect login', function (done) {
-  helper.userAgent
-    .post('/api/login')
-    .set('Accept', 'application/json')
-    .send({
-      'email': 'nobody@nowhere.com',
-      'password': '12345'
-    })
-    .expect(401)
-    .expect('Content-Type', /json/)
-    .end(function (error, res) {
-      should.not.exist(error);
-      done();
-    });
-});
-
 it('should accept requests to verify if a user is authenticated', function (done) {
   helper.userAgent
     .get('/api/authcheck')
@@ -116,14 +201,6 @@ it('should accept requests to verify if a user is authenticated', function (done
       res.body.id.should.equal(authUser._id);
       done();
     });
-});
-
-it('should be able to generate a random token', function (done) {
-  auth.createToken(function (error, token) {
-    should.not.exist(error);
-    token.should.have.lengthOf(24);
-    done();
-  });
 });
 
 it('should accept requests to create a password reset token', function (done) {
@@ -178,7 +255,7 @@ it('should reset a users password', function (done) {
     });
 });
 
-it('should delete token after password change', function (done) {
+it('should delete password token after password change', function (done) {
   usermanager.retrieveUser({ email: authUser.email, auth: 'local' }, function (error, userObject) {
     should.not.exist(error);
     should.exist(userObject);

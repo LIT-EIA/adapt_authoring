@@ -10,26 +10,26 @@ describe('login process', function () {
     browser.navigateTo(`http://localhost:${config.serverPort}`);
   });
 
-  it('should complete successful login', function (browser) {
-    browser.assert.elementPresent('#login-input-username');
-    browser.sendKeys('#login-input-username', testData.testUser.email);
-    browser.assert.elementPresent('#login-input-password');
-    browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
-    browser.assert.urlContains('#user/loginMfa');
-    var devEnv = config.devEnv;
-    var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
-    browser.getCookie(cookieName, function callback(result) {
-      this.assert.equal(result.name, cookieName);
-      var sessionID = result.value.split('.')[0].substring(4);
-      var validationTokenId;
-      MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) {
-        if (err) {
-          browser.assert.fail("Database connection failed: " + err.message);
-        }
-        var dbo = db.db(config.dbName);
-        var mfa_db = dbo.collection("mfatokens");
+  MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, db) {
+    if (err) {
+      browser.assert.fail("Database connection failed: " + err.message);
+    }
 
-        mfa_db.findOne({ sessionId: sessionID, verified: false }, function(err, result) {
+    var database = db.db(config.dbName);
+
+    it('should complete successful login', function (browser) {
+      browser.assert.elementPresent('#login-input-username');
+      browser.sendKeys('#login-input-username', testData.testUser.email);
+      browser.assert.elementPresent('#login-input-password');
+      browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
+      browser.assert.urlContains('#user/loginMfa');
+      var devEnv = config.devEnv;
+      var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
+      browser.getCookie(cookieName, function callback(result) {
+        this.assert.equal(result.name, cookieName);
+        var sessionID = result.value.split('.')[0].substring(4);
+        var validationTokenId;
+        database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false }, function (err, result) {
           if (err) {
             browser.assert.fail("Failed to query validation token: " + err.message);
           }
@@ -39,11 +39,11 @@ describe('login process', function () {
           browser.assert.elementPresent('#login-mfa-input-verificationcode');
           browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
         });
-      });
-    });
-    browser.assert.urlContains('#dashboard');
-  });
 
+      });
+      browser.assert.urlContains('#dashboard');
+    });
+  });
   after(function (browser) {
     browser.end();
   });
