@@ -25,6 +25,7 @@
 
 /temp
 /test/.testcache
+/testDataRoot
 /test/output/assets
 /test/output/frontend
 /test/output/unit

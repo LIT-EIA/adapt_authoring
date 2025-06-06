@@ -137,19 +137,114 @@ it('should reject a user with an incorrect mfa token', function (done) {
       should.exist(res.body.id);
       res.body.email.should.equal(authUser.email);
       res.body.isAuthenticated.should.equal(false);
-        helper.userAgent
-          .post('/api/loginMfa')
-          .send({
-            'email': authUser.email,
-            'token': 123456,
-            'shouldSkipMfa': false
-          })
-          .expect(403)
-          .end(function (error, res) {
-            should.not.exist(error);
-            res.body.errorCode.should.equal('invalidMfaToken');
-            done();
-          });
+      helper.userAgent
+        .post('/api/loginMfa')
+        .send({
+          'email': authUser.email,
+          'token': 123456,
+          'shouldSkipMfa': false
+        })
+        .expect(403)
+        .end(function (error, res) {
+          should.not.exist(error);
+          res.body.errorCode.should.equal('invalidMfaToken');
+          done();
+        });
+
+    });
+});
+
+it('should lock account after 3 wrong passwords', function (done) {
+  var data = {
+    'email': authUser.email,
+    'password': "averywrongpasswordindeed"
+  };
+  helper.userAgent
+    .post('/api/login')
+    .set('Accept', 'application/json')
+    .send(data)
+    .expect(401)
+    .end(function (error, res) {
+      should.not.exist(error);
+      res.body.errorCode.should.equal(1);
+      helper.userAgent
+        .post('/api/login')
+        .set('Accept', 'application/json')
+        .send(data)
+        .expect(401)
+        .end(function (error, res) {
+          should.not.exist(error);
+          res.body.errorCode.should.equal(1);
+          helper.userAgent
+            .post('/api/login')
+            .set('Accept', 'application/json')
+            .send(data)
+            .expect(401)
+            .end(function (error, res) {
+              should.not.exist(error);
+              res.body.errorCode.should.equal(1);
+              helper.userAgent
+                .post('/api/login')
+                .set('Accept', 'application/json')
+                .send(data)
+                .expect(401)
+                .end(function (error, res) {
+                  should.not.exist(error);
+                  res.body.errorCode.should.equal(2);
+                  usermanager.updateUser({ email: authUser.email, auth: 'local' }, { failedLoginCount: 0 }, function (error, user) {
+                    should.not.exist(error);
+                    user.failedLoginCount.should.equal(0);
+                    done();
+                  });
+                });
+            });
+        });
+    });
+});
+
+it('should lock account after 3 wrong mfa tokens', function (done) {
+  helper.userAgent
+    .post('/api/login')
+    .set('Accept', 'application/json')
+    .send({
+      'email': authUser.email,
+      'password': authUser.plainPassword
+    })
+    .expect(200)
+    .end(function (error, res) {
+      should.not.exist(error);
+      should.exist(res.body.id);
+      res.body.email.should.equal(authUser.email);
+      res.body.isAuthenticated.should.equal(false);
+      helper.userAgent
+        .post('/api/loginMfa')
+        .send({
+          'email': authUser.email,
+          'token': 123456,
+          'shouldSkipMfa': false
+        })
+        .expect(403)
+        .end(function (error, res) {
+          should.not.exist(error);
+          res.body.errorCode.should.equal('invalidMfaToken');
+          helper.userAgent
+            .post('/api/loginMfa')
+            .send({
+              'email': authUser.email,
+              'token': 123456,
+              'shouldSkipMfa': false
+            })
+            .expect(403)
+            .end(function (error, res) {
+              should.not.exist(error);
+              res.body.errorCode.should.equal('failedMfaCount');
+              usermanager.updateUser({ email: authUser.email, auth: 'local' }, { failedMfaCount: 0 }, function (error, user) {
+                should.not.exist(error);
+                user.failedMfaCount.should.equal(0);
+                done();
+              });
+            });
+        });
 
     });
 });
