@@ -27,11 +27,7 @@ describe('login process', function () {
     });
 
     it('should lock account after 3 wrong passwords', function (browser) {
-
-
-      browser.url(`http://localhost:${config.serverPort}`);
       browser.assert.elementPresent('#login-input-username');
-      browser.sendKeys('#login-input-username', testData.testUser.email);
 
       for (let i = 1; i <= 4; i++) {
         browser.perform(() => {
@@ -61,9 +57,9 @@ describe('login process', function () {
             browser.assert.fail("Failed to reset count " + err.message);
           }
           browser.assert.equal(commandResult.result.nModified, 1);
-          browser.setValue('#login-input-username', '');
         });
       });
+      browser.setValue('#login-input-username', '');
     });
 
 
