@@ -133,6 +133,87 @@ describe('login process', function () {
       browser.expect.element('.swal2-html-container').text.to.equal('Your session has expired, click OK to log on again');
     });
 
+    it('should reject login from the old password', function (browser) {
+      browser.navigateTo(`http://localhost:${config.serverPort}`);
+      browser.assert.elementPresent('#login-input-username');
+      browser.sendKeys('#login-input-username', testData.testUser.email);
+      browser.assert.elementPresent('#login-input-password');
+      browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
+      browser.assert.elementPresent('#loginErrorMessage');
+      browser.setValue('.login-input-password', '');
+    });
+
+
+    it('should complete successful login with the new password', function (browser) {
+      browser.assert.elementPresent('#login-input-username');
+      browser.assert.elementPresent('#login-input-password');
+      browser.sendKeys('#login-input-password', [testData.testUser.newpassword, browser.Keys.ENTER]);
+      browser.assert.urlContains('#user/loginMfa');
+      var devEnv = config.devEnv;
+      var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
+      browser.getCookie(cookieName, function callback(result) {
+        this.assert.equal(result.name, cookieName);
+        var sessionID = result.value.split('.')[0].substring(4);
+        var validationTokenId;
+        database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false }, function (err, result) {
+          if (err) {
+            browser.assert.fail("Failed to query validation token: " + err.message);
+          }
+          if (result && result.validationToken) {
+            validationTokenId = result.validationToken;
+          }
+          browser.assert.elementPresent('#login-mfa-input-verificationcode');
+          browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
+        });
+
+      });
+      browser.assert.urlContains('#dashboard');
+    });
+
+
+    it('should enable user to change password from the profile menu', function (browser) {
+      browser.assert.urlContains('#dashboard');
+      browser.assert.elementPresent('.profile-dropbtn');
+      browser.click('.profile-dropbtn');
+      browser.keys(browser.Keys.ENTER);
+      browser.click('.navigation-profile');
+      browser.keys(browser.Keys.ENTER);
+      browser.click('.change-password');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.elementPresent('#passwordField');
+      browser.sendKeys('#password', [testData.testUser.thirdpassword]);
+      browser.sendKeys('#confirmPassword', [testData.testUser.thirdpassword]);
+      browser.click('.user-profile-edit-sidebar-save-inner');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.urlContains('#dashboard');
+      browser.click('.profile-dropbtn');
+      browser.keys(browser.Keys.ENTER);
+      browser.click('.navigation-user-logout');
+      browser.keys(browser.Keys.ENTER);
+    });
+
+    it('should accept password change from profile menu', function (browser) {
+      browser.assert.elementPresent('#login-input-username');
+      browser.sendKeys('#login-input-username', testData.testUser.email);
+      browser.assert.elementPresent('#login-input-password');
+      browser.sendKeys('#login-input-password', [testData.testUser.thirdpassword, browser.Keys.ENTER]);
+      browser.assert.urlContains('#user/loginMfa');
+    });
+
+    it('should lock the user after 3 failed MFA key entry attempts', function (browser) {
+      var basicKey = '123456'
+      for (let i = 1; i <= 4; i++) {
+        browser.perform(() => {
+          browser
+            .assert.elementPresent('#login-mfa-input-verificationcode')
+            .sendKeys('#login-mfa-input-verificationcode', [basicKey, browser.Keys.ENTER])
+            .setValue('#login-mfa-input-verificationcode', '')
+            .pause(500);
+        });
+      }
+      browser.expect.element('#loginErrorMessage').text.to.equal('You have exceeded the maximum number of attempts to enter your one-time password. For your security, please reset your password by selecting the "Forgot Password?" option.');
+    });
+
   });
   after(function (browser) {
     browser.end();

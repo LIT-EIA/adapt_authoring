@@ -3,6 +3,9 @@
     "email": "user@adaptlearning.org",
     "plainPassword": "passwordmain123",
     "newpassword": "mynewpasswordfortesting",
+    "thirdpassword": "mynewpasswordfortesting1",
+    "firstName": "Test",
+    "lastName": "User",
     "auth": "local",
     "_isDeleted": false
   },
