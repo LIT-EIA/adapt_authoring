@@ -1,7 +1,7 @@
 {
   "testUser": {
     "email": "user@adaptlearning.org",
-    "plainPassword": "password",
+    "plainPassword": "passwordmain123",
     "newpassword": "mynewpasswordfortesting",
     "auth": "local",
     "_isDeleted": false
