@@ -14,6 +14,10 @@
     "version": {
       "type": "string"
     },
+
+    "default": {
+      "type": "boolean"
+    },
     "statement": [ "policyStatement" ]
   }
 }
