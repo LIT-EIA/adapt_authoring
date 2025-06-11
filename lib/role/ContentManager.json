@@ -1,6 +1,7 @@
 {
   "name": "Content Manager",
   "version": "0.0.1",
+  "default": false,
   "statement" : [
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/*", "action":["read", "create", "update", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/all/course", "action":["read"], "effect":"allow" },
