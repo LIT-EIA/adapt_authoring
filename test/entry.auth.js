@@ -114,6 +114,56 @@ it('should accept requests to create a password reset token', function (done) {
     });
 });
 
+it('should reject requests to reset a user\'s password if part of blocklist', function (done) {
+  usermanager.retrieveUser({ email: authUser.email, auth: 'local' }, function (error, userObject) {
+    should.not.exist(error);
+    should.exist(userObject);
+    usermanager.retrieveUserPasswordReset({ user: userObject._id }, function (error, reset) {
+      should.not.exist(error);
+      should.exist(reset);
+      helper.userAgent
+        .put('/api/userpasswordreset/' + reset.token)
+        .set('Accept', 'application/json')
+        .send({
+          'user': authUser._id,
+          'password': 'abcd!EFG!123',
+          'token': reset.token
+        })
+        .expect(500)
+        .end(function (error, res) {
+          should.not.exist(error);
+          res.body.should.equal('app.passwordtoocommon');
+          done();
+        });
+    });
+  });
+});
+
+it('should reject requests to reset a user\'s password if doesn\'t meet the minimum length', function (done) {
+  usermanager.retrieveUser({ email: authUser.email, auth: 'local' }, function (error, userObject) {
+    should.not.exist(error);
+    should.exist(userObject);
+    usermanager.retrieveUserPasswordReset({ user: userObject._id }, function (error, reset) {
+      should.not.exist(error);
+      should.exist(reset);
+      helper.userAgent
+        .put('/api/userpasswordreset/' + reset.token)
+        .set('Accept', 'application/json')
+        .send({
+          'user': authUser._id,
+          'password': 'tinypass',
+          'token': reset.token
+        })
+        .expect(500)
+        .end(function (error, res) {
+          should.not.exist(error);
+          res.body.should.equal('app.passwordindicatormedium');
+          done();
+        });
+    });
+  });
+});
+
 it('should accept requests to reset a user\'s password', function (done) {
   usermanager.retrieveUser({ email: authUser.email, auth: 'local' }, function (error, userObject) {
     should.not.exist(error);
