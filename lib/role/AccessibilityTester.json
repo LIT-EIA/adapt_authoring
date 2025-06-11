@@ -1,6 +1,7 @@
 {
   "name": "Accessibility Tester",
   "version": "0.0.1",
+  "default": false,
   "statement" : [
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/*", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/all/course", "action":["read"], "effect":"allow" },

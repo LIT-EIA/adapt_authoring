@@ -1,6 +1,7 @@
 {
   "name": "Course Creator",
   "version": "0.0.1",
+  "default": true,
   "statement" : [
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/course/own", "action":["read", "create", "update", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/themepreset/*", "action":["read", "create", "update", "delete"], "effect":"allow" },
