@@ -56,11 +56,9 @@ define(function(require){
       var users = this.users.models;
       users.forEach(function(user){
         if(!user.get('_isHidden')){
-          console.log(user.get('email'));
           emailList += user.get('email') + ';';
         }
       });
-      console.log(emailList)
       const blob = new Blob([emailList], { type: 'text/plain;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
