@@ -300,16 +300,56 @@ describe('login process', function () {
       browser.setValue('#confirmPasswordUserManagementResetModal', '');
     });
 
-    it('should enable password change from usermanager', function (browser) {
+    it('should enable new user login to work', function (browser) {
       browser.sendKeys('#passwordUserManagementResetModal', testData.secondUser.newpassword);
       browser.sendKeys('#confirmPasswordUserManagementResetModal', testData.secondUser.newpassword);
       browser.click('.swal2-confirm');
       browser.keys(browser.Keys.ENTER);
       browser.click('.swal2-confirm');
-      browser.assert.elementNotPresent('#passwordResetModal');
     });
 
     it('should be able to logout and render session invalid', function (browser) {
+      browser.click('.profile-dropbtn');
+      browser.keys(browser.Keys.ENTER);
+      browser.click('.navigation-user-logout');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.urlContains('#user/login');
+      browser.navigateTo(`http://localhost:${config.serverPort}/#dashboard`);
+      browser.expect.element('.swal2-html-container').text.to.equal('Your session has expired, click OK to log on again');
+    });
+
+    it('should accept new user password on login', function (browser) {
+      browser.navigateTo(`http://localhost:${config.serverPort}`);
+      browser.assert.elementPresent('#login-input-username');
+      browser.assert.elementPresent('#login-input-password');
+      browser.assert.elementPresent('#login-input-username');
+      browser.sendKeys('#login-input-username', testData.secondUser.email);
+      browser.sendKeys('#login-input-password', [testData.secondUser.newpassword, browser.Keys.ENTER]);
+      browser.assert.urlContains('#user/loginMfa');
+      var devEnv = config.devEnv;
+      var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
+      browser.getCookie(cookieName, function callback(result) {
+        this.assert.equal(result.name, cookieName);
+        var sessionID = result.value.split('.')[0].substring(4);
+        var validationTokenId;
+        database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false }, function (err, result) {
+          if (err) {
+            browser.assert.fail("Failed to query validation token: " + err.message);
+          }
+          if (result && result.validationToken) {
+            validationTokenId = result.validationToken;
+          }
+          browser.assert.elementPresent('#login-mfa-input-verificationcode');
+          browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
+        });
+
+      });
+      browser.assert.elementPresent('#passwordResetModal');
+      browser.sendKeys('#passwordResetModal', testData.secondUser.thirdpassword);
+      browser.sendKeys('#confirmPasswordResetModal', testData.secondUser.thirdpassword);
+      browser.click('.swal2-confirm');
+      browser.assert.elementNotPresent('#passwordResetModal');
+      browser.assert.urlContains('#dashboard');
       browser.click('.profile-dropbtn');
       browser.keys(browser.Keys.ENTER);
       browser.click('.navigation-user-logout');
