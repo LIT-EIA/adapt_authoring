@@ -202,6 +202,20 @@ describe('login process', function () {
       browser.expect.element('.errorResetModal').text.to.equal('Make your password stronger with at least 12 characters');
     });
 
+    it('should not accept mismatched password in password confirmation field', function (browser) {
+      browser.setValue('#passwordResetModal', '');
+      browser.setValue('#confirmPasswordResetModal', '');
+      browser.assert.elementPresent('#passwordResetModal');
+      browser.sendKeys('#passwordResetModal', testData.testUser.plainPassword);
+      browser.sendKeys('#confirmPasswordResetModal', 'mismatchedpassword');
+      browser.click('.swal2-confirm');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.elementPresent('#confirmPasswordErrorResetModal');
+      browser.expect.element('#confirmPasswordErrorResetModal').text.to.equal('Confirmation password does not match the new password.');
+      browser.setValue('#passwordResetModal', '');
+      browser.setValue('#confirmPasswordResetModal', '');
+    });
+
     it('should not accept previous password', function (browser) {
       browser.setValue('#passwordResetModal', '');
       browser.setValue('#confirmPasswordResetModal', '');
@@ -224,6 +238,77 @@ describe('login process', function () {
       browser.assert.elementNotPresent('#passwordResetModal');
     });
 
+    it('should enable super admin to access user management', function (browser) {
+      browser.assert.elementPresent('.navigation-global-menu');
+      browser.click('.navigation-global-menu');
+      browser.keys(browser.Keys.ENTER);
+      browser.click('.fa-users');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.elementPresent('.users');
+    });
+
+    it('should enable super admin to create a new user', function (browser) {
+      browser.assert.elementPresent('.add');
+      browser.click('.add');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.urlContains('#userManagement/addUser');
+      browser.sendKeys('input[name="firstName"]', [testData.secondUser.firstName, browser.Keys.ENTER]);
+      browser.sendKeys('input[name="lastName"]', [testData.secondUser.lastName, browser.Keys.ENTER]);
+      browser.sendKeys('input[name="email"]', [testData.secondUser.email, browser.Keys.ENTER]);
+      browser.click('.save');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.urlContains('#userManagement/addUser');
+    });
+
+    it('should enable super admin to be subjected to 12 character password policy change on user password change', function (browser) {
+      browser.click('ul.users .user-item:nth-of-type(2)');
+      browser.click('.changePassword');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.elementPresent('#passwordUserManagementResetModal');
+      browser.sendKeys('#passwordUserManagementResetModal', 'tinypass');
+      browser.sendKeys('#confirmPasswordUserManagementResetModal', 'tinypass');
+      browser.click('.swal2-confirm');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.elementPresent('.errorUserManagementResetModal');
+      browser.expect.element('.errorUserManagementResetModal').text.to.equal('Make your password stronger with at least 12 characters');
+      browser.setValue('#passwordUserManagementResetModal', '');
+      browser.setValue('#confirmPasswordUserManagementResetModal', '');
+    });
+
+    it('should not permit blocklist passwords from usermanager', function (browser) {
+      browser.sendKeys('#passwordUserManagementResetModal', 'yankeesRomeo-NK1992');
+      browser.sendKeys('#confirmPasswordUserManagementResetModal', 'yankeesRomeo-NK1992');
+      browser.click('.swal2-confirm');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.elementPresent('.errorUserManagementResetModal');
+      browser.expect.element('.errorUserManagementResetModal').text.to.equal('This password is too common, please use a more unique password.');
+      browser.setValue('#passwordUserManagementResetModal', '');
+      browser.setValue('#confirmPasswordUserManagementResetModal', '');
+    });
+
+
+    it('should not accept mismatched password in usermanager', function (browser) {
+      browser.setValue('#passwordUserManagementResetModal', '');
+      browser.setValue('#confirmPasswordUserManagementResetModal', '');
+      browser.sendKeys('#passwordUserManagementResetModal', 'hugepasswordinputhere');
+      browser.sendKeys('#confirmPasswordUserManagementResetModal', 'mismatchedpassword');
+      browser.click('.swal2-confirm');
+      browser.keys(browser.Keys.ENTER);
+      browser.assert.elementPresent('#confirmPasswordErrorUserManagementResetModal');
+      browser.expect.element('#confirmPasswordErrorUserManagementResetModal').text.to.equal('Confirmation password does not match the new password.');
+      browser.setValue('#passwordUserManagementResetModal', '');
+      browser.setValue('#confirmPasswordUserManagementResetModal', '');
+    });
+
+    it('should enable password change from usermanager', function (browser) {
+      browser.sendKeys('#passwordUserManagementResetModal', testData.secondUser.newpassword);
+      browser.sendKeys('#confirmPasswordUserManagementResetModal', testData.secondUser.newpassword);
+      browser.click('.swal2-confirm');
+      browser.keys(browser.Keys.ENTER);
+      browser.click('.swal2-confirm');
+      browser.assert.elementNotPresent('#passwordResetModal');
+    });
+
     it('should be able to logout and render session invalid', function (browser) {
       browser.click('.profile-dropbtn');
       browser.keys(browser.Keys.ENTER);
@@ -233,6 +318,7 @@ describe('login process', function () {
       browser.navigateTo(`http://localhost:${config.serverPort}/#dashboard`);
       browser.expect.element('.swal2-html-container').text.to.equal('Your session has expired, click OK to log on again');
     });
+
 
     it('should reject login from the old password', function (browser) {
       browser.navigateTo(`http://localhost:${config.serverPort}`);
