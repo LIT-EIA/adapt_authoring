@@ -62,8 +62,109 @@ describe('login process', function () {
       browser.setValue('#login-input-username', '');
     });
 
+    it('should fail login whenever failedLoginCount, failedMfaCount, mfaResetCount or passwordResetCount reaches 3', function (browser) {
+      const updates = [
+        { field: 'failedLoginCount', value: 3 },
+        { field: 'failedMfaCount', value: 3 },
+        { field: 'mfaResetCount', value: 3 },
+        { field: 'passwordResetCount', value: 3 }
+      ];
+
+      const resetAllFields = (done) => {
+        database.collection("users").updateOne(
+          { email: testData.testUser.email },
+          {
+            $set: {
+              failedLoginCount: 0,
+              failedMfaCount: 0,
+              mfaResetCount: 0,
+              passwordResetCount: 0
+            }
+          },
+          function (err, commandResult) {
+            if (err) {
+              browser.assert.fail("Failed to reset all fields: " + err.message);
+            } else {
+              browser.assert.strictEqual(commandResult.matchedCount, 1, "Expected 1 document to match for reset");
+            }
+            done();
+          }
+        );
+      };
+
+      updates.forEach(({ field, value }, index) => {
+        // Reset all fields before each iteration
+        browser.perform((done) => resetAllFields(done));
+
+        // Set the current field to 3
+        browser.perform((done) => {
+          const update = {};
+          update[field] = value;
+
+          database.collection("users").updateOne(
+            { email: testData.testUser.email },
+            { $set: update },
+            function (err, commandResult) {
+              if (err) {
+                browser.assert.fail(`Failed to update ${field}: ${err.message}`);
+              } else {
+                browser.assert.strictEqual(
+                  commandResult.matchedCount,
+                  1,
+                  `Expected 1 document to match for ${field}`
+                );
+              }
+              done();
+            }
+          );
+        });
+
+        // Perform login and assert error message
+        if (field === 'passwordResetCount') {
+
+        } else {
+          browser.setValue('#login-input-username', '');
+          browser.assert.elementPresent('#login-input-username');
+          browser.sendKeys('#login-input-username', testData.testUser.email);
+          browser.assert.elementPresent('#login-input-password');
+          browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
+          browser.assert.elementPresent('#loginErrorMessage');
+          browser.expect.element('#loginErrorMessage').text.to.equal(
+            'This account has been locked because of too many failed login attempts.'
+          );
+        }
+      });
+
+      // Final check: all fields should be 0
+      browser.perform((done) => {
+        database.collection("users").findOne(
+          { email: testData.testUser.email },
+          {
+            projection: {
+              failedLoginCount: 1,
+              failedMfaCount: 1,
+              mfaResetCount: 1,
+              passwordResetCount: 1,
+              _id: 0
+            }
+          },
+          function (err, user) {
+            if (err) {
+              browser.assert.fail("Failed to fetch user data: " + err.message);
+            } else {
+              browser.assert.strictEqual(user.failedLoginCount, 0, 'failedLoginCount should be 0');
+              browser.assert.strictEqual(user.failedMfaCount, 0, 'failedMfaCount should be 0');
+              browser.assert.strictEqual(user.mfaResetCount, 0, 'mfaResetCount should be 0');
+            }
+            done();
+          }
+        );
+      });
+    });
+
 
     it('should complete successful login', function (browser) {
+      browser.setValue('#login-input-username', '');
       browser.assert.elementPresent('#login-input-username');
       browser.sendKeys('#login-input-username', testData.testUser.email);
       browser.assert.elementPresent('#login-input-password');
@@ -171,13 +272,17 @@ describe('login process', function () {
     });
 
 
-    it('should enable user to change password from the profile menu', function (browser) {
+    it('should enable user to change password & personal information from the profile menu', function (browser) {
       browser.assert.urlContains('#dashboard');
       browser.assert.elementPresent('.profile-dropbtn');
       browser.click('.profile-dropbtn');
       browser.keys(browser.Keys.ENTER);
       browser.click('.navigation-profile');
       browser.keys(browser.Keys.ENTER);
+      browser.setValue('#firstName', '');
+      browser.setValue('#lastName', '');
+      browser.sendKeys('#firstName', ['John', browser.Keys.ENTER]);
+      browser.sendKeys('#lastName', ['Doe', browser.Keys.ENTER]);
       browser.click('.change-password');
       browser.keys(browser.Keys.ENTER);
       browser.assert.elementPresent('#passwordField');
@@ -186,6 +291,12 @@ describe('login process', function () {
       browser.click('.user-profile-edit-sidebar-save-inner');
       browser.keys(browser.Keys.ENTER);
       browser.assert.urlContains('#dashboard');
+      browser.click('.profile-dropbtn');
+      browser.keys(browser.Keys.ENTER);
+      browser.click('.navigation-profile');
+      browser.keys(browser.Keys.ENTER);
+      browser.expect.element('#firstName').to.have.value.equal('John');
+      browser.expect.element('#lastName').to.have.value.equal('Doe');
       browser.click('.profile-dropbtn');
       browser.keys(browser.Keys.ENTER);
       browser.click('.navigation-user-logout');
