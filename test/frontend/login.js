@@ -309,11 +309,13 @@ describe('login process', function () {
     });
 
     it('should be able to logout and render session invalid', function (browser) {
-      browser.click('.profile-dropbtn');
-      browser.keys(browser.Keys.ENTER);
-      browser.click('.navigation-user-logout');
-      browser.keys(browser.Keys.ENTER);
-      browser.assert.urlContains('#user/login');
+      browser.perform(() => {
+        browser.click('.profile-dropbtn');
+        browser.keys(browser.Keys.ENTER);
+        browser.click('.navigation-user-logout');
+        browser.keys(browser.Keys.ENTER);
+        browser.assert.urlContains('#user/login');
+      });
       browser.navigateTo(`http://localhost:${config.serverPort}/#dashboard`);
       browser.expect.element('.swal2-html-container').text.to.equal('Your session has expired, click OK to log on again');
     });
@@ -350,13 +352,15 @@ describe('login process', function () {
       browser.click('.swal2-confirm');
       browser.assert.elementNotPresent('#passwordResetModal');
       browser.assert.urlContains('#dashboard');
-      browser.click('.profile-dropbtn');
-      browser.keys(browser.Keys.ENTER);
-      browser.click('.navigation-user-logout');
-      browser.keys(browser.Keys.ENTER);
-      browser.assert.urlContains('#user/login');
-      browser.navigateTo(`http://localhost:${config.serverPort}/#dashboard`);
-      browser.expect.element('.swal2-html-container').text.to.equal('Your session has expired, click OK to log on again');
+      browser.perform(() => {
+        browser.click('.profile-dropbtn');
+        browser.keys(browser.Keys.ENTER);
+        browser.click('.navigation-user-logout');
+        browser.keys(browser.Keys.ENTER);
+        browser.assert.urlContains('#user/login');
+        browser.navigateTo(`http://localhost:${config.serverPort}/#dashboard`);
+        browser.expect.element('.swal2-html-container').text.to.equal('Your session has expired, click OK to log on again');
+      })
     });
 
 
@@ -424,10 +428,12 @@ describe('login process', function () {
       browser.keys(browser.Keys.ENTER);
       browser.expect.element('#firstName').to.have.value.equal('John');
       browser.expect.element('#lastName').to.have.value.equal('Doe');
-      browser.click('.profile-dropbtn');
-      browser.keys(browser.Keys.ENTER);
-      browser.click('.navigation-user-logout');
-      browser.keys(browser.Keys.ENTER);
+      browser.perform(() => {
+        browser.click('.profile-dropbtn');
+        browser.keys(browser.Keys.ENTER);
+        browser.click('.navigation-user-logout');
+        browser.keys(browser.Keys.ENTER);
+      });
     });
 
     it('should accept password change from profile menu', function (browser) {
@@ -496,10 +502,12 @@ describe('login process', function () {
       browser.getCookie(cookieName2, function callback(result) {
         this.assert.equal(result.name, cookieName2);
       });
-      browser.click('.profile-dropbtn');
-      browser.keys(browser.Keys.ENTER);
-      browser.click('.navigation-user-logout');
-      browser.keys(browser.Keys.ENTER);
+      browser.perform(() => {
+        browser.click('.profile-dropbtn');
+        browser.keys(browser.Keys.ENTER);
+        browser.click('.navigation-user-logout');
+        browser.keys(browser.Keys.ENTER);
+      });
     });
 
     it('should accept login with stored mfa cookie', function (browser) {
