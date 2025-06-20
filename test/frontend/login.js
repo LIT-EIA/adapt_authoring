@@ -162,8 +162,52 @@ describe('login process', function () {
       });
     });
 
+    it('should reject login when mfa code is over 10 minutes old', function (browser) {
+      browser.navigateTo(`http://localhost:${config.serverPort}`);
+      browser.setValue('#login-input-username', '');
+      browser.assert.elementPresent('#login-input-username');
+      browser.sendKeys('#login-input-username', testData.testUser.email);
+      browser.assert.elementPresent('#login-input-password');
+      browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
+      browser.assert.urlContains('#user/loginMfa');
+      var devEnv = config.devEnv;
+      var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
+      browser.getCookie(cookieName, function callback(result) {
+        this.assert.equal(result.name, cookieName);
+        var sessionID = result.value.split('.')[0].substring(4);
+        var validationTokenId;
+        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000); // 15 minutes ago
+        browser.pause(2000);
+        database.collection("mfatokens").findOneAndUpdate(
+          { sessionId: sessionID, verified: false },
+          { $set: { validationTokenIssueDate: fifteenMinutesAgo } },
+          function (err, result) {
+            if (err) {
+              browser.assert.fail("Failed to update issue date: " + err.message);
+            }
+
+            const updatedDoc = result.value;
+            if (updatedDoc && updatedDoc.validationToken) {
+              validationTokenId = updatedDoc.validationToken;
+            }
+            browser.perform(() => {
+              browser.assert.elementPresent('#login-mfa-input-verificationcode');
+              browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
+              browser.assert.elementPresent('#loginErrorMessage');
+              browser.expect.element('#loginErrorMessage').text.to.equal('Invalid one-time password');
+                database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { failedMfaCount: 0 } }, function (err, commandResult) {
+                  if (err) {
+                    browser.assert.fail("Failed to reset count " + err.message);
+                  }
+                });
+            });
+          }
+        );
+      });
+    });
 
     it('should complete successful login', function (browser) {
+      browser.navigateTo(`http://localhost:${config.serverPort}`);
       browser.setValue('#login-input-username', '');
       browser.assert.elementPresent('#login-input-username');
       browser.sendKeys('#login-input-username', testData.testUser.email);
