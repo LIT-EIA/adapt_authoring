@@ -63,6 +63,9 @@ before(function (done) {
 
 after(function (done) {
   this.timeout(EXTENDED_TIMEOUT);
+
+  app.configuration.setConfig('useMailService', true);
+
   console.log('Starting e2e tests')
 
   var options = {

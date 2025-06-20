@@ -66,8 +66,7 @@ describe('login process', function () {
       const updates = [
         { field: 'failedLoginCount', value: 3 },
         { field: 'failedMfaCount', value: 3 },
-        { field: 'mfaResetCount', value: 3 },
-        { field: 'passwordResetCount', value: 3 }
+        { field: 'mfaResetCount', value: 3 }
       ];
 
       const resetAllFields = (done) => {
@@ -77,8 +76,7 @@ describe('login process', function () {
             $set: {
               failedLoginCount: 0,
               failedMfaCount: 0,
-              mfaResetCount: 0,
-              passwordResetCount: 0
+              mfaResetCount: 0
             }
           },
           function (err, commandResult) {
@@ -120,9 +118,7 @@ describe('login process', function () {
         });
 
         // Perform login and assert error message
-        if (field === 'passwordResetCount') {
 
-        } else {
           browser.setValue('#login-input-username', '');
           browser.assert.elementPresent('#login-input-username');
           browser.sendKeys('#login-input-username', testData.testUser.email);
@@ -132,9 +128,10 @@ describe('login process', function () {
           browser.expect.element('#loginErrorMessage').text.to.equal(
             'This account has been locked because of too many failed login attempts.'
           );
-        }
+
       });
 
+      browser.perform((done) => resetAllFields(done));
       // Final check: all fields should be 0
       browser.perform((done) => {
         database.collection("users").findOne(
@@ -144,7 +141,6 @@ describe('login process', function () {
               failedLoginCount: 1,
               failedMfaCount: 1,
               mfaResetCount: 1,
-              passwordResetCount: 1,
               _id: 0
             }
           },
@@ -162,13 +158,67 @@ describe('login process', function () {
       });
     });
 
+    it('should accept request to reset password with Forgot Password? option', function (browser) {
+      browser.navigateTo(`http://localhost:${config.serverPort}`);
+      browser.assert.elementPresent('a[href="#user/forgot"]');
+      browser.navigateTo(`http://localhost:${config.serverPort}/#user/forgot`);
+      browser.assert.urlContains('#user/forgot');
+      browser.assert.elementPresent('.input-username-email');
+      browser.sendKeys('.input-username-email', [testData.testUser.email, browser.Keys.ENTER]);
+      browser.assert.elementPresent('.forgot-password-success');
+    });
+
+    it('should reject password reset page with invalid token', function (browser) {
+      browser.navigateTo(`http://localhost:${config.serverPort}/#user/reset/2b51063c83eb099c58e6234a`);
+      browser.assert.urlContains('#user/reset');
+      browser.assert.elementNotPresent('.reset-password');
+    });
+
+    it('should accept password reset page with valid token', function (browser) {
+      browser.perform((done) => {
+        database.collection("users").findOne({ email: testData.testUser.email }, function (err, user) {
+          if (err) {
+            browser.assert.fail("Failed to get user " + err.message);
+          }
+          database.collection("userpasswordresets").findOne({ user: user._id }, function (err, result) {
+            if (err) {
+              browser.assert.fail("Failed to get user " + err.message);
+            }
+            browser.navigateTo(`http://localhost:${config.serverPort}/#user/reset/${result.token}`);
+            browser.assert.urlContains('#user/reset');
+            browser.assert.elementPresent('.reset-password');
+            browser.assert.elementPresent('#password');
+            browser.sendKeys('#password', testData.testUser.newpassword);
+            browser.assert.elementPresent('#confirmPassword');
+            browser.sendKeys('#confirmPassword', [testData.testUser.newpassword]);
+            browser.assert.elementPresent('.submit');
+            browser.click('.submit');
+            browser.keys(browser.Keys.ENTER);
+            browser.assert.elementPresent('.return');
+            browser.pause(2000);
+            browser.perform((cb) => {
+              browser.pause(2000);
+              database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { lastPasswordChange: new Date("2020-01-01T00:00:00Z") } }, function (err, commandResult) {
+                if (err) {
+                  browser.assert.fail("Failed to reset count " + err.message);
+                }
+                console.log(commandResult)
+                cb()
+              });
+            })
+            done();
+          });
+        });
+      });
+    });
+
     it('should reject login when mfa code is over 10 minutes old', function (browser) {
       browser.navigateTo(`http://localhost:${config.serverPort}`);
       browser.setValue('#login-input-username', '');
       browser.assert.elementPresent('#login-input-username');
       browser.sendKeys('#login-input-username', testData.testUser.email);
       browser.assert.elementPresent('#login-input-password');
-      browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
+      browser.sendKeys('#login-input-password', [testData.testUser.newpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
@@ -212,7 +262,7 @@ describe('login process', function () {
       browser.assert.elementPresent('#login-input-username');
       browser.sendKeys('#login-input-username', testData.testUser.email);
       browser.assert.elementPresent('#login-input-password');
-      browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
+      browser.sendKeys('#login-input-password', [testData.testUser.newpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
@@ -250,7 +300,7 @@ describe('login process', function () {
       browser.setValue('#passwordResetModal', '');
       browser.setValue('#confirmPasswordResetModal', '');
       browser.assert.elementPresent('#passwordResetModal');
-      browser.sendKeys('#passwordResetModal', testData.testUser.plainPassword);
+      browser.sendKeys('#passwordResetModal', testData.testUser.newpassword);
       browser.sendKeys('#confirmPasswordResetModal', 'mismatchedpassword');
       browser.click('.swal2-confirm');
       browser.keys(browser.Keys.ENTER);
@@ -264,8 +314,8 @@ describe('login process', function () {
       browser.setValue('#passwordResetModal', '');
       browser.setValue('#confirmPasswordResetModal', '');
       browser.assert.elementPresent('#passwordResetModal');
-      browser.sendKeys('#passwordResetModal', testData.testUser.plainPassword);
-      browser.sendKeys('#confirmPasswordResetModal', testData.testUser.plainPassword);
+      browser.sendKeys('#passwordResetModal', testData.testUser.newpassword);
+      browser.sendKeys('#confirmPasswordResetModal', testData.testUser.newpassword);
       browser.click('.swal2-confirm');
       browser.keys(browser.Keys.ENTER);
       browser.assert.elementPresent('#passwordErrorResetModal');
@@ -276,8 +326,8 @@ describe('login process', function () {
 
     it('should accept a new valid password', function (browser) {
       browser.assert.elementPresent('#passwordResetModal');
-      browser.sendKeys('#passwordResetModal', testData.testUser.newpassword);
-      browser.sendKeys('#confirmPasswordResetModal', testData.testUser.newpassword);
+      browser.sendKeys('#passwordResetModal', testData.testUser.thirdpassword);
+      browser.sendKeys('#confirmPasswordResetModal', testData.testUser.thirdpassword);
       browser.click('.swal2-confirm');
       browser.assert.elementNotPresent('#passwordResetModal');
     });
@@ -414,7 +464,7 @@ describe('login process', function () {
       browser.assert.elementPresent('#login-input-username');
       browser.sendKeys('#login-input-username', testData.testUser.email);
       browser.assert.elementPresent('#login-input-password');
-      browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
+      browser.sendKeys('#login-input-password', [testData.testUser.newpassword, browser.Keys.ENTER]);
       browser.assert.elementPresent('#loginErrorMessage');
       browser.setValue('.login-input-password', '');
     });
@@ -423,7 +473,7 @@ describe('login process', function () {
     it('should complete successful login with the new password', function (browser) {
       browser.assert.elementPresent('#login-input-username');
       browser.assert.elementPresent('#login-input-password');
-      browser.sendKeys('#login-input-password', [testData.testUser.newpassword, browser.Keys.ENTER]);
+      browser.sendKeys('#login-input-password', [testData.testUser.thirdpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
@@ -461,8 +511,8 @@ describe('login process', function () {
       browser.click('.change-password');
       browser.keys(browser.Keys.ENTER);
       browser.assert.elementPresent('#passwordField');
-      browser.sendKeys('#password', [testData.testUser.thirdpassword]);
-      browser.sendKeys('#confirmPassword', [testData.testUser.thirdpassword]);
+      browser.sendKeys('#password', [testData.testUser.lastpassword]);
+      browser.sendKeys('#confirmPassword', [testData.testUser.lastpassword]);
       browser.click('.user-profile-edit-sidebar-save-inner');
       browser.keys(browser.Keys.ENTER);
       browser.assert.urlContains('#dashboard');
@@ -484,7 +534,7 @@ describe('login process', function () {
       browser.assert.elementPresent('#login-input-username');
       browser.sendKeys('#login-input-username', testData.testUser.email);
       browser.assert.elementPresent('#login-input-password');
-      browser.sendKeys('#login-input-password', [testData.testUser.thirdpassword, browser.Keys.ENTER]);
+      browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
     });
 
@@ -519,7 +569,7 @@ describe('login process', function () {
       browser.assert.elementPresent('#login-input-username');
       browser.sendKeys('#login-input-username', testData.testUser.email);
       browser.assert.elementPresent('#login-input-password');
-      browser.sendKeys('#login-input-password', [testData.testUser.thirdpassword, browser.Keys.ENTER]);
+      browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
@@ -561,7 +611,7 @@ describe('login process', function () {
       browser.assert.elementPresent('#login-input-username');
       browser.sendKeys('#login-input-username', testData.testUser.email);
       browser.assert.elementPresent('#login-input-password');
-      browser.sendKeys('#login-input-password', [testData.testUser.thirdpassword, browser.Keys.ENTER]);
+      browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
       browser.pause(2000);
       browser.assert.urlContains('#dashboard');
       browser.perform(() => {
@@ -595,7 +645,7 @@ describe('login process', function () {
             browser.assert.elementPresent('#login-input-username');
             browser.sendKeys('#login-input-username', testData.testUser.email);
             browser.assert.elementPresent('#login-input-password');
-            browser.sendKeys('#login-input-password', [testData.testUser.thirdpassword, browser.Keys.ENTER]);
+            browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
             browser.pause(2000);
             browser.assert.urlContains('#user/loginMfa');
             database.collection("mfatokens").updateOne(
@@ -629,7 +679,7 @@ describe('login process', function () {
         browser.assert.elementPresent('#login-input-username');
         browser.sendKeys('#login-input-username', testData.testUser.email);
         browser.assert.elementPresent('#login-input-password');
-        browser.sendKeys('#login-input-password', [testData.testUser.thirdpassword, browser.Keys.ENTER]);
+        browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
         browser.assert.urlContains('#user/loginMfa');
       });
     });
@@ -647,7 +697,7 @@ describe('login process', function () {
       browser.assert.elementPresent('#login-input-username');
       browser.sendKeys('#login-input-username', testData.testUser.email);
       browser.assert.elementPresent('#login-input-password');
-      browser.sendKeys('#login-input-password', [testData.testUser.thirdpassword, browser.Keys.ENTER]);
+      browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
     });
 
