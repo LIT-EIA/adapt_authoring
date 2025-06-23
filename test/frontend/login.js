@@ -119,15 +119,15 @@ describe('login process', function () {
 
         // Perform login and assert error message
 
-          browser.setValue('#login-input-username', '');
-          browser.assert.elementPresent('#login-input-username');
-          browser.sendKeys('#login-input-username', testData.testUser.email);
-          browser.assert.elementPresent('#login-input-password');
-          browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
-          browser.assert.elementPresent('#loginErrorMessage');
-          browser.expect.element('#loginErrorMessage').text.to.equal(
-            'This account has been locked because of too many failed login attempts.'
-          );
+        browser.setValue('#login-input-username', '');
+        browser.assert.elementPresent('#login-input-username');
+        browser.sendKeys('#login-input-username', testData.testUser.email);
+        browser.assert.elementPresent('#login-input-password');
+        browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
+        browser.assert.elementPresent('#loginErrorMessage');
+        browser.expect.element('#loginErrorMessage').text.to.equal(
+          'This account has been locked because of too many failed login attempts.'
+        );
 
       });
 
@@ -245,11 +245,11 @@ describe('login process', function () {
               browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
               browser.assert.elementPresent('#loginErrorMessage');
               browser.expect.element('#loginErrorMessage').text.to.equal('Invalid one-time password');
-                database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { failedMfaCount: 0 } }, function (err, commandResult) {
-                  if (err) {
-                    browser.assert.fail("Failed to reset count " + err.message);
-                  }
-                });
+              database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { failedMfaCount: 0 } }, function (err, commandResult) {
+                if (err) {
+                  browser.assert.fail("Failed to reset count " + err.message);
+                }
+              });
             });
           }
         );
@@ -352,6 +352,85 @@ describe('login process', function () {
       browser.click('.save');
       browser.keys(browser.Keys.ENTER);
       browser.assert.urlContains('#userManagement/addUser');
+    });
+
+    it('locked account should return the right message in usermanager', function (browser) {
+      browser.pause(1000);
+      browser.perform(() => {
+        database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 3, passwordResetCount: 0, failedMfaCount: 0, mfaResetCount: 0 } }, function (err, commandResult) {
+          if (err) {
+            browser.assert.fail("Failed to reset count " + err.message);
+          }
+        });
+      });
+      browser.pause(1000);
+      browser.navigateTo(`http://localhost:${config.serverPort}/#userManagement`);
+      browser.pause(1000);
+      browser.refresh();
+      browser.pause(1000);
+      browser.useXpath().assert.containsText(
+        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-20')][.//text()[contains(., 'Locked')]]",
+        'Locked'
+      ).useCss();
+    });
+
+    it('email password locked account should return the right message in usermanager', function (browser) {
+      browser.pause(1000);
+      browser.perform(() => {
+        database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 0, passwordResetCount: 3, failedMfaCount: 0, mfaResetCount: 0 } }, function (err, commandResult) {
+          if (err) {
+            browser.assert.fail("Failed to reset count " + err.message);
+          }
+        });
+      });
+      browser.pause(1000);
+      browser.navigateTo(`http://localhost:${config.serverPort}/#userManagement`);
+      browser.pause(1000);
+      browser.refresh();
+      browser.pause(1000);
+      browser.useXpath().assert.containsText(
+        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-20')][.//text()[contains(., 'Password Mail Locked')]]",
+        'Locked'
+      ).useCss();
+    });
+
+    it('mfa locked account should return the right message in usermanager', function (browser) {
+      browser.pause(1000);
+      browser.perform(() => {
+        database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 0, passwordResetCount: 0, failedMfaCount: 3, mfaResetCount: 0 } }, function (err, commandResult) {
+          if (err) {
+            browser.assert.fail("Failed to reset count " + err.message);
+          }
+        });
+      });
+      browser.pause(1000);
+      browser.navigateTo(`http://localhost:${config.serverPort}/#userManagement`);
+      browser.pause(1000);
+      browser.refresh();
+      browser.pause(1000);
+      browser.useXpath().assert.containsText(
+        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-20')][.//text()[contains(., 'Mfa Locked')]]",
+        'Locked'
+      ).useCss();
+    });
+    it('mfa email locked account should return the right message in usermanager', function (browser) {
+      browser.pause(1000);
+      browser.perform(() => {
+        database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 0, passwordResetCount: 0, failedMfaCount: 0, mfaResetCount: 3 } }, function (err, commandResult) {
+          if (err) {
+            browser.assert.fail("Failed to reset count " + err.message);
+          }
+        });
+      });
+      browser.pause(1000);
+      browser.navigateTo(`http://localhost:${config.serverPort}/#userManagement`);
+      browser.pause(1000);
+      browser.refresh();
+      browser.pause(1000);
+      browser.useXpath().assert.containsText(
+        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-20')][.//text()[contains(., 'Mfa Mail Locked')]]",
+        'Locked'
+      ).useCss();
     });
 
     it('should enable super admin to be subjected to 12 character password policy change on user password change', function (browser) {
