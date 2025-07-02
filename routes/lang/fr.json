@@ -1399,7 +1399,7 @@
   "app.titleunlock": "Détacher du titre",
   "app.stopsharingwithyourself": "Vous ne pouvez pas retirer votre nom de cette liste.<br/><br/>Si vous souhaitez que ce cours ne soit plus partagé avec vous, veuillez utiliser un autre compte utilisateur.",
   "app.searchByMail": "Effectuer une recherche par adresse courriel.",
-  "app.maxfileuploadsize": "Taille maximale du fichier à téléverser : %{size}. <br> Exceptions : ",
+  "app.maxfileuploadsize": "Taille maximale du fichier à téléverser : %{size}.",
   "app.uploadsizeerror": "La taille limite du fichier est dépassée.",
   "app.fileuploaderror": "Le téléversement du fichier a échoué.",
   "app.cannotfindbower": "Impossible de trouver le fichier bower.json attendu dans la racine du module d’extension; veuillez vérifier la structure du fichier zip, puis réessayez.",
@@ -1952,17 +1952,14 @@
   "app.erroritemtoremoveinuse": "L'élément que vous souhaitez supprimer est en cours d'utilisation.",
   "app.clone": "Cloner",
   "app.adapt-esdc-talk.displayName": "Dialogue",
-  "app.adapt-esdc-talk.description": "Composant de dialogue"
-}
-
   "app.adapt-esdc-talk.description": "Composant de dialogue",
   "app.failedmfacount": "Vous avez dépassé le nombre maximum de tentatives d'authentification de votre mot de passe à usage unique. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
   "app.mfaresetcount": "Vous avez dépassé le nombre maximum de demandes pour générer un mot de passe à usage unique. Pour votre sécurité, veuillez réinitialiser votre mot de passe en sélectionnant l'option « Mot de passe oublié? ».",
   "app.sending": "Envoi en cours",
   "app.validationTime": "Le mot de passe à usage unique sera valide pendant 10 minutes.",
-  "app.accountstatus": "Statut Compte",
   "app.notDeletedfilter": "Actif",
   "app.exportemails": "Exporter les courriels",
   "app.deletedFilter": "Inactif",
-  "app.passwordreused": "Votre mot de passe ne peut pas être identique à vos mots de passe précédents."
+  "app.passwordreused": "Votre mot de passe ne peut pas être identique à vos mots de passe précédents.",
+  "app.exceptionsmaxfileuploadsize": "Exceptions :"
 }

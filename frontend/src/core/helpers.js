@@ -406,7 +406,8 @@ define(function(require){
       Object.keys(maxSizes).forEach(function(key){
         uploadArray.push({type: key, size: maxSizes[key]})
       })
-      var data = {uploads: uploadArray, uploadMaxSize: Origin.l10n.t('app.maxfileuploadsize', {size: maxUploadSizeDefault} )}
+
+      var data = {uploads: uploadArray, uploadMaxSize: Origin.l10n.t('app.maxfileuploadsize', {size: maxUploadSizeDefault}), uploadMaxSizeExceptions: uploadArray.length > 0 ? Origin.l10n.t('app.exceptionsmaxfileuploadsize') : ""}
       var template = Handlebars.templates['assetManagementUploadMaxSize'];
       return new Handlebars.SafeString(template(data));
     },
