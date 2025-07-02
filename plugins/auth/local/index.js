@@ -246,7 +246,7 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
           }
           if (data && data.length) {
             var result = data[0];
-            if (crypto.timingSafeEqual(Buffer.from(result.validationToken), Buffer.from(req.body.token)) && result.validationTokenIssueDate.getTime() > timestampMinAge) {
+            if (crypto.timingSafeEqual(Buffer.from(String(result.validationToken)), Buffer.from(String(req.body.token))) && result.validationTokenIssueDate.getTime() > timestampMinAge) {
               var delta = {
                 verified: true,
                 validationDate: new Date()
