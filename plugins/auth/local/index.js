@@ -15,6 +15,7 @@ var auth = require('../../../lib/auth'),
   permissions = require('../../../lib/permissions'),
   logger = require('../../../lib/logger'),
   LocalStrategy = require('passport-local').Strategy;
+  var crypto = require('crypto');
 
 var MESSAGES = {
   INVALID_USERNAME_OR_PASSWORD: 'Invalid username or password',
@@ -245,7 +246,7 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
           }
           if (data && data.length) {
             var result = data[0];
-            if (result.validationToken === req.body.token && result.validationTokenIssueDate.getTime() > timestampMinAge) {
+            if (crypto.timingSafeEqual(Buffer.from(result.validationToken), Buffer.from(req.body.token)) && result.validationTokenIssueDate.getTime() > timestampMinAge) {
               var delta = {
                 verified: true,
                 validationDate: new Date()
