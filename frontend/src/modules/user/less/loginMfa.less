@@ -1,0 +1,212 @@
+@import 'colours';
+
+.module-user {
+
+    &.location-loginMfa {
+        .no-ui;
+        width: 100%;
+        margin: 0 auto;
+        color: @white;
+        background-color: @adapt-primary-color;
+
+        #app {
+            margin-left: 0px;
+            width: 100%;
+            margin-top: 60px;
+        }
+
+        a {
+            color: @white;
+        }
+
+        button.small {
+            font-size: 16px;
+            margin: 0 auto;
+            display: block;
+            width: 200px;
+            margin-top: 20px;
+            height: 80%;
+        }
+    }
+
+    .login-mfa-logo {
+        height: 123px;
+        background-image: url('assets/adapt-learning-logo-white.png');
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    // ESDC - adjusted login-mfa title to insert lang switcher
+    .login-mfa-title {
+        text-align: center;
+        font-size: 32px;
+        margin-bottom: 40px;
+    }
+
+    .login-mfa-text {
+        margin-bottom: 15px;
+    }
+
+    #login-mfaError {
+        width: 425px;
+        text-align: center;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        margin: 5px 0;
+        padding: 10px;
+
+        i.fa {
+            color: @alert-color;
+            font-size: 110%;
+            margin-right: 5px;
+        }
+
+        #login-mfaErrorMessage {
+            font-size: 110%;
+            color: @white;
+            position: static;
+        }
+    }
+
+    .login-mfa-fields {
+        margin: 20px 0 20px 0;
+        position: relative;
+
+        .login-mfa-input-verificationcode {
+            font-size: 20px;
+            border-radius: 4px;
+            border: 0;
+            padding: 11px 20px;
+            background-color: @white;
+            color: @primary-color;
+            margin-bottom: 5px;
+            height: 40px;
+        }
+
+        input#login-mfa-input-verificationcode::placeholder {
+            color: @primary-color;
+        }
+
+        input::-webkit-input-placeholder {
+            color: @white;
+        }
+
+        input:-moz-placeholder {
+            color: @white;
+        }
+
+        input::-moz-placeholder {
+            color: @white;
+        }
+
+        input:-ms-input-placeholder {
+            color: @white;
+        }
+
+        .login-mfa-input-verificationcode {
+            width: calc(100% - 40px);
+        }
+
+        button {
+            margin-bottom: 5px;
+            width: 100%;
+            height: 45px;
+            font-size: 17px;
+        }
+        #loginError {
+            width: calc(100% - 20px);
+        }
+    }
+
+}
+
+.resend-mfatoken-btn {
+    width: 445px;
+    height: 65px !important;
+    font-size: 17px;
+}
+
+// ESDC - added to login-mfa form to for language switcher
+.login-mfa .login-mfa-form {
+    margin-top: 40px;
+
+    .login-mfa-form-submit {
+        height: 65px;
+    }
+}
+
+.login-mfa {
+    max-width: 450px;
+    margin: 50px auto;
+}
+
+.login-skip-mfa {
+    display: flex;
+    align-items: center;
+    float: left;
+    font-size: 15px;
+    margin: 10px 0 15px 0px;
+}
+
+.skip-mfa-label {
+    padding-left: 10px;
+    display: inline;
+    margin-bottom: 0;
+}
+
+.skip-mfa-checkbox {
+    vertical-align: middle;
+}
+
+.location-loginMfa {
+
+    .resend-mfatoken-btn:hover .loading-spinner,
+    .resend-mfatoken-btn:focus .loading-spinner {
+        display: inline-block;
+        margin: -2px 2px;
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+        border: 3px solid #ffffff;
+        border-top-color: transparent;
+        -webkit-animation: spin 800ms infinite linear;
+        animation: spin 800ms infinite linear;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        margin: -2px 2px;
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+        border: 3px solid #F4F5F0;
+        border-top-color: transparent;
+        -webkit-animation: spin 800ms infinite linear;
+        animation: spin 800ms infinite linear;
+    }
+
+    .help-dialog {
+        display: none;
+    }
+
+    @-webkit-keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+}

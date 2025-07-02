@@ -1,5 +1,5 @@
 {
-  "rootUrl": "http://localhost:5000",
+  "rootUrl": "http://localhost:5001",
   "serverName": "localhost",
   "serverPort": 5001,
   "dbType": "mongoose",
@@ -14,5 +14,7 @@
   "fromAddress": "",
   "outputPlugin": "adapt",
   "auth": "local",
-  "isTestEnvironment": true
+  "isTestEnvironment": true,
+  "useMFA": false,
+  "devEnv": "testing"
 }

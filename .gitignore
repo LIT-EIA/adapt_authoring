@@ -25,6 +25,11 @@
 
 /temp
 /test/.testcache
+/testDataRoot
+/test/output/assets
+/test/output/frontend
+/test/output/unit
+/test/temp
 /tmp
 
 /.settings
@@ -34,5 +39,6 @@ package-lock.json
 .idea
 .project
 .vscod
+.env
 /routes/preview/index.js
 nohup.out

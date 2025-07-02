@@ -8,7 +8,7 @@ define(function(require){
     isClosedRoute: function(){
       var fragments = Backbone.history.getFragment().split('/');
         var route = fragments[0] + '/' + fragments[1];
-        if(route && route !== 'user/login' && route !== 'user/logout' && route !== 'user/forgot' && route !== 'user/reset'){
+        if(route && route !== 'user/login' && route !== 'user/loginMfa' && route !== 'user/logout' && route !== 'user/forgot' && route !== 'user/reset'){
           return true
         }
         return false
@@ -84,6 +84,14 @@ define(function(require){
         return `${options.fallback || options.key} -*/*- ${l10nKey}`;
       }
       return options.fallback;
+    },
+
+    translateKey: function(key) {
+      if (!key) return;
+
+      if(Origin.l10n.has(key)) {
+        return Origin.l10n.t(key);
+      }
     },
 
     momentFormat: function(date, format) {

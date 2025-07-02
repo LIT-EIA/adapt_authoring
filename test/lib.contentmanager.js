@@ -1,19 +1,20 @@
 var async = require('async');
 var request = require('supertest');
-var should = require('should');
+var should = require('should')
 
 var origin = require('../');
 var auth = require('../lib/auth');
 var database = require('../lib/database');
+var usermanager = require('../lib/usermanager');
 
-var testData = require('./testData.json');
+var testUser = require('./testData.json').testUser;
 var app = origin();
 
 var agent = {};
-var userId = false;
 var contentObj = {};
 var otherContentObj = {};
 var content = app.contentmanager;
+var userId;
 
 before(function(done) {
   agent = request.agent(app.getServerURL());
@@ -22,30 +23,52 @@ before(function(done) {
     .post('/api/login')
     .set('Accept', 'application/json')
     .send({
-      email: testData.testUser.email,
-      password: testData.testUser.plainPassword
+      email: testUser.email,
+      password: testUser.plainPassword
     })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
-      if(error) return done(error);
+    .end(function (error, res) {
+      should.not.exist(error);
+      should.exist(res.body.id);
+      res.body.email.should.equal(testUser.email);
+      res.body.isAuthenticated.should.equal(false);
       userId = res.body.id;
-      done();
+      usermanager.retrieveMfaToken({ userId: res.body.id, verified: false }, function (error, tokens) {
+        var token = tokens[0];
+        agent
+          .post('/api/loginMfa')
+          .send({
+            'email': testUser.email,
+            'token': token.validationToken,
+            'shouldSkipMfa': false
+          })
+          .expect(200)
+          .end(function (error, res) {
+            should.not.exist(error);
+            res.body.email.should.equal(testUser.email);
+            res.body.isAuthenticated.should.equal(true);
+            should.exist(res.body.tenantId);
+            should.exist(res.body.tenantName);
+            should.exist(res.body.permissions);
+            done();
+          });
+      });
     });
 });
 
-after(function(done) {
-  if(contentObj._id) {
-    database.getDatabase(function(error, db) {
-      if(error) return done(error);
-      db.destroy('course', { _id: contentObj._id }, function(error) {
+after(function (done) {
+  if (contentObj._id) {
+    database.getDatabase(function (error, db) {
+      if (error) return done(error);
+      db.destroy('course', { _id: contentObj._id }, function (error) {
         db.destroy('course', { _id: otherContentObj._id }, done);
       });
     }, app.configuration.getConfig('dbName'));
   }
 });
 
-it('should accept requests to create content', function(done) {
+it('should accept requests to create content', function (done) {
   agent
     .post('/api/content/course')
     .set('Accept', 'application/json')
@@ -55,51 +78,51 @@ it('should accept requests to create content', function(done) {
     })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       contentObj = res.body;
       should.exist(contentObj._id);
       // create some more content
       agent
-      .post('/api/content/course')
-      .set('Accept', 'application/json')
-      .send({
-        title: 'a title',
-        body: 'no body here',
-      })
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .end(function(error, res) {
-        should.not.exist(error);
-        otherContentObj = res.body;
-        should.exist(otherContentObj._id);
-        return done();
-      });
+        .post('/api/content/course')
+        .set('Accept', 'application/json')
+        .send({
+          title: 'a title',
+          body: 'no body here',
+        })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function (error, res) {
+          should.not.exist(error);
+          otherContentObj = res.body;
+          should.exist(otherContentObj._id);
+          return done();
+        });
     });
 });
 
-it('should reject requests to create unknown content types', function(done) {
+it('should reject requests to create unknown content types', function (done) {
   agent
     .post('/api/content/iwillneverbeacontenttype')
     .set('Accept', 'application/json')
     .send({ title: 'some name' })
     .expect(400)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       res.body.success.should.be.false;
       return done();
     });
 });
 
-it('should accept requests to retrieve content by id', function(done) {
+it('should accept requests to retrieve content by id', function (done) {
   agent
     .get('/api/content/course/' + contentObj._id)
     .set('Accept', 'application/json')
     .send()
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       should.exist(res.body._id);
       res.body._id.should.equal(contentObj._id);
@@ -107,59 +130,59 @@ it('should accept requests to retrieve content by id', function(done) {
     });
 });
 
-it('should accept requests to retrieve multiple content items', function(done) {
+it('should accept requests to retrieve multiple content items', function (done) {
   agent
     .get('/api/content/course')
     .set('Accept', 'application/json')
     .send()
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       res.body.length.should.be.above(0);
       return done();
     });
 });
 
-it('should accept requests to retrieve multiple content items filtered by a regex query', function(done) {
+it('should accept requests to retrieve multiple content items filtered by a regex query', function (done) {
   agent
     .get('/api/content/course/query')
     .set('Accept', 'application/json')
     .send({ search: { body: { $regex: '^lorem' } } })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       res.body.length.should.be.above(0);
       return done();
     });
 });
 
-it('should accept requests to retrieve multiple content items with a field less-than-or-equal to a value', function(done) {
+it('should accept requests to retrieve multiple content items with a field less-than-or-equal to a value', function (done) {
   agent
     .get('/api/content/course/query')
     .set('Accept', 'application/json')
     .send({ search: { createdAt: { $lte: new Date() } } })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       res.body.length.should.be.above(0);
       return done();
     });
 });
 
-it('should accept requests to retrieve content with a custom-populated subdocument', function(done) {
+it('should accept requests to retrieve content with a custom-populated subdocument', function (done) {
   agent
     .get('/api/content/course/query')
     .set('Accept', 'application/json')
     .send({ populate: { 'createdBy': ['_id', 'email'] } })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       res.body.length.should.be.above(0);
-      if(res.body[0].createdBy === null) {
+      if (res.body[0].createdBy === null) {
         throw new Error('Sub-document not populated');
       }
       res.body[0].createdBy._id.should.equal(userId, 'Invalid _id specified');
@@ -167,14 +190,14 @@ it('should accept requests to retrieve content with a custom-populated subdocume
     });
 });
 
-it('should accept requests to retrieve only desired content attributes', function(done) {
+it('should accept requests to retrieve only desired content attributes', function (done) {
   agent
     .get('/api/content/course/query')
     .set('Accept', 'application/json')
     .send({ fields: { title: 1 } })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       res.body.length.should.be.above(0);
       /*
@@ -188,44 +211,44 @@ it('should accept requests to retrieve only desired content attributes', functio
     });
 });
 
-it('should accept requests to retrieve a sorted list of content items', function(done) {
+it('should accept requests to retrieve a sorted list of content items', function (done) {
   agent
     .get('/api/content/course/query')
     .set('Accept', 'application/json')
     .send({ operators: { sort: { 'createdAt': -1 } } })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
-      for(var i = 1, count = res.body.length; i < count; i++) {
-        res.body[i].createdAt.should.be.below(res.body[i-1].createdAt);
+      for (var i = 1, count = res.body.length; i < count; i++) {
+        res.body[i].createdAt.should.be.below(res.body[i - 1].createdAt);
       }
       done();
     });
 });
 
-it('should accept requests to retrieve a limited number of content items', function(done) {
+it('should accept requests to retrieve a limited number of content items', function (done) {
   agent
     .get('/api/content/course/query')
     .set('Accept', 'application/json')
     .send({ operators: { limit: 1 } })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       res.body.length.should.equal(1);
       return done();
     });
 });
 
-it('should accept requests to update a content item', function(done) {
+it('should accept requests to update a content item', function (done) {
   agent
     .put('/api/content/course/' + contentObj._id)
     .set('Accept', 'application/json')
     .send({ title: "some different name" })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(function(error, res) {
+    .end(function (error, res) {
       should.not.exist(error);
       res.body.success.should.be.true;
       return done();
@@ -233,10 +256,10 @@ it('should accept requests to update a content item', function(done) {
 });
 
 // only applies to course/contentobject/article
-it('should accept cascading delete requests for supported content', function(done) {
+it('should accept cascading delete requests for supported content', function (done) {
   var pageContent = false; // will retain our contentobject _id for assertion
   async.series([
-    function(next) {
+    function (next) {
       agent
         .post('/api/content/contentobject')
         .set('Accept', 'application/json')
@@ -248,7 +271,7 @@ it('should accept cascading delete requests for supported content', function(don
         })
         .expect(200)
         .expect('Content-Type', /json/)
-        .end(function(error, res) {
+        .end(function (error, res) {
           should.not.exist(error);
           should.exist(res.body._id);
           pageContent = res.body;
@@ -256,23 +279,23 @@ it('should accept cascading delete requests for supported content', function(don
         });
     },
     // delete the course
-    function(next) {
+    function (next) {
       agent
         .del('/api/content/course/' + contentObj._id)
         .set('Accept', 'application/json')
         .send()
         .expect(200)
-        .end(function(res) {
+        .end(function (res) {
           return next(null);
         });
     },
     // check that the pageContent was also deleted
-    function(next) {
+    function (next) {
       agent
         .get('/api/content/contentobject/' + pageContent._id)
         .send()
         .expect(404)
-        .end(function(res) {
+        .end(function (res) {
           return next(null);
         });
     }

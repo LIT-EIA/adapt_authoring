@@ -5,6 +5,7 @@ var should = require('should');
 
 var origin = require('../');
 var assetmanager = require('../lib/assetmanager');
+var usermanager = require('../lib/usermanager');
 
 var testUser = require('./testData.json').testUser;
 var testData = require('./testData.json').assetmanager;
@@ -26,7 +27,32 @@ before(function(done) {
     })
     .expect(200)
     .expect('Content-Type', /json/)
-    .end(done);
+    .end(function (error, res) {
+      should.not.exist(error);
+      should.exist(res.body.id);
+      res.body.email.should.equal(testUser.email);
+      res.body.isAuthenticated.should.equal(false);
+      usermanager.retrieveMfaToken({ userId: res.body.id, verified: false }, function (error, tokens) {
+        var token = tokens[0];
+        agent
+          .post('/api/loginMfa')
+          .send({
+            'email': testUser.email,
+            'token': token.validationToken,
+            'shouldSkipMfa': false
+          })
+          .expect(200)
+          .end(function (error, res) {
+            should.not.exist(error);
+            res.body.email.should.equal(testUser.email);
+            res.body.isAuthenticated.should.equal(true);
+            should.exist(res.body.tenantId);
+            should.exist(res.body.tenantName);
+            should.exist(res.body.permissions);
+            done();
+          });
+      });
+    });
 });
 
 it('should allow requests to create an new asset', function(done) {

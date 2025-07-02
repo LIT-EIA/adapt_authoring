@@ -6,6 +6,7 @@ define(function(require) {
 
   var Router = Backbone.Router.extend({
     homeRoute: '',
+    loginMfa: 'user/loginMfa',
     routes: {
       '': 'handleIndex',
       '_=_': 'handleIndex',
@@ -17,7 +18,7 @@ define(function(require) {
       $(document).ajaxError(function (e, xhr, options) {
         var fragments = Backbone.history.getFragment().split('/');
         var route = fragments[0] + '/' + fragments[1];
-        if(route && route !== 'user/login' && route !== 'user/logout' && route !== 'user/forgot' && route !== 'user/reset'){
+        if(route && route !== 'user/login' && route !== 'user/loginMfa' && route !== 'user/logout' && route !== 'user/forgot' && route !== 'user/reset'){
           if(xhr.status === 403 && xhr.responseJSON.statusCode === 'not-authenticated'){
             self.blockUserAccess(Origin.l10n.t('app.errorsessionexpired'), true);
           }
@@ -73,7 +74,11 @@ define(function(require) {
       }
       // FIXME routes shouldn't be hard-coded
       var route = module + '/' + route1;
-      if(!this.isUserAuthenticated()  && route !== 'user/login' && route !== 'user/forgot' && route !== 'user/reset') {
+      if(!this.isUserAuthenticated()  && route !== 'user/login' && route !== 'user/loginMfa' && route !== 'user/forgot' && route !== 'user/reset') {
+        this.blockUserAccess(Origin.l10n.t('app.errorsessionexpired'), true);
+        return false;
+      }
+      if((!Origin.sessionModel.get('email') || Origin.sessionModel.get('email').length === 0) && route === 'user/loginMfa') {
         this.blockUserAccess(Origin.l10n.t('app.errorsessionexpired'), true);
         return false;
       }
@@ -144,7 +149,7 @@ define(function(require) {
     navigateToLogout: function() {
       Origin.sessionModel.logout();
     },
-    
+
     navigateToHome: function() {
       if(!Origin.router.homeRoute) {
         console.trace('Router.navigateToHome: cannot load homepage, homeRoute not set');
@@ -152,6 +157,16 @@ define(function(require) {
       }
       // use Origin.router.navigate in case we don't have a valid 'this' reference
       Origin.router.navigateTo(Origin.router.homeRoute);
+    },
+
+    navigateToLoginMfaPage: function() {
+      if(!Origin.router.loginMfa) {
+        console.trace('Router.navigateToLoginMfaPage: cannot load verif, loginMfa not set');
+        return;
+      }
+
+      // use Origin.router.navigate in case we don't have a valid 'this' reference
+      Origin.router.navigateTo(Origin.router.loginMfa);
     },
 
     handleIndex: function() {
