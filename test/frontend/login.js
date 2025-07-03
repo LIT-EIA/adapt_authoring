@@ -18,16 +18,16 @@ describe('login process', function () {
     var database = db.db(config.dbName);
 
     it('should return invalid email address or password message on wrong password', function (browser) {
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
       browser.sendKeys('#login-input-username', testData.testUser.email);
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', ['mywrongpassword', browser.Keys.ENTER]);
       browser.assert.elementPresent('#loginErrorMessage');
       browser.expect.element('#loginErrorMessage').text.to.equal('Invalid email address or password');
     });
 
     it('should lock account after 3 wrong passwords', function (browser) {
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
 
       for (let i = 1; i <= 4; i++) {
         browser.perform(() => {
@@ -46,7 +46,7 @@ describe('login process', function () {
 
     it('should fail login when account locked', function (browser) {
 
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
       browser.assert.elementPresent('#loginErrorMessage');
       browser.expect.element('#loginErrorMessage').text.to.equal('This account has been locked because of too many failed login attempts.');
@@ -120,9 +120,9 @@ describe('login process', function () {
         // Perform login and assert error message
 
         browser.setValue('#login-input-username', '');
-        browser.assert.elementPresent('#login-input-username');
+        browser.waitForElementPresent('#login-input-username', 5000);
         browser.sendKeys('#login-input-username', testData.testUser.email);
-        browser.assert.elementPresent('#login-input-password');
+        browser.waitForElementPresent('#login-input-password', 5000);
         browser.sendKeys('#login-input-password', [testData.testUser.plainPassword, browser.Keys.ENTER]);
         browser.assert.elementPresent('#loginErrorMessage');
         browser.expect.element('#loginErrorMessage').text.to.equal(
@@ -215,9 +215,9 @@ describe('login process', function () {
     it('should reject login when mfa code is over 10 minutes old', function (browser) {
       browser.navigateTo(`http://localhost:${config.serverPort}`);
       browser.setValue('#login-input-username', '');
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
       browser.sendKeys('#login-input-username', testData.testUser.email);
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', [testData.testUser.newpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
@@ -259,9 +259,9 @@ describe('login process', function () {
     it('should complete successful login', function (browser) {
       browser.navigateTo(`http://localhost:${config.serverPort}`);
       browser.setValue('#login-input-username', '');
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
       browser.sendKeys('#login-input-username', testData.testUser.email);
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', [testData.testUser.newpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
@@ -495,9 +495,9 @@ describe('login process', function () {
 
     it('should accept new user password on login', function (browser) {
       browser.navigateTo(`http://localhost:${config.serverPort}`);
-      browser.assert.elementPresent('#login-input-username');
-      browser.assert.elementPresent('#login-input-password');
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
+      browser.waitForElementPresent('#login-input-password', 5000);
+      browser.waitForElementPresent('#login-input-username', 5000);
       browser.sendKeys('#login-input-username', testData.secondUser.email);
       browser.sendKeys('#login-input-password', [testData.secondUser.newpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
@@ -540,9 +540,9 @@ describe('login process', function () {
     it('should reject login from the old password', function (browser) {
       browser.navigateTo(`http://localhost:${config.serverPort}`);
       browser.pause(1000);
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
       browser.sendKeys('#login-input-username', testData.testUser.email);
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', [testData.testUser.newpassword, browser.Keys.ENTER]);
       browser.assert.elementPresent('#loginErrorMessage');
       browser.setValue('.login-input-password', '');
@@ -550,8 +550,8 @@ describe('login process', function () {
 
 
     it('should complete successful login with the new password', function (browser) {
-      browser.assert.elementPresent('#login-input-username');
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-username', 5000);
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', [testData.testUser.thirdpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
@@ -610,9 +610,9 @@ describe('login process', function () {
     });
 
     it('should accept password change from profile menu', function (browser) {
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
       browser.sendKeys('#login-input-username', testData.testUser.email);
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
     });
@@ -645,9 +645,9 @@ describe('login process', function () {
       browser.navigateTo(`http://localhost:${config.serverPort}`);
       browser.pause(500);
       browser.assert.urlContains('#user/login');
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
       browser.sendKeys('#login-input-username', testData.testUser.email);
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
@@ -687,9 +687,9 @@ describe('login process', function () {
       browser.navigateTo(`http://localhost:${config.serverPort}`);
       browser.pause(500);
       browser.assert.urlContains('#user/login');
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
       browser.sendKeys('#login-input-username', testData.testUser.email);
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
       browser.pause(2000);
       browser.assert.urlContains('#dashboard');
@@ -721,9 +721,9 @@ describe('login process', function () {
             browser.navigateTo(`http://localhost:${config.serverPort}`);
             browser.pause(500);
             browser.assert.urlContains('#user/login');
-            browser.assert.elementPresent('#login-input-username');
+            browser.waitForElementPresent('#login-input-username', 5000);
             browser.sendKeys('#login-input-username', testData.testUser.email);
-            browser.assert.elementPresent('#login-input-password');
+            browser.waitForElementPresent('#login-input-password', 5000);
             browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
             browser.pause(2000);
             browser.assert.urlContains('#user/loginMfa');
@@ -755,9 +755,9 @@ describe('login process', function () {
           value: 's%253A5mn7X5wTyDT45hTv8-m3lHFUvvo_dyY4.aIRqsk9F1Hv6dEa061usdSuV9jDVfWFm7AFj4cqygyg',
           path: '/'
         })
-        browser.assert.elementPresent('#login-input-username');
+        browser.waitForElementPresent('#login-input-username', 5000);
         browser.sendKeys('#login-input-username', testData.testUser.email);
-        browser.assert.elementPresent('#login-input-password');
+        browser.waitForElementPresent('#login-input-password', 5000);
         browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
         browser.assert.urlContains('#user/loginMfa');
       });
@@ -773,9 +773,9 @@ describe('login process', function () {
         value: cookieValue,
         path: '/'
       })
-      browser.assert.elementPresent('#login-input-username');
+      browser.waitForElementPresent('#login-input-username', 5000);
       browser.sendKeys('#login-input-username', testData.testUser.email);
-      browser.assert.elementPresent('#login-input-password');
+      browser.waitForElementPresent('#login-input-password', 5000);
       browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
       browser.assert.urlContains('#user/loginMfa');
     });
