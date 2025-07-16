@@ -441,7 +441,7 @@ LocalAuth.prototype.internalResetPassword = function (user, req, next) {
           var previousPasswords = result && result.length > 0 ? result[0].previousPasswords : [];
           var currentPassword = result && result.length > 0 ? result[0].password : user.password;
           if (currentPassword) previousPasswords.unshift(currentPassword);
-          if (previousPasswords.length > 3) {
+          if (previousPasswords.length > app.configuration.getConfig('passwordHistoryLimit')) {
             previousPasswords.pop();
           }
           delta.previousPasswords = previousPasswords;
