@@ -78,7 +78,8 @@ define(function (require) {
                     });
                 }
                 if (user.attributes.lastPasswordChange) {
-                    var policyChange = new Date('2025-02-10T19:25:46.936Z');
+                    var policyChangeDateISO = Origin.constants.passwordPolicyChangeDate;
+                    var policyChange = new Date(policyChangeDateISO);
                     var changeDate = new Date(user.attributes.lastPasswordChange);
                     if ((changeDate < policyChange)) {
                        openPopup();
