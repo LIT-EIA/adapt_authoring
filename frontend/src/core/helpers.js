@@ -400,13 +400,14 @@ define(function(require){
     },
 
     maxUploadSize: function(options) {
-      var maxSizes = Origin.constants.humanMaxCustomUploadSize || {};
       var maxUploadSizeDefault = Origin.constants.humanMaxFileUploadSize;
       var uploadArray = [];
-      Object.keys(maxSizes).forEach(function(key){
-        uploadArray.push({type: key, size: maxSizes[key]})
-      })
-
+      const regex = /^mimeTypesCustomUploadSize\/.+/;
+      Object.keys(Origin.constants).filter(function(key) {
+        if(regex.test(key)){
+          uploadArray.push({type: key.split('/')[1], size: Origin.constants[key]})
+        };
+      });
       var data = {uploads: uploadArray, uploadMaxSize: Origin.l10n.t('app.maxfileuploadsize', {size: maxUploadSizeDefault}), uploadMaxSizeExceptions: uploadArray.length > 0 ? Origin.l10n.t('app.exceptionsmaxfileuploadsize') : ""}
       var template = Handlebars.templates['assetManagementUploadMaxSize'];
       return new Handlebars.SafeString(template(data));
