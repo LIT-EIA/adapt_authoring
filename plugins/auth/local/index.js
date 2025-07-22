@@ -128,7 +128,15 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
           }
           if (req.body.shouldPersist && req.body.shouldPersist == 'true') {
             // Session is persisted for 2 weeks if the user has set 'Remember me'
-            req.session.cookie.maxAge = 14 * 24 * 3600000;
+            const now = new Date();
+            const sessionExpiryDate = new Date(now);
+            sessionExpiryDate.setDate(sessionExpiryDate.getDate() + 14);
+            const weekdayAfterOffsetPeriod = sessionExpiryDate.getDay();
+            const daysUntilSunday = weekdayAfterOffsetPeriod === 0 ? 0 : 7 - weekdayAfterOffsetPeriod;
+            sessionExpiryDate.setDate(sessionExpiryDate.getDate() + daysUntilSunday);
+            sessionExpiryDate.setHours(0, 0, 0, 0);
+            const maxAge = sessionExpiryDate.getTime() - now.getTime();
+            req.session.cookie.maxAge = maxAge;
           } else {
             req.session.cookie.expires = false;
           }
@@ -136,7 +144,8 @@ LocalAuth.prototype.authenticate = function (req, res, next) {
             return res.status(200).json({
               id: user._id,
               email: user.email,
-              isAuthenticated: false
+              isAuthenticated: false,
+              shouldPersist: req.body.shouldPersist
             });
           } else {
             req.logIn(user, function (error) {
@@ -288,7 +297,16 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
                           }
                           if (req.body.shouldPersist && req.body.shouldPersist == 'true') {
                             // Session is persisted for 2 weeks if the user has set 'Remember me'
-                            req.session.cookie.maxAge = 14 * 24 * 3600000;
+                            // Calculating next sunday in 2 weeks at midnight (00:00) for expiryDate
+                            const now = new Date();
+                            const sessionExpiryDate = new Date(now);
+                            sessionExpiryDate.setDate(sessionExpiryDate.getDate() + 14);
+                            const weekdayAfterOffsetPeriod = sessionExpiryDate.getDay();
+                            const daysUntilSunday = weekdayAfterOffsetPeriod === 0 ? 0 : 7 - weekdayAfterOffsetPeriod;
+                            sessionExpiryDate.setDate(sessionExpiryDate.getDate() + daysUntilSunday);
+                            sessionExpiryDate.setHours(0, 0, 0, 0);
+                            const maxAge = sessionExpiryDate.getTime() - now.getTime();
+                            req.session.cookie.maxAge = maxAge;
                           } else {
                             req.session.cookie.expires = false;
                           }
