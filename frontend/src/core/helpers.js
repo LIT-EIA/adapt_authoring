@@ -402,10 +402,10 @@ define(function(require){
     maxUploadSize: function(options) {
       var maxUploadSizeDefault = Origin.constants.humanMaxFileUploadSize;
       var uploadArray = [];
-      const regex = /^mimeTypesCustomUploadSize\/.+/;
+      const regex = /^mimeTypesCustomUploadSize\_.+/;
       Object.keys(Origin.constants).filter(function(key) {
         if(regex.test(key)){
-          uploadArray.push({type: key.split('/')[1], size: Origin.constants[key]})
+          uploadArray.push({type: key.split('_')[1], size: Origin.constants[key]})
         };
       });
       var data = {uploads: uploadArray, uploadMaxSize: Origin.l10n.t('app.maxfileuploadsize', {size: maxUploadSizeDefault}), uploadMaxSizeExceptions: uploadArray.length > 0 ? Origin.l10n.t('app.exceptionsmaxfileuploadsize') : ""}
