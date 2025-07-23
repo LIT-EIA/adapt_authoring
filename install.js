@@ -258,7 +258,7 @@ installHelpers.checkPrimaryDependencies(function (error) {
           message: 'Last Name',
           validate: installHelpers.inputHelpers.requiredValidator
         },
-        
+
         {
           name: 'suPassword',
           type: 'password',
@@ -306,7 +306,7 @@ function generatePromptOverrides() {
   }
   const sessionSecret = USE_CONFIG && configData.sessionSecret || crypto.randomBytes(64).toString('hex');
   addConfig({ sessionSecret: sessionSecret });
-  
+
   const randomNumber = Math.floor(100000 + Math.random() * 900000);
   addConfig({ devEnv: randomNumber });
 
@@ -335,6 +335,8 @@ function generateExtraConfigs(callback) {
       audio : "50MB",
       image : "3MB"
     },
+    passwordHistoryLimit: 8,
+    passwordPolicyChangeDate: new Date().toISOString(),
   });
   callback();
 }

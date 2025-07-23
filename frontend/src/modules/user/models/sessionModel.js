@@ -38,7 +38,8 @@ define(['require', 'backbone', 'core/origin'], function (require, Backbone, Orig
           this.set({
             id: jqXHR.id,
             email: jqXHR.email,
-            isAuthenticated: jqXHR.isAuthenticated
+            isAuthenticated: jqXHR.isAuthenticated,
+            shouldPersist: jqXHR.shouldPersist
           });
           Origin.trigger('schemas:loadData', Origin.router.navigateToLoginMfaPage);
         }
@@ -51,7 +52,8 @@ define(['require', 'backbone', 'core/origin'], function (require, Backbone, Orig
       var postData = {
         email: this.get('email'),
         token: code,
-        shouldSkipMfa: shouldSkipMfa
+        shouldSkipMfa: shouldSkipMfa,
+        shouldPersist: Origin.sessionModel.get('shouldPersist')
       };
 
       $.post('api/loginMfa', postData, _.bind(function (jqXHR, textStatus, errorThrown) {
