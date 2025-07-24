@@ -39,14 +39,20 @@ define(['core/origin', 'backbone-forms'], function (Origin, BackboneForms) {
       this.updateCharacterName();
     },
 
-    updateCharacterName: function() {
-      if (this.characters && this.characters.length > 0) {
-        if (this.getValue() > 0) {
-          this.form.fields['_characterName'].editor.setValue(this.characters[this.getValue()-1]['title']);
+    updateCharacterName: function(e) {
+      if (e) {
+        var selectedVal = $(e.target).val()
+        if (this.characters && this.characters.length > 0) {
+          if (selectedVal > 0) {
+            this.form.fields['_characterName'].editor.setValue(this.characters[selectedVal]['title']);
+          }
+          else {
+            this.form.fields['_characterName'].editor.setValue(this.characters[0]['title']);
+          }
         }
-        else {
-          this.form.fields['_characterName'].editor.setValue(this.characters[0]['title']);
-        }
+      }
+      else {
+        this.form.fields['_characterName'].editor.setValue(this.characters[0]['title']);
       }
     },
 
