@@ -52,7 +52,12 @@ define(['core/origin', 'backbone-forms'], function (Origin, BackboneForms) {
         }
       }
       else {
-        this.form.fields['_characterName'].editor.setValue(this.characters[0]['title']);
+        if (this.getValue() > 0) {
+          this.form.fields['_characterName'].editor.setValue(this.characters[this.getValue()]['title']);
+        }
+        else {
+          this.form.fields['_characterName'].editor.setValue(this.characters[0]['title']);
+        }
       }
     },
 
