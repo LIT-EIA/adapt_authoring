@@ -1,5 +1,5 @@
 // LICENCE https://github.com/adaptlearning/adapt_authoring/blob/master/LICENSE
-define(function(require){
+define(function (require) {
   var Origin = require('core/origin');
   var OriginView = require('core/views/originView');
   var Helpers = require('core/helpers');
@@ -21,41 +21,59 @@ define(function(require){
       'click button[data-sort]': 'onSortClick'
     },
 
-    initialize: function() {
+    initialize: function () {
       OriginView.prototype.initialize.apply(this, arguments);
       this.users = this.collection;
 
-      this.listenTo(this.users, 'sort', function(a,b,c) {
+      this.listenTo(this.users, 'sort', function (a, b, c) {
         this.removeChildViews();
         this.renderChildViews();
       });
 
       this.listenTo(Origin, {
-        'userManagement:exportEmails' : this.exportEmails 
+        'userManagement:exportEmails': this.exportEmails
       })
 
       Origin.trigger('location:title:update', { title: Origin.l10n.t('app.usermanagementtitle') });
       this.initData();
+      this.countActiveUsers();
       this.render();
     },
 
-    initData: function() {
+    initData: function () {
       this.listenTo(this.users, {
         'sync': this.onDataFetched
       });
     },
 
-    render: function() {
+    countActiveUsers: function () {
+      var activeUsers = 0;
+      this.users.models.forEach(function (model) {
+        const lastAccess = model.get('lastAccess');
+        if (lastAccess) {
+          const lastAccessDate = new Date(lastAccess);
+          const now = new Date();
+          const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
+          if (lastAccessDate >= fifteenMinutesAgo && lastAccessDate <= now) {
+            activeUsers++
+          }
+        }
+      });
+      console.log(activeUsers);
+      this.model.set('activeUsers', activeUsers);
+    },
+
+    render: function () {
       this.removeChildViews();
       OriginView.prototype.render.apply(this, arguments);
       this.renderChildViews();
     },
 
-    exportEmails: function() {
+    exportEmails: function () {
       var emailList = '';
       var users = this.users.models;
-      users.forEach(function(user){
-        if(!user.get('_isHidden')){
+      users.forEach(function (user) {
+        if (!user.get('_isHidden')) {
           emailList += user.get('email') + ';';
         }
       });
@@ -70,15 +88,15 @@ define(function(require){
       URL.revokeObjectURL(url);
     },
 
-    renderChildViews: function() {
+    renderChildViews: function () {
       var fragment = document.createDocumentFragment();
-      this.users.each(function(user) {
+      this.users.each(function (user) {
         user.set('globalData', this.model.get('globalData'));
-        var userView = new UserView({model: user});
+        var userView = new UserView({ model: user });
         fragment.appendChild(userView.el);
         this.views.push(userView);
 
-        if(this.selectedView && user.get('_id') === this.selectedView) {
+        if (this.selectedView && user.get('_id') === this.selectedView) {
           userView.$el.addClass('selected').click();
         }
 
@@ -86,9 +104,9 @@ define(function(require){
       this.$('.users').append(fragment);
     },
 
-    removeChildViews: function() {
-      if(this.views.length) {
-        for(var i = 0, count = this.views.length; i < count; i++) {
+    removeChildViews: function () {
+      if (this.views.length) {
+        for (var i = 0, count = this.views.length; i < count; i++) {
           var view = this.views[i];
           if (view.isSelected) this.selectedView = view.model.get('_id');
           view.remove();
@@ -97,12 +115,12 @@ define(function(require){
       }
     },
 
-    postRender: function() {
+    postRender: function () {
       this.setViewToReady();
       this.$('.users').fadeIn(300);
     },
 
-    onSortClick: function(event) {
+    onSortClick: function (event) {
       var $elm = $(event.currentTarget);
       var sortBy = $elm.data('sort');
       var sortAscending = $elm.hasClass('sort-down');
@@ -122,12 +140,12 @@ define(function(require){
       this.users.sortCollection();
     },
 
-    refreshUserViews: function(event) {
+    refreshUserViews: function (event) {
       event && event.preventDefault();
       this.users.fetch();
     },
 
-    onDataFetched: function(models, reponse, options) {
+    onDataFetched: function (models, reponse, options) {
       this.render();
     }
 

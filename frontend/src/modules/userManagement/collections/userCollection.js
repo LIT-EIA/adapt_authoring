@@ -9,7 +9,7 @@ define(function (require) {
     sortBy: 'email',
     direction: 1,
     mailSearchTerm: false,
-    lastAccess: null,
+    lastLogin: null,
 
     initialize: function () {
       this.filterGroups = {
@@ -27,7 +27,7 @@ define(function (require) {
         b = b[0];
       }
 
-      if (this.sortBy === 'lastAccess') {
+      if (this.sortBy === 'lastLogin') {
         a = new Date(a || '01.01.1900');
         b = new Date(b || '01.01.1900');
       }

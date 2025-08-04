@@ -41,6 +41,10 @@
       "type": "date",
       "required": false
     },
+    "lastLogin": {
+      "type": "date",
+      "required": false
+    },
     "lastAccess": {
       "type": "date",
       "required": false
