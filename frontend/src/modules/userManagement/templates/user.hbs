@@ -42,7 +42,7 @@ the model.
         {{/unless}}{{/ifUserNotMe}}
       </div>
     </div>
-    <div class="col-20">
+    <div class="col-15">
       <div class="tb-col-inner">
         <div class="read">
           <ul>
@@ -67,7 +67,7 @@ the model.
         {{/unless}}{{/ifUserNotMe}}
       </div>
     </div>
-    <div class="col-20">
+    <div class="col-10">
       <div class="tb-col-inner">
         {{accountStatus}}
         {{#if _isLocked}}
@@ -75,8 +75,11 @@ the model.
         {{/if}}
       </div>
     </div>
-    <div class="col-10 col-centered">
-      <div class="tb-col-inner no-wrap">{{momentFormat lastAccess 'DD MMM-YY'}}</div>
+    <div class="col-10">
+      <div class="tb-col-inner no-wrap">{{momentFormat lastLogin 'DD MMM-YY'}}</div>
+    </div>
+    <div class="col-15">
+      <div class="tb-col-inner no-wrap">{{momentFormat lastAccess 'DD MMM-YY HH:mm a'}}</div>
     </div>
     <div class="col-15">
       <div class="tb-col-inner">
