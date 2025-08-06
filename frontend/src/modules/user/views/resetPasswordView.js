@@ -1,8 +1,9 @@
 // LICENCE https://github.com/adaptlearning/adapt_authoring/blob/master/LICENSE
-define(function(require) {
+define(function (require) {
   var OriginView = require('core/views/originView');
   var Origin = require('core/origin');
   var Helpers = require('core/helpers');
+  var _ = require('underscore');
   var PasswordFieldsView = require('plugins/passwordChange/views/passwordFieldsView');
 
   var ResetPasswordView = OriginView.extend({
@@ -10,12 +11,13 @@ define(function(require) {
     className: "reset-password",
 
     events: {
-      'click button.submit' : 'resetPassword',
-      'click button.cancel' : 'goToLogin',
-      'click button.return' : 'goToLogin'
+      'click button.submit': 'resetPassword',
+      'click button.cancel': 'goToLogin',
+      'click button.return': 'goToLogin'
     },
 
-    preRender: function() {
+    preRender: function () {
+      this.handleReset = _.debounce(this.handleResetPassword, 300, true);
       this.listenTo(this.model, {
         sync: this.verifyToken,
         invalid: this.handleValidationError
@@ -23,24 +25,24 @@ define(function(require) {
       this.model.set('fieldId', 'password');
     },
 
-    postRender: function() {
+    postRender: function () {
       $('.general-ribbon').hide();
       var passwordFieldsView = PasswordFieldsView({ model: this.model }).el;
       this.$('#passwordField').append(passwordFieldsView);
       this.setViewToReady();
     },
 
-    goToLogin: function(e) {
+    goToLogin: function (e) {
       e && e.preventDefault();
       Origin.router.navigateToLogin();
     },
 
-    handleValidationError: function(model, error) {
+    handleValidationError: function (model, error) {
       if (!error) {
         return;
       }
       var msg = "";
-      _.each(error, function(value, key) {
+      _.each(error, function (value, key) {
         msg += value + '. ';
       }, this);
 
@@ -48,14 +50,19 @@ define(function(require) {
       this.$('.resetError').removeClass('display-none');
     },
 
-    verifyToken: function() {
+    verifyToken: function () {
       // Invalid token entered, take the user to login
       if (!this.model.get('user')) {
         Origin.router.navigateToLogin();
       }
     },
 
-    resetPassword: function(event) {
+    resetPassword: function (e) {
+      e && e.preventDefault();
+      this.handleReset(e);
+    },
+
+    handleResetPassword: function (event) {
       event.preventDefault();
       var errorHash = {};
       errorHash['password'] = '';
@@ -72,17 +79,17 @@ define(function(require) {
       var self = this;
       this.model.save(toChange, {
         patch: true,
-        success: _.bind(function(model, response, options) {
+        success: _.bind(function (model, response, options) {
           this.$('.form-reset-password').addClass('display-none');
           this.$('.reset-introduction').addClass('display-none');
           this.$('.message .success').removeClass('display-none');
-        },this),
-        error: _.bind(function(model, response, options) {
+        }, this),
+        error: _.bind(function (model, response, options) {
           // for server error messages - will remove in future
           var errMsg = Helpers.translateData(response);
           self.$(`#passwordError`).html(errMsg);
           self.$(`#confirmPasswordError`).html('');
-        },this)
+        }, this)
       });
     }
   }, {

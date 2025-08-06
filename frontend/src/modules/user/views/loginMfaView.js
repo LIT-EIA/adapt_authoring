@@ -4,7 +4,7 @@ define(function (require) {
   var Origin = require('core/origin');
   var OriginView = require('core/views/originView');
   var Helpers = require('core/helpers');
-
+  var _ = require('underscore');
 
   var LoginMfaView = OriginView.extend({
 
@@ -21,6 +21,8 @@ define(function (require) {
     },
 
     preRender: function () {
+      this.handleSubmit = _.debounce(this.handleSubmitLoginDetails, 300, true);
+      this.handleResend = _.debounce(this.handleResendLoginMfaToken, 300, true);
       this.listenTo(Origin, 'login:failed', this.loginFailed, this);
       var email = this.model.get('email');
       this.model.set('mfaText', Origin.l10n.t('app.checkemail', { email: email }))
@@ -59,6 +61,11 @@ define(function (require) {
 
     submitLoginDetails: function (e) {
       e && e.preventDefault();
+      this.handleSubmit(e);
+    },
+
+    handleSubmitLoginDetails: function (e) {
+      e && e.preventDefault();
 
       var inputVerificationCode = $.trim(this.$("#login-mfa-input-verificationcode").val());
       var shouldSkipMfa = this.$('#skip-mfa').prop('checked');
@@ -76,7 +83,12 @@ define(function (require) {
       userModel.verifyCode(inputVerificationCode, shouldSkipMfa);
     },
 
-    resendLoginMfaToken: function (e) {
+    resendLoginMfaToken: function(e){
+      e && e.preventDefault();
+      this.handleResend(e);
+    },
+
+    handleResendLoginMfaToken: function (e) {
       e && e.preventDefault();
 
       var resendCodeString = Helpers.translateKey('app.resendverificationcode');
