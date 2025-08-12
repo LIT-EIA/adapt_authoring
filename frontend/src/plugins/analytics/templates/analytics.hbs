@@ -1,0 +1,35 @@
+<div class="profile-inner">
+  <div class="error-text display-none">
+    {{t 'app.fixerrors'}}
+  </div>
+  <div class="editing-overlay-panel form-container-style analytics-container">
+    <div class="editing-overlay-panel-content inner">
+      <div class="editing-overlay-panel-content-inner panel-analytics">
+        <form id="analytics-activity-form" class="analytics-activity-form">
+          <div class="form-section">
+            <label for="start-date">Start Date:</label>
+            <input type="date" id="start-date" name="startDate" required>
+          </div>
+          <div class="form-section">
+            <label for="end-date">End Date:</label>
+            <input type="date" id="end-date" name="endDate" required>
+          </div>
+          <div class="form-section">
+            <label for="interval">Interval:</label>
+            <select id="interval" name="interval" required>
+              <option value="hourly">Hourly</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+          <div class="analytics-activity-button">
+            <button class="action-primary" type="submit">Search</button>
+          </div>
+        </form>
+        <canvas id="analytics-chart" width="800" height="400"></canvas>
+      </div>
+    </div>
+  </div>
+</div>

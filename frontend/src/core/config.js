@@ -23,6 +23,7 @@ require.config({
     selectize: 'libraries/selectize/js/selectize',
     shepherd: 'libraries/shepherd/shepherd',
     cropper: 'libraries/cropperjs/js/cropper',
+    chartjs: 'libraries/chartjs/chart.min',
     sweetalert: 'libraries/sweetalert.min',
     sweetalert2: 'libraries/sweetalert2.min',
     typeahead: 'libraries/typeahead',
@@ -95,6 +96,9 @@ require.config({
     velocity: {
       deps: ['jquery'],
       exports: 'velocity'
+    },
+    chartjs: {
+      exports: 'Chart'
     },
     // internal
     'templates/templates': {

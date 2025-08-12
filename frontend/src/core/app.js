@@ -15,6 +15,8 @@
       'selectize',
       'shepherd',
       'cropper',
+      'chartjs',
+      'moment',
       'sweetalert',
       'sweetalert2',
       'velocity'

@@ -1,0 +1,55 @@
+@import 'colours';
+
+:root {
+    --chart-line-color: @adapt-topbar-color;
+}
+
+.analytics {
+    .analytics-container {
+        max-width: 800px;
+
+        .panel-analytics {
+            padding: 0 !important
+        }
+    }
+
+    .analytics-activity-form {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        font-family: sans-serif;
+    }
+
+    .analytics-activity-form label {
+        margin-right: 0.5rem;
+        font-weight: bold;
+    }
+
+    .analytics-activity-button {
+        display: grid;
+        align-items: end;
+    }
+
+    .form-section {
+        display: grid;
+    }
+
+    .analytics-activity-form input[type="date"],
+    .analytics-activity-form select {
+        padding: 0.4rem 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .analytics-activity-form button {
+        display: grid;
+        align-items: end;
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 3px;
+        font-size: 15px;
+        text-align: center;
+    }
+}
