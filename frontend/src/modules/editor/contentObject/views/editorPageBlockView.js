@@ -1,5 +1,5 @@
 // LICENCE https://github.com/adaptlearning/adapt_authoring/blob/master/LICENSE
-define(function(require){
+define(function (require) {
   var Backbone = require('backbone');
   var Origin = require('core/origin');
   var ComponentModel = require('core/models/componentModel');
@@ -24,15 +24,15 @@ define(function(require){
       'dblclick': 'loadBlockEdit'
     }),
 
-    preRender: function() {
+    preRender: function () {
       this.listenToEvents();
       this.model.set('componentTypes', Origin.editor.data.componenttypes.toJSON());
       this.model.set('_arialabel', Origin.l10n.t('app.blockmenu'));
       this.render();
     },
 
-    render: function() {
-      this.model.fetchChildren(_.bind(function(components) {
+    render: function () {
+      this.model.fetchChildren(_.bind(function (components) {
         this.children = components;
         var layouts = this.getAvailableLayouts();
         // FIXME why do we have two attributes with the same value?
@@ -47,39 +47,39 @@ define(function(require){
       }, this));
     },
 
-    animateIn: function() {
+    animateIn: function () {
       this.$el.velocity({
         scale: [1, 0.95],
         opacity: [1, 0.4]
       }, {
         duration: 400,
-        begin: function() {
+        begin: function () {
           this.$el.removeClass('page-content-syncing');
         }.bind(this),
-        complete: function() {
+        complete: function () {
           Origin.trigger('pageView:itemAnimated', this);
         }.bind(this)
       })
     },
 
-    handleAsyncPostRender: function() {
+    handleAsyncPostRender: function () {
       var renderedChildren = [];
-      if(this.children.length === 0) {
+      if (this.children.length === 0) {
         return this.animateIn();
       }
-      this.listenTo(Origin, 'editorPageComponent:postRender', function(view) {
+      this.listenTo(Origin, 'editorPageComponent:postRender', function (view) {
         var id = view.model.get('_id');
-        if(this.children.indexOf(view.model) !== -1 && renderedChildren.indexOf(id) === -1) {
+        if (this.children.indexOf(view.model) !== -1 && renderedChildren.indexOf(id) === -1) {
           renderedChildren.push(id);
         }
-        if(renderedChildren.length === this.children.length) {
+        if (renderedChildren.length === this.children.length) {
           this.stopListening(Origin, 'editorPageComponent:postRender');
           this.animateIn();
         }
       });
     },
 
-    listenToEvents: function() {
+    listenToEvents: function () {
       var id = this.model.get('_id');
       var events = {
         'editorView:removeSubViews editorPageView:removePageSubViews': this.remove
@@ -100,45 +100,45 @@ define(function(require){
       });
     },
 
-    postRender: function() {
+    postRender: function () {
       this.trigger('blockView:postRender');
       Origin.trigger('pageView:itemRendered', this);
     },
 
-    getAvailableLayouts: function() {
+    getAvailableLayouts: function () {
       var layoutOptions = {
         full: { type: 'full', name: 'app.layoutfull', pasteZoneRenderOrder: 1 },
         left: { type: 'left', name: 'app.layoutleft', pasteZoneRenderOrder: 2 },
         right: { type: 'right', name: 'app.layoutright', pasteZoneRenderOrder: 3 }
       };
       if (this.children.length === 0) {
-        return [layoutOptions.full,layoutOptions.left,layoutOptions.right];
+        return [layoutOptions.full, layoutOptions.left, layoutOptions.right];
       }
       if (this.children.length === 1) {
         var layout = this.children[0].get('_layout');
-        if(layout === layoutOptions.left.type) return [layoutOptions.right];
-        if(layout === layoutOptions.right.type) return [layoutOptions.left];
+        if (layout === layoutOptions.left.type) return [layoutOptions.right];
+        if (layout === layoutOptions.right.type) return [layoutOptions.left];
       }
       return [];
     },
 
-    deleteBlockPrompt: function(event) {
+    deleteBlockPrompt: function (event) {
       event && event.preventDefault();
 
       Origin.Notify.confirm({
         type: 'warning',
         title: Origin.l10n.t('app.deleteblock'),
         text: Origin.l10n.t('app.confirmdeleteblock') + '<br />' + '<br />' + Origin.l10n.t('app.confirmdeleteblockwarning'),
-        callback: _.bind(function(confirmed) {
+        callback: _.bind(function (confirmed) {
           if (confirmed) this.deleteBlock();
         }, this)
       });
     },
 
-    deleteBlock: function(event) {
+    deleteBlock: function (event) {
       this.model.destroy({
         success: _.bind(this.remove, this),
-        error: function(model, response) {
+        error: function (model, response) {
           var errorMessage = response && typeof response == 'object' && response.responseJSON && response.responseJSON.message ? response.responseJSON.message : Origin.l10n.t('app.errordelete');
           Origin.Notify.alert({ type: 'error', text: errorMessage });
         }
@@ -168,12 +168,14 @@ define(function(require){
       }
     },
 
-    setupDragDrop: function() {
+    setupDragDrop: function () {
       var view = this;
       var autoScrollTimer = false;
       var $container = $('.contentPane');
 
       this.$el.draggable({
+        delay: 350,
+        distance: 5,
         opacity: 0.8,
         handle: '.handle',
         revert: 'invalid',
@@ -182,7 +184,7 @@ define(function(require){
           top: 22,
           left: 0
         },
-        appendTo:'.app-inner',
+        appendTo: '.app-inner',
         containment: '.app-inner',
         helper: function (e) {
           // Store the offset to stop the page jumping during the start of drag
@@ -195,29 +197,29 @@ define(function(require){
           $(this).attr('data-' + view.model.get('_parent') + '-id', view.model.get('_parentId'));
           return $('<div class="drag-helper">' + view.model.get('title') + '</div>');
         },
-        start: function(event) {
+        start: function (event) {
           // Using the initial offset we're able to position the window back in place
-          $(window).scrollTop(view.$el.offset().top -view.offsetTopFromWindow);
+          $(window).scrollTop(view.$el.offset().top - view.offsetTopFromWindow);
         },
-        drag: function(event) {
+        drag: function (event) {
           window.clearInterval(autoScrollTimer);
 
-          var SCROLL_THRESHOLD = $container.height()*0.2;
+          var SCROLL_THRESHOLD = $container.height() * 0.2;
           var SCROLL_INCREMENT = 7;
 
           var offsetTop = $container.offset().top;
           var clientY = event.originalEvent.clientY;
           var scrollAmount;
 
-          if(clientY < (offsetTop + SCROLL_THRESHOLD)) {
+          if (clientY < (offsetTop + SCROLL_THRESHOLD)) {
             scrollAmount = -SCROLL_INCREMENT;
           }
-          else if(clientY > (($container.height() + offsetTop) - SCROLL_THRESHOLD)) {
+          else if (clientY > (($container.height() + offsetTop) - SCROLL_THRESHOLD)) {
             scrollAmount = SCROLL_INCREMENT;
           }
 
-          if(scrollAmount) {
-            autoScrollTimer = window.setInterval(function() {
+          if (scrollAmount) {
+            autoScrollTimer = window.setInterval(function () {
               $container.scrollTop($container.scrollTop() + scrollAmount);
             }, 10);
           }
@@ -225,12 +227,12 @@ define(function(require){
         stop: function () {
           window.clearInterval(autoScrollTimer);
           view.hideDropZones();
-          $container.scrollTop($(this).offset().top*-1);
+          $container.scrollTop($(this).offset().top * -1);
         }
       });
     },
 
-    addComponentViews: function() {
+    addComponentViews: function () {
       this.$('.page-components').empty();
 
       var addPasteZonesFirst = this.children.length && this.children[0].get('_layout') !== 'full';
@@ -238,29 +240,29 @@ define(function(require){
 
       if (addPasteZonesFirst) this.setupPasteZones();
       // Add component elements
-      for(var i = 0, count = this.children.length; i < count; i++) {
+      for (var i = 0, count = this.children.length; i < count; i++) {
         var view = new EditorPageComponentView({ model: this.children[i] });
         this.$('.page-components').append(view.$el);
       }
       if (!addPasteZonesFirst) this.setupPasteZones();
     },
 
-    addComponentButtonLayout: function(components) {
-      if(components.length === 2) {
+    addComponentButtonLayout: function (components) {
+      if (components.length === 2) {
         return;
       }
-      if(components.length === 0) {
+      if (components.length === 0) {
         this.$('.add-component').addClass('full');
         return;
       }
       var layout = components[0].get('_layout');
       var className = '';
-      if(layout === 'left') className = 'right';
-      if(layout === 'right') className = 'left';
+      if (layout === 'left') className = 'right';
+      if (layout === 'right') className = 'left';
       this.$('.add-component').addClass(className);
       var componentWidthRatio = this.model.get('componentWidthRatio');
       var componentWidthPercentage = className === 'right' ? 100 - parseInt(componentWidthRatio) : parseInt(componentWidthRatio);
-      this.$('.add-component').css('width', `${componentWidthPercentage -1}%`);
+      this.$('.add-component').css('width', `${componentWidthPercentage - 1}%`);
     },
 
     loadBlockEdit: function (event) {
@@ -270,7 +272,7 @@ define(function(require){
       Origin.router.navigateTo('editor/' + courseId + '/' + type + '/' + id + '/edit');
     },
 
-    showComponentList: function(event) {
+    showComponentList: function (event) {
       event.preventDefault();
       // If adding a new component
       // get current layoutOptions
@@ -291,12 +293,12 @@ define(function(require){
       }).$el);
     },
 
-    setupPasteZones: function() {
+    setupPasteZones: function () {
       // Add available paste zones
       var layouts = this.model.get('layoutOptions').slice();
       var dragLayouts = this.model.get('dragLayoutOptions').slice();
 
-      _.each(this.sortArrayByKey(dragLayouts, 'pasteZoneRenderOrder'), function(layout) {
+      _.each(this.sortArrayByKey(dragLayouts, 'pasteZoneRenderOrder'), function (layout) {
         var pasteComponent = new ComponentModel();
         pasteComponent.set('_parentId', this.model.get('_id'));
         pasteComponent.set('_type', 'component');
@@ -306,7 +308,7 @@ define(function(require){
         this.$('.page-components').append($pasteEl);
       }, this);
 
-      _.each(this.sortArrayByKey(layouts, 'pasteZoneRenderOrder'), function(layout) {
+      _.each(this.sortArrayByKey(layouts, 'pasteZoneRenderOrder'), function (layout) {
         var pasteComponent = new ComponentModel();
         pasteComponent.set('_parentId', this.model.get('_id'));
         pasteComponent.set('_type', 'component');
@@ -315,13 +317,13 @@ define(function(require){
       }, this);
     },
 
-    onPaste: function(data) {
+    onPaste: function (data) {
       (new ComponentModel({ _id: data._id })).fetch({
-        success: _.bind(function(model) {
+        success: _.bind(function (model) {
           this.children.push(model);
           this.render();
         }, this),
-        error: function(data) {
+        error: function (data) {
           Origin.Notify.alert({
             type: 'error',
             text: Origin.l10n.t('app.errorfetchingdata')
