@@ -1961,5 +1961,7 @@
   "app.exportemails": "Exporter les courriels",
   "app.deletedFilter": "Inactif",
   "app.passwordreused": "Votre mot de passe ne peut pas être identique à vos mots de passe précédents.",
-  "app.exceptionsmaxfileuploadsize": "Exceptions :"
+  "app.exceptionsmaxfileuploadsize": "Exceptions :",
+  "app.adapt-esdc-talk._componentTypeDisplayName": "Dialogue",
+  "app.talk._componentTypeDisplayName": "Dialogue"
 }
