@@ -15,6 +15,7 @@
       'selectize',
       'shepherd',
       'cropper',
+      'usertour',
       'sweetalert',
       'sweetalert2',
       'velocity'
