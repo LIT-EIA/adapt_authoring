@@ -101,6 +101,8 @@ define(function(require){
       var $container = $('.contentPane');
 
       this.$el.draggable({
+        delay: 350,
+        distance: 5,
         opacity: 0.8,
         handle: '.handle',
         revert: 'invalid',

@@ -1,5 +1,6 @@
 // LICENCE https://github.com/adaptlearning/adapt_authoring/blob/master/LICENSE
 define(['require', 'backbone', 'core/origin'], function (require, Backbone, Origin) {
+  var _ = require('underscore');
   var SessionModel = Backbone.Model.extend({
     url: "api/authcheck",
     defaults: {
@@ -12,9 +13,10 @@ define(['require', 'backbone', 'core/origin'], function (require, Backbone, Orig
     },
 
     initialize: function() {
+      this.login = _.debounce(this.handleLogin, 300, true);
     },
 
-    login: function (username, password, shouldPersist) {
+    handleLogin: function (username, password, shouldPersist) {
       var postData = {
         email: username,
         password: password,

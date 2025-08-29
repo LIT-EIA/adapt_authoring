@@ -255,7 +255,7 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
           }
           if (data && data.length) {
             var result = data[0];
-            if (crypto.timingSafeEqual(Buffer.from(String(result.validationToken)), Buffer.from(String(req.body.token))) && result.validationTokenIssueDate.getTime() > timestampMinAge) {
+            if (req.body.token.length === 6 && crypto.timingSafeEqual(Buffer.from(String(result.validationToken)), Buffer.from(String(req.body.token))) && result.validationTokenIssueDate.getTime() > timestampMinAge) {
               var delta = {
                 verified: true,
                 validationDate: new Date()
@@ -489,7 +489,7 @@ LocalAuth.prototype.internalResetPassword = function (user, req, next) {
 LocalAuth.prototype.generateResetToken = function (req, res, next) {
   var self = this;
 
-  usermanager.retrieveUser({ email: req.body.email, auth: 'local' }, function (error, userRecord) {
+  usermanager.retrieveUser({ email: new RegExp(req.body.email, 'i'), auth: 'local' }, function (error, userRecord) {
     if (error) {
       logger.log('error', error);
       res.statusCode = 400;
