@@ -178,6 +178,10 @@ define([
   Backbone.Form.Field.prototype.events = {
     'click [data-action="default"]': function() {
       this.setValue(this.editor.defaultValue);
+
+      if (this.editor.$el[0] && this.editor.$el[0].selectize) {
+        this.editor.$el[0].selectize.clear();
+      }
       this.editor.trigger('change', this);
 
       return false;
