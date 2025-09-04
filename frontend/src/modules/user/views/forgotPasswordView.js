@@ -1,48 +1,58 @@
 // LICENCE https://github.com/adaptlearning/adapt_authoring/blob/master/LICENSE
-define(function(require) {
+define(function (require) {
   var Backbone = require('backbone');
   var Helpers = require('core/helpers');
   var OriginView = require('core/views/originView');
   var Origin = require('core/origin');
+  var _ = require('underscore');
 
   var ForgotPasswordView = OriginView.extend({
     tagName: "div",
     className: "forgot-password",
 
     events: {
-      'click button.submit' : 'requestResetToken',
-      'click button.cancel' : 'goToLogin',
-      'click button.return' : 'goToLogin',
-      'keydown .input-username-email' : 'handleKeydown'
+      'click button.submit': 'requestResetToken',
+      'click button.cancel': 'goToLogin',
+      'click button.return': 'goToLogin',
+      'keydown .input-username-email': 'handleKeydown'
     },
 
-    postRender: function() {
+    preRender: function () {
+      this.handleReset = _.debounce(this.handleRequestResetToken, 300, true);
+    },
+
+    postRender: function () {
       $('.general-ribbon').hide();
       this.setViewToReady();
     },
 
-    goToLogin: function(e) {
+    goToLogin: function (e) {
       e && e.preventDefault();
       Origin.router.navigateToLogin();
     },
 
-    handleKeydown: function(e) {
+    handleKeydown: function (e) {
       this.$('.forgotError').addClass('display-none');
 
       var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
 
       if (key == 13) {
         e.preventDefault();
-        this.requestResetToken();
+        this.handleRequestResetToken();
       }
     },
 
-    isValid: function() {
+    isValid: function () {
       var email = this.$('.input-username-email').val().trim();
       return Helpers.isValidEmail(email);
     },
 
-    requestResetToken: function(e) {
+    requestResetToken: function (e) {
+      e && e.preventDefault();
+      this.handleReset(e);
+    },
+
+    handleRequestResetToken: function (e) {
       e && e.preventDefault();
       var self = this;
 

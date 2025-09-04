@@ -84,22 +84,16 @@ define(function (require) {
       indicatePasswordStrength: function (event) {
         var password = $('#password' + genericId).val();
         var errors = PasswordHelpers.validatePassword(password);
-        var $passwordSpecialChar = $(`.password${genericId}-special-char-feedback`);
-        var $passwordNumber = $(`.password${genericId}-number-feedback`);
-        var $passwordUppercase = $(`.password${genericId}-uppercase-feedback`);
         var $passwordLength = $(`.password${genericId}-length-feedback`);
         var $passwordChecklistFeedback = $(`.password${genericId}-checklist-feedback`);
 
         var xMark = '<i class="fa fa-times" aria-hidden="true"></i>';
         var checkMark = '<i class="fa fa-check" aria-hidden="true"></i>';
 
-        errors.includes('missingspecialchars') ? $passwordSpecialChar.html(xMark) : $passwordSpecialChar.html(checkMark);
-        errors.includes('missingnumber') ? $passwordNumber.html(xMark) : $passwordNumber.html(checkMark);
-        errors.includes('missinguppercase') ? $passwordUppercase.html(xMark) : $passwordUppercase.html(checkMark);
         errors.includes('tooshort') ? $passwordLength.html(xMark) : $passwordLength.html(checkMark);
 
         $passwordChecklistFeedback.html(`${Origin.l10n.t('app.numberofrequirementscompleted', {number: 4 - errors.length, total: 4}) }`)
-        
+
       },
 
       onConfirmPasswordKeyup: function () {

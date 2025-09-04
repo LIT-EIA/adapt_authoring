@@ -530,27 +530,28 @@ function ImportSource(req, done) {
   * @param {callback} cb
   */
   function createCourseAssets(type, contentData, cb) {
-    var assetData = {
-      _courseId : contentData._courseId,
-      _contentType: type,
-      _contentTypeParentId: contentData._parentId
-    };
-    // some courseassets values change depending on what content type they're for
-    switch(type) {
-      case 'course':
-        assetData._courseId = assetData._contentTypeId = assetData._contentTypeParentId = contentData._id;
-        break;
-      case 'article', 'block', 'config':
-        assetData._contentTypeId = contentData._componentType;
-        break;
-      default:
-        assetData._contentTypeId = contentData._id;
-        break;
-    }
+
     var contentDataString = JSON.stringify(contentData);
     var assetArray = contentDataString.match(PATH_REXEX);
     // search through object values for file paths
     async.each(assetArray, function(data, callback) {
+      var assetData = {
+        _courseId : contentData._courseId,
+        _contentType: type,
+        _contentTypeParentId: contentData._parentId
+      };
+      // some courseassets values change depending on what content type they're for
+      switch(type) {
+        case 'course':
+          assetData._courseId = assetData._contentTypeId = assetData._contentTypeParentId = contentData._id;
+          break;
+        case 'article', 'block', 'config':
+          assetData._contentTypeId = contentData._componentType;
+          break;
+        default:
+          assetData._contentTypeId = contentData._id;
+          break;
+      }
       delete assetData._assetId;
       if (!_.isString(data)) {
         return callback();

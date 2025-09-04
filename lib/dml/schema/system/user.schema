@@ -5,7 +5,7 @@
   "$ref": "http://localhost/system/tenantObject.schema",
   "properties": {
     "idNumber": {
-      "type": "string", 
+      "type": "string",
       "default": ""
     },
     "firstName": {
@@ -54,6 +54,22 @@
       "type" : "number",
       "required": true,
       "default": 0
+    },
+    "failedMfaCount": {
+      "type" : "number",
+      "required": true,
+      "default": 0
+    },
+    "mfaResetCount": {
+      "type" : "number",
+      "required": true,
+      "default": 0
+    },
+    "previousPasswords": {
+      "type": "array",
+      "default": [],
+      "required": false,
+      "protect": true
     },
      "metadata": {
       "type" : "object"

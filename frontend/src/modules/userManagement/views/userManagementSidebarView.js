@@ -7,7 +7,8 @@ define([
   var UserManagementSidebarView = SidebarItemView.extend({
 
     events: {
-      'click button.add': 'addUser'
+      'click button.add': 'addUser',
+      'click button.export': 'exportEmails'
     },
 
     initialize: function() {
@@ -24,6 +25,10 @@ define([
     addUser: function(event) {
       event && event.preventDefault();
       Origin.router.navigateTo('userManagement/addUser');
+    },
+    exportEmails: function(event) {
+      event && event.preventDefault();
+      Origin.trigger('userManagement:exportEmails', event);
     }
 
   }, {

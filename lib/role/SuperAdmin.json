@@ -1,6 +1,7 @@
 {
   "name": "Super Admin",
   "version": "0.0.1",
+  "default": false,
   "statement" : [
     { "condition":{}, "resource":"urn:x-adapt:*/*", "action":["create","read","update","delete"], "effect":"allow" }
   ]

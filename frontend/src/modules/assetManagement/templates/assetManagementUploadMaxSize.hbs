@@ -1,5 +1,8 @@
 <div class="maxSize">
   {{{uploadMaxSize}}}
+  <br>
+  {{#if uploadMaxSizeExceptions}}
+  {{uploadMaxSizeExceptions}}
   <ul>
     {{#each uploads}}
     <li>
@@ -7,4 +10,5 @@
     </li>
     {{/each}}
   </ul>
+  {{/if}}
 </div>

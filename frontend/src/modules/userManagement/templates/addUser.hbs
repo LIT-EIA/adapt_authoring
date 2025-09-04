@@ -3,47 +3,48 @@
     {{t 'app.adduserformtitle'}}
   </div>
   <form class="addUser forms" action="api/user" method="post" autocomplete="off">
-      <div class="form-group">
-        <label>
-          {{t 'app.firstname'}} <span aria-label="(required)" class="req">*</span>
-          <span class="field-error display-none" data-error="">{{t 'app.validationrequired'}}</span>
-        </label>
-        <input type="text" name="firstName" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label>
-          {{t 'app.lastname'}}
-          <span aria-label="(required)" class="req">*</span>
-         <span class="field-error display-none" data-error="">{{t 'app.validationrequired'}}</span>  
-        </label>
-        <input type="text" name="lastName" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label>
-          {{t 'app.usernameoremail'}} 
-          <span aria-label="(required)" class="req">*</span>
-          <span class="field-error display-none" data-error="">{{t 'app.invalidusernameoremail'}}</span>
-        </label>
-        <input type="email" name="email" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <div id="passwordField"></div>
-      </div>
-      <div class="form-group">
-        <label>{{t 'app.tenant'}}</label>
-        <select name="_tenantId">
-          {{#each globalData.allTenants.models}}
-            <option value="{{{this.attributes._id}}}">{{this.attributes.displayName}}</option>
-          {{/each}}
-        </select>
-      </div>
-      <div class="form-group">
-        <label>{{t 'app.role'}}</label>
-        <select name="role">
-          {{#each globalData.allRoles.models}}
-            <option value="{{{this.attributes._id}}}">{{this.attributes.name}}</option>
-          {{/each}}
-        </select>
-      </div>
+    <div class="form-group">
+      <label>
+        {{t 'app.firstname'}} <span aria-label="(required)" class="req">*</span>
+        <span class="field-error display-none" data-error="">{{t 'app.validationrequired'}}</span>
+      </label>
+      <input type="text" name="firstName" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>
+        {{t 'app.lastname'}}
+        <span aria-label="(required)" class="req">*</span>
+        <span class="field-error display-none" data-error="">{{t 'app.validationrequired'}}</span>
+      </label>
+      <input type="text" name="lastName" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>
+        {{t 'app.usernameoremail'}}
+        <span aria-label="(required)" class="req">*</span>
+        <span class="field-error display-none" data-error="">{{t 'app.invalidusernameoremail'}}</span>
+      </label>
+      <input type="email" name="email" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>{{t 'app.tenant'}}</label>
+      <select name="_tenantId">
+        {{#each globalData.allTenants.models}}
+        <option value="{{{this.attributes._id}}}">{{this.attributes.displayName}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>{{t 'app.role'}}</label>
+
+      <select name="role">
+        {{#each globalData.allRoles.models}}
+        <option value="{{{this.attributes._id}}}" {{#if this.attributes.default}}selected{{/if}}>
+          {{this.attributes.name}}
+        </option>
+        {{/each}}
+      </select>
+
+    </div>
   </form>
 </div>

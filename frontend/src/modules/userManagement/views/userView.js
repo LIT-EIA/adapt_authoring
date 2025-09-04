@@ -33,7 +33,6 @@ define(function(require){
       'click button.changePassword': 'onChangePasswordClicked',
 
       'click button.unlock': 'onResetLoginsClicked',
-      'click button.unlock-reset-password': 'onUnlockPasswordResetClicked',
 
       'click button.disable': 'onDisableClicked',
       'click button.delete': 'onDeleteClicked',
@@ -143,7 +142,9 @@ define(function(require){
       // save if not the same as old value
       var $input = this.getInputFromDiv($column);
       if($input.val() && this.model.get($input.attr('data-modelKey')) !== $input.val()) {
-        this.updateModel($input.attr('data-modelKey'), $input.val());
+        var inputObject = {};
+        inputObject[$input.attr('data-modelKey')] = $input.val();
+        this.updateModel(inputObject);
       }
     },
 
@@ -177,17 +178,12 @@ define(function(require){
       Origin.Notify.confirm({
         text: Origin.l10n.t('app.confirmresetlogins', { email: this.model.get('email') }),
         callback: function(confirmed) {
-          if(confirmed) self.updateModel('failedLoginCount', 0);
-        }
-      });
-    },
-
-    onUnlockPasswordResetClicked: function() {
-      var self = this;
-      Origin.Notify.confirm({
-        text: Origin.l10n.t('app.confirmUnlockPasswordReset', { email: this.model.get('email') }),
-        callback: function(confirmed) {
-          if(confirmed) self.updateModel('passwordResetCount', 0);
+          if(confirmed) self.updateModel({ 
+            failedLoginCount: 0,
+            failedMfaCount: 0,
+            mfaResetCount: 0,
+            passwordResetCount: 0
+          });
         }
       });
     },
@@ -210,15 +206,17 @@ define(function(require){
     },
 
     onResetPasswordClicked: function(e) {
+      var self = this;
       Origin.Notify.confirm({
         text: Origin.l10n.t('app.confirmsendreset', { email: this.model.get('email') }),
         callback: function(confirmed) {
           if (!confirmed) {
             return;
-          }
+          };
           var $btn = $(e.currentTarget);
           $btn.addClass('submitted');
           Helpers.ajax('api/createtoken', { email: this.model.get('email') }, 'POST', function() {
+            self.model.fetch();
             $btn.removeClass('submitted');
           });
         }.bind(this)
@@ -297,6 +295,7 @@ define(function(require){
               type: 'success',
               text: Origin.l10n.t('app.changepasswordtext', { email: self.model.get('email') })
             });
+            self.model.fetch();
           }
         }
       });
@@ -326,11 +325,11 @@ define(function(require){
     },
 
     onDisableClicked: function() {
-      this.updateModel('_isDeleted', true);
+      this.updateModel({ _isDeleted: true});
     },
 
     onRestoreClicked: function() {
-      this.updateModel('_isDeleted', false);
+      this.updateModel({ _isDeleted: false});
     },
 
     onDeleteClicked: function() {
@@ -398,21 +397,18 @@ define(function(require){
       });
     },
 
-    updateModel: function(key, value) {
+    updateModel: function(changes) {
       var self = this;
-      var toSave = {};
-      toSave[key] = value;
-      this.model.save(toSave, {
+      this.model.save(changes, {
         patch: true,
         wait: true,
         error: function(model, response, options) {
-          var data = { key: key, value: value };
           var errorCode = response.responseJSON && response.responseJSON.code;
           var errorMessage = response.responseText;
           switch(errorCode) {
             // duplicate key
             case 11000:
-              return self.onError(Origin.l10n.t('app.duplicateuservalueerror', data));
+              return self.onError(Origin.l10n.t('app.duplicateuservalueerror', changes));
             default:
               return self.onError(Origin.l10n.t('app.uservalueerror') + ' (' + errorMessage + ')');
           }

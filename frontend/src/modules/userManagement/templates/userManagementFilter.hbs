@@ -11,9 +11,28 @@
   <div class="sidebar-row-input">
     <select name="tenantName">
       {{#each tenants}}
-        <option value="{{displayName}}">{{displayName}}</option>
+      <option value="{{displayName}}">{{displayName}}</option>
       {{/each}}
     </select>
+  </div>
+  <div class="sidebar-row sidebar-divide">
+    <h3 class="sidebar-divide-inner">
+      {{t 'app.accountstatus'}}
+    </h3>
+  </div>
+  <div class="sidebar-row">
+    <label class="sidebar-tag">
+      <span>{{t 'app.notDeletedfilter'}}</span>
+      <input type="checkbox" name="notDeleted" value="{{t 'app.notDeletedfilter'}}" checked>
+      <i class="fa fa-toggle-off"></i>
+    </label>
+  </div>
+    <div class="sidebar-row">
+    <label class="sidebar-tag">
+      <span>{{t 'app.deletedFilter'}}</span>
+      <input type="checkbox" name="isDeleted" value="{{t 'app.deletedFilter'}}">
+      <i class="fa fa-toggle-off"></i>
+    </label>
   </div>
   <div class="sidebar-row sidebar-divide">
     <h3 class="sidebar-divide-inner">

@@ -1,8 +1,22 @@
 {
   "testUser": {
     "email": "user@adaptlearning.org",
-    "plainPassword": "password",
-    "newpassword": "newpassword",
+    "plainPassword": "passwordmain123",
+    "newpassword": "mynewpasswordfortesting",
+    "thirdpassword": "mynewpasswordfortesting1",
+    "lastpassword": "mynewpasswordfortesting2",
+    "firstName": "Test",
+    "lastName": "User",
+    "auth": "local",
+    "_isDeleted": false
+  },
+  "secondUser": {
+    "email": "user@adaptlearning2.org",
+    "plainPassword": "passwordmain123",
+    "newpassword": "mynewpasswordfortesting",
+    "thirdpassword": "mynewpasswordfortesting1234",
+    "firstName": "second",
+    "lastName": "User",
     "auth": "local",
     "_isDeleted": false
   },
@@ -22,7 +36,8 @@
   "auth": {
     "email": "auth@adaptlearning.org",
     "plainPassword": "thisismypassword",
-    "newPassword": "newpassword",
+    "newPassword": "mynewpasswordfortesting",
+    "secondNewPassword": "thisnewpasswordfortesting",
     "token": "testtokentesttokentesttokentest1",
     "auth": "local"
   },

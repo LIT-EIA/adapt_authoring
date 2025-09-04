@@ -17,9 +17,6 @@ define(function(require){
     },
 
     postRender: function() {
-      this.model.set('fieldId', 'password');
-      var passwordFieldsView = PasswordFieldsView({ model: this.model }).el;
-      this.$('#passwordField').append(passwordFieldsView);
       this.setViewToReady();
     },
 
@@ -33,17 +30,6 @@ define(function(require){
         var isValid = $input.attr('name') === 'email' ?
           Helpers.isValidEmail($input.val().trim()) :
           $input.val().trim().length > 0;
-
-        if ($input.attr('name') === 'password') {
-          var passwordErrors = PasswordHelpers.validatePassword($input.val());
-          isValid = passwordErrors.length == 0;
-          !isValid ? $error.html(`${Origin.l10n.t('app.passwordindicatormedium')}`) : '';
-        }
-
-        if ($input.attr('name') === 'confirmPassword') {
-          isValid = PasswordHelpers.validateConfirmationPassword($('[name="password"]').val(), $input.val());
-          !isValid ? $error.html(`${Origin.l10n.t('app.confirmpasswordnotmatch')}`) : '';
-        }
 
         $error.toggleClass('display-none', isValid);
 
