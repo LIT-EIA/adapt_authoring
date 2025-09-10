@@ -1987,5 +1987,11 @@
   "app.scaffold.component.properties._itemMinHeight.help": "Hauteur minimale de l'élément. Si elle est fixée à 0, la hauteur sera calculée automatiquement.",
   "app.scaffold.course._components._dnd-multiple.label": "Glisser-déposer de multiples",
   "app.scaffold.course._dnd-multiple.ariaRegion.label": "Région ARIA",
-  "app.scaffold.course._dnd-multiple.dndHelp.label": "Étiquette d'aide"
+  "app.scaffold.course._dnd-multiple.dndHelp.label": "Étiquette d'aide",
+  "app.scaffold._items.size.label": "Taille",
+  "app.scaffold.component._characters._size.label": "Taille",
+  "app.scaffold.component._characters._size.help": "Sélectionnez la taille de l'avatar du personnage.",
+  "app.scaffold._size.default.variable": "Défaut",
+  "app.scaffold._size.medium.variable": "Moyenne",
+  "app.scaffold._size.large.variable": "Large"
 }
