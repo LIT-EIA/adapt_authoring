@@ -23,6 +23,7 @@ require.config({
     selectize: 'libraries/selectize/js/selectize',
     shepherd: 'libraries/shepherd/shepherd',
     cropper: 'libraries/cropperjs/js/cropper',
+    usertour: 'libraries/usertour/js/usertour.snippet.min',
     sweetalert: 'libraries/sweetalert.min',
     sweetalert2: 'libraries/sweetalert2.min',
     typeahead: 'libraries/typeahead',
