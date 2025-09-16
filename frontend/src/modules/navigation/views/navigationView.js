@@ -34,7 +34,6 @@ define(function(require){
             if (result && result.firstName && result.lastName) {
               var firstInitial = (result['firstName'])[0].toUpperCase();
               var lastInitial = (result['lastName'])[0].toUpperCase();
-              that.model.set('firstName', result['firstName']);
               that.model.set('userFullName', `${result['firstName']} ${result['lastName']}`)
               that.model.set('userInitials', firstInitial + lastInitial);
             }

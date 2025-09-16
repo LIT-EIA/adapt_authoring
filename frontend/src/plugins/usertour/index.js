@@ -7,12 +7,7 @@ define(function (require) {
         WS_URI: Origin.constants['usertourWS']
       };
       usertour.init(Origin.constants['usertourToken']);
-      const user = Origin.sessionModel.get('firstName');
-      const email = `${user.toLowerCase()}@example.com`;
-      usertour.identify(email, {
-        name: user,
-        email: email
-      });
+      usertour.identifyAnonymous();
     }
   });
 })
