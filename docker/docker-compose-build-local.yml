@@ -1,0 +1,85 @@
+services:
+  mongo:
+    image: mongo:6.0.11
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    volumes:
+      - db:/data/db
+    networks:
+      - default
+  migration:
+    image: ghcr.io/lit-eia/adapt-migration-demo:latest
+    depends_on:
+      - mongo
+    volumes:
+      - storage:/app/storage
+    networks:
+      - default
+  app:
+    depends_on:
+      - mongo
+      - migration
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    restart: unless-stopped
+    ports:
+      - 5000:5000
+    volumes:
+      - storage:/app/storage
+    entrypoint: ["./docker/migration/wait-for-migrations.sh"]
+    stdin_open: true
+    tty: true
+    networks:
+      - default
+    environment:
+      - rootUrl=http://localhost:5000/
+      - outputPlugin=adapt
+      - dbType=mongoose
+      - auth=local
+      - root=/app/storage
+      - sessionSecret=b3c53ddf7844200547e790adda500bde3317010d20ed9dff227aaf79066af8d43ea5e458341e1fbea7d4148a85e8b365dc4222d3b4f973be8880d3585dbfdd27
+      - serverPort=5000
+      - serverName=localhost
+      - dataRoot=data
+      - authoringToolRepository=https://github.com/LIT-EIA/adapt_authoring.git
+      - frameworkRepository=https://github.com/adaptlearning/adapt_framework.git
+      - frameworkRevision=v4.4.1
+      - dbName=adapt-tenant-master
+      - useConnectionUri=false
+      - dbHost=mongo
+      - dbPort=27017
+      - dbUser=
+      - dbPass=
+      - dbAuthSource=
+      - useSmtp=false
+      - maxLoginAttempts=3
+      - ckEditorExtraAllowedContent=span(*)
+      - maxFileUploadSize=20MB
+      - mimeTypesCustomUploadSize_video=100MB
+      - mimeTypesCustomUploadSize_audio=50MB
+      - mimeTypesCustomUploadSize_image=3MB
+      - ckEditorEnterMode=ENTER_P
+      - masterTenantName=master
+      - masterTenantID=68e3f614ba3f6e060810da92
+      - isProduction=true
+      - buildNumber=1909
+      - buildPrefix=BUILD
+      - translating=false
+      - useMailService=false
+      - mailServiceUrl=
+      - mailServiceApiKey=
+      - mailServiceTemplates_resetPasword=
+      - mailServiceTemplates_loginMfa=
+      - printMailService=false
+      - useMFA=false
+      - devEnv=local
+      - passwordHistoryLimit=3
+      - passwordPolicyChangeDate="2025-07-22T16:45:26.629Z",
+volumes:
+  db:
+  storage:
+networks:
+  default:
+    driver: bridge

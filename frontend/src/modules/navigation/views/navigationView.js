@@ -30,7 +30,6 @@ define(function(require){
             console.log('error user me:', error);
           },
           success: function(result){
-            console.log(result);
             if (result && result.firstName && result.lastName) {
               var firstInitial = (result['firstName'])[0].toUpperCase();
               var lastInitial = (result['lastName'])[0].toUpperCase();

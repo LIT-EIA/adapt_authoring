@@ -7,7 +7,6 @@ const Constants = require('../../lib/outputmanager').Constants;
 const helpers = require('../../lib/helpers');
 const logger = require('../../lib/logger');
 const usermanager = require('../../lib/usermanager');
-const config = require('../../conf/config.json');
 
 const server = module.exports = express();
 
@@ -39,8 +38,8 @@ server.get('/preview/:tenant/:course/*', (req, res, next) => {
   function validateIP() {
     var ip = (req.headers['x-forwarded-for'] || req.connection.remoteAddress).replace('::ffff:', '');
     //regex expression goes in previewAllowIps property in /conf/config.json
-    var regex = new RegExp(config.previewAllowIps, 'g');
-    if (config.previewAllowIps) {
+    var regex = new RegExp(configuration.getConfig('previewAllowIps'), 'g');
+    if (configuration.getConfig('previewAllowIps')) {
       if (ip.match(regex)) {
         return true
       } else {
