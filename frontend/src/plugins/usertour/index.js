@@ -8,7 +8,9 @@ define(function (require) {
           WS_URI: Origin.constants['usertourWS'],
           ASSETS_URI: Origin.constants['usertourWS'] + "/sdk/",
           USERTOURJS_ES2020_URL: Origin.constants['usertourWS'] + '/sdk/es2020/usertour.js',
-          USERTOURJS_LEGACY_URL: Origin.constants['usertourWS'] + "/sdk/legacy/usertour.iife.js"
+          USERTOURJS_LEGACY_URL: Origin.constants['usertourWS'] + "/sdk/legacy/usertour.iife.js",
+          ENVIRONMENT_TEST: Origin.constants['usertourTokenTest'],
+          ENVIRONMENT_LIVE: Origin.constants['usertourTokenLive']
         };
         if (Origin.sessionModel && Origin.sessionModel.get('isAuthenticated')) {
           $.ajax({
@@ -20,10 +22,7 @@ define(function (require) {
             },
             success: function (result) {
               var role = result.rolesAsName[0];
-              usertour.init(Origin.constants['usertourToken']);
-              usertour.identifyAnonymous({
-                role: role,
-              });
+              usertour.enableUserTour({ role: role });
             }
           });
         }

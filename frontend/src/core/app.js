@@ -16,6 +16,7 @@
       'shepherd',
       'cropper',
       'usertour',
+      'usertourExtended',
       'sweetalert',
       'sweetalert2',
       'velocity'

@@ -24,6 +24,7 @@ require.config({
     shepherd: 'libraries/shepherd/shepherd',
     cropper: 'libraries/cropperjs/js/cropper',
     usertour: 'libraries/usertour/js/usertour.snippet.min',
+    usertourExtended: 'libraries/usertour/js/usertour.extended.min',
     sweetalert: 'libraries/sweetalert.min',
     sweetalert2: 'libraries/sweetalert2.min',
     typeahead: 'libraries/typeahead',
