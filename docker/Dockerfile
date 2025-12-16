@@ -4,7 +4,6 @@ WORKDIR /app/storage/
 COPY package.json .
 RUN npm install
 COPY . .
-RUN [ -f conf/config.json ] || mkdir -p conf && echo '{}' > conf/config.json
 RUN npm install -g grunt-cli
 RUN grunt build:prod
-ENTRYPOINT ["npm", "start"]
+ENTRYPOINT ["sleep", "infinity"]

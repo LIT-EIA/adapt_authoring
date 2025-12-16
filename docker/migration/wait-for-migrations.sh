@@ -22,4 +22,4 @@ FLAG_FILE="/app/storage/migration_done.flag"
 
 # Start application
 cd /app/storage/
-exec npm start
+exec sleep infinity
