@@ -1977,7 +1977,7 @@
   "app.scaffold._items._graphic.isBackground.label": "Est à l'arrière-plan",
   "app.scaffold.component._graphic.isBackground.label": "Est à l'arrière-plan",
   "app.scaffold.component._graphic.isBackground.help": "Si cette option est activée, l'image sera utilisée comme image d'arrière-plan au lieu d'une image en ligne.",
-  "app.scaffold.component._options.title.label": "Texte de l'option",
+  "app.scaffold.component._options.title.label": "Élément",
   "app.scaffold.component._options._graphic.label": "Image",
   "app.scaffold.component.properties._useStrictOrder.label": "Utiliser un ordre strict",
   "app.scaffold.component.properties._hasItemScoring.label": "Notation des éléments",
@@ -1994,5 +1994,6 @@
   "app.scaffold.component._characters._size.help": "Sélectionnez la taille de l'avatar du personnage.",
   "app.scaffold._size.default.variable": "Défaut",
   "app.scaffold._size.medium.variable": "Moyenne",
-  "app.scaffold._size.large.variable": "Large"
+  "app.scaffold._size.large.variable": "Large",
+  "app.scaffold.component._options.title.help": "Élément"
 }
