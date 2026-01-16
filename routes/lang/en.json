@@ -604,5 +604,8 @@
   "app.exportemails": "Export Emails",
   "app.deletedFilter": "Inactive",
   "app.passwordreused": "Your password cannot be the same as your previous passwords",
-  "app.exceptionsmaxfileuploadsize": "Exceptions:"
+  "app.exceptionsmaxfileuploadsize": "Exceptions:",
+  "app.scaffold.component.properties._items.dnd-multiple.label": "Category Columns",
+  "app.scaffold.component.dnd-multiple.title.label": "Column Title",
+  "app.scaffold.component.dnd-multiple._options.label": "Draggable Items"
 }
