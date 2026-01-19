@@ -120,7 +120,7 @@ define(function(require){
       var self = this;
       var repsUl = document.createElement('ul');
       repsUl.classList.add("help-dialog-choice-list");
-      bl['atptRepresentative'].forEach(function(rep) {
+      bl['digitRepresentative'].forEach(function(rep) {
         var repLi = document.createElement('li');
         var repObject = self.model.get('users').filter(function(u) {
           return u.email === rep;
@@ -134,7 +134,7 @@ define(function(require){
         repsUl.append(repLi);
       })
       this.$el.find('.help-dialog-technical-reps').html(repsUl);
-      if (bl['atptRepresentative'] && bl['atptRepresentative'].length > 0) {
+      if (bl['digitRepresentative'] && bl['digitRepresentative'].length > 0) {
         this.$el.find('.reps-texts').removeClass('display-none');
         this.$el.find('.no-reps-texts').addClass('display-none');
       }
