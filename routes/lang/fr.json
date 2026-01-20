@@ -1970,7 +1970,7 @@
   "app.scaffold.component.properties.ariaQuestion.label": "Question ARIA",
   "app.scaffold.component.properties.ariaQuestion.help": "Les lecteurs d'écran liront ce texte au lieu de lire les champs « Titre affiché », « Corps » et « Instruction » lorsqu'ils se concentrent sur les options. Pour être clair et concis, veillez à ce que le texte n'englobe que la question associée.",
   "app.scaffold.component.properties._items.dnd-multiple.label": "Colonnes de catégorie",
-  "app.scaffold._items.itemDragOptions.label": "Options de glissement des éléments",
+  "app.scaffold._items.itemDragOptions.label": "Éléments déplaçables",
   "app.scaffold.component.dnd-multiple.title.label": "Titre de la colonne",
   "app.scaffold.component.dnd-multiple.title.help": "Texte du titre affiché au-dessus de l'élément",
   "app.scaffold.component.dnd-multiple._options.label": "Éléments déplaçables",
