@@ -1995,5 +1995,7 @@
   "app.scaffold._size.default.variable": "Défaut",
   "app.scaffold._size.medium.variable": "Moyenne",
   "app.scaffold._size.large.variable": "Large",
-  "app.scaffold.component._options.title.help": "Élément"
+  "app.scaffold.component._options.title.help": "Élément",
+  "app.storyboard": "Scénarimage",
+  "app.generating": "Génération en cours..."
 }

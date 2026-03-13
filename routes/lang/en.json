@@ -608,5 +608,7 @@
   "app.scaffold.component.properties._items.dnd-multiple.label": "Column Categories",
   "app.scaffold.component.dnd-multiple.title.label": "Column Title",
   "app.scaffold.component.dnd-multiple._options.label": "Draggable Items",
-  "app.scaffold._items.itemDragOptions.label": "Draggable Items"
+  "app.scaffold._items.itemDragOptions.label": "Draggable Items",
+  "app.storyboard": "Storyboard",
+  "app.generating": "Generating..."
 }

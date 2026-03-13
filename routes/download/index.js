@@ -83,3 +83,33 @@ server.get('/download/:tenant/:course/:title/download.zip', function (req, res, 
     return res.json({success: false});
   }
 });
+
+// STORYBOARD DOCX DOWNLOAD
+server.get('/storyboard/:tenant/:course/:filename', function(req, res) {
+  var tenantId = req.params.tenant;
+  var courseId = req.params.course;
+  var filename = req.params.filename;
+
+  var currentUser = usermanager.getCurrentUser();
+  if (!currentUser || currentUser.tenant._id !== tenantId) {
+    return res.status(401).json({ success: false });
+  }
+
+  var tempDir = configuration.tempDir;
+  var filepath = path.join(tempDir, tenantId, courseId, 'storyboard', filename);
+
+  fs.stat(filepath, function(err, stat) {
+    if (err || !stat) {
+      logger.log('error', 'Storyboard file not found: ' + filepath);
+      return res.status(404).json({ success: false, message: 'File not found' });
+    }
+
+    res.writeHead(200, {
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Length': stat.size,
+      'Content-disposition': 'attachment; filename="' + filename + '"'
+    });
+
+    fs.createReadStream(filepath).pipe(res);
+  });
+});

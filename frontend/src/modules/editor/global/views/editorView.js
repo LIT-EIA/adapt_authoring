@@ -50,7 +50,8 @@ define(function(require) {
           var previewWindow = window.open('loading', 'preview');
           this.previewProject(previewWindow, isForceRebuild);
         },
-        'editorCommon:export': this.exportProject
+        'editorCommon:export': this.exportProject,
+        'editorCommon:generateStoryboard': this.generateStoryboard,
       });
       this.render();
       this.setupEditor();
@@ -140,6 +141,64 @@ define(function(require) {
               Origin.l10n.t('app.debuginfo', { message: errorMessage })
           });
         }
+      });
+    },
+
+    generateStoryboard: function() {
+      var courseId = this.currentCourseId;
+      var tenantId = Origin.sessionModel.get('tenantId');
+
+      // Show spinner
+      $('.editor-common-sidebar-storyboard-inner').addClass('display-none');
+      $('.editor-common-sidebar-generating').removeClass('display-none');
+
+      var url = 'api/output/storyboard/storyboard/' + courseId;
+
+      $.get(url, function (data, textStatus, jqXHR) {
+
+        // Error handling
+        if (!data.success) {
+          var errorMessage = jqXHR &&
+            typeof jqXHR == 'object' &&
+            jqXHR.responseJSON &&
+            jqXHR.responseJSON.message ?
+            jqXHR.responseJSON.message :
+            Origin.l10n.t('app.errorpermission');
+
+          Origin.Notify.alert({
+            type: 'error',
+            text: Origin.l10n.t('app.errorgeneric') +
+              Origin.l10n.t('app.debuginfo', { message: errorMessage })
+          });
+
+          // Reset spinner
+          $('.editor-common-sidebar-storyboard-inner').removeClass('display-none');
+          $('.editor-common-sidebar-generating').addClass('display-none');
+          return;
+        }
+
+        // SUCCESS → trigger file download
+        var filename = data.payload.filename;
+
+        // Use hidden form to download
+        var $downloadForm = $('#downloadForm');
+        $downloadForm.attr(
+          'action',
+          'storyboard/' + tenantId + '/' + courseId + '/' + filename
+        );
+        $downloadForm.submit();
+
+        // Reset spinner
+        $('.editor-common-sidebar-storyboard-inner').removeClass('display-none');
+        $('.editor-common-sidebar-generating').addClass('display-none');
+
+      }.bind(this)).fail(function (jqXHR, textStatus, errorThrown) {
+
+        // Reset spinner
+        $('.editor-common-sidebar-storyboard-inner').removeClass('display-none');
+        $('.editor-common-sidebar-generating').addClass('display-none');
+
+        Origin.Notify.alert({ type: 'error', text: Origin.l10n.t('app.errorgeneric') });
       });
     },
 
@@ -347,7 +406,7 @@ define(function(require) {
               }
               break;
             case 'block':
-              if(!pageCopyView){             
+              if(!pageCopyView){
                 editor.showPasteZones('block');
               } else {
                 cannotCopyContent();
