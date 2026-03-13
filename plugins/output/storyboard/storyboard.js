@@ -60,43 +60,59 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
     // 5. Build ordered course hierarchy
     function storyboardBuildHierarchy(cb) {
       try {
-        // Extract collections
-        const pages = sanitized.contentobject.filter(o => o._type === 'page');
+        // Normalize ID and parentId values consistently as strings
+        const norm = v => (v == null ? "" : v.toString());
+
+        const pages = sanitized.contentobject.filter(o => o._type === "page");
         const articles = sanitized.article || [];
         const blocks = sanitized.block || [];
         const components = sanitized.component || [];
 
-        // Helper map by parentId
         const articlesByPage = {};
         const blocksByArticle = {};
         const componentsByBlock = {};
 
-        // Group articles by page
+        // Group articles under pages
         pages.forEach(page => {
-          articlesByPage[page._id] = articles.filter(a => a._parentId === page._id);
+          const pageId = norm(page._id);
+          articlesByPage[pageId] = articles.filter(a => norm(a._parentId) === pageId);
         });
 
-        // Group blocks by article
+        // Group blocks under articles
         articles.forEach(article => {
-          blocksByArticle[article._id] = blocks.filter(b => b._parentId === article._id);
+          const artId = norm(article._id);
+          blocksByArticle[artId] = blocks.filter(b => norm(b._parentId) === artId);
         });
 
-        // Group components by block
+        // Group components under blocks
         blocks.forEach(block => {
-          componentsByBlock[block._id] = components.filter(c => c._parentId === block._id);
+          const blockId = norm(block._id);
+          componentsByBlock[blockId] = components.filter(c => norm(c._parentId) === blockId);
         });
 
-        // Create final hierarchical structure
-        const hierarchy = pages.map(page => ({
-          page,
-          articles: (articlesByPage[page._id] || []).map(article => ({
-            article,
-            blocks: (blocksByArticle[article._id] || []).map(block => ({
-              block,
-              components: componentsByBlock[block._id] || []
-            }))
-          }))
-        }));
+        // Build final hierarchy
+        const hierarchy = pages.map(page => {
+          const pageId = norm(page._id);
+
+          return {
+            page,
+            articles: (articlesByPage[pageId] || []).map(article => {
+              const artId = norm(article._id);
+
+              return {
+                article,
+                blocks: (blocksByArticle[artId] || []).map(block => {
+                  const blockId = norm(block._id);
+
+                  return {
+                    block,
+                    components: componentsByBlock[blockId] || []
+                  };
+                })
+              };
+            })
+          };
+        });
 
         sanitized._storyboardHierarchy = hierarchy;
         cb();
@@ -107,25 +123,21 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
 
     // 6. Retrieve all asset metadata for this course
     function storyboardRetrieveAssetMetadata(cb) {
-      // Get DB
       database.getDatabase(function (err, db) {
         if (err) return cb(err);
 
-        // Find all asset mappings for this course
-        db.retrieve('courseasset',
+        db.retrieve(
+          'courseasset',
           { _courseId: courseId, _contentType: { $ne: 'theme' } },
           function (err, results) {
             if (err) return cb(err);
 
             if (!results || results.length === 0) {
-              sanitized._storyboardAssets = {}; // no assets
+              sanitized._storyboardAssets = {};
               return cb();
             }
 
-            // We will build a map: assetId → asset record
             const assetIds = results.map(r => r._assetId);
-
-            // Retrieve actual asset records
             const assetmanager = require('../../../lib/assetmanager');
 
             assetmanager.retrieveAsset(
@@ -133,11 +145,27 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
               function (err, assets) {
                 if (err) return cb(err);
 
-                // Format asset lookup:
-                // { assetId: { filename, path, repository, size, ... } }
+                const config = require('../../../lib/configuration');
+                const tenantAssetRoot = path.join(
+                  config.tempDir,
+                  tenantId.toString(),
+                  "assets"
+                );
+
                 const map = {};
+
                 assets.forEach(a => {
-                  map[a._id] = a;
+                  // Normalize the virtual DB path "\assets\e5\a5\..."
+                  const cleaned = a.path.replace(/\\/g, path.sep);
+
+                  // Build real filesystem path
+                  const realPath = path.join(tenantAssetRoot, cleaned);
+
+                  // Add realPath so docxBuilder can load the image
+                  map[a._id] = {
+                    ...a,
+                    realPath
+                  };
                 });
 
                 sanitized._storyboardAssets = map;
