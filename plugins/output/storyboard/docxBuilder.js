@@ -10,21 +10,47 @@ const {
 
 const filestorage = require("../../../lib/filestorage");
 const htmlToText = require("html-to-text");
+const sizeOf = require("image-size");
 
 /* ---------------------------------------------
-   HTML → plain text
+   UNIVERSAL XML-SAFE TEXT SANITIZER
 ---------------------------------------------- */
-function htmlToPlain(html) {
-  if (!html) return "";
-  return htmlToText.fromString(html, {
-    wordwrap: false,
-    ignoreHref: true,
-    ignoreImage: true
+function safeText(str) {
+  if (!str || typeof str !== "string") return "";
+
+  return str
+    // remove all illegal XML chars
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+    // remove bidirectional text markers that break Word
+    .replace(/[\u202A-\u202E]/g, "")
+    // remove replacement character
+    .replace(/\uFFFD/g, "")
+    .trim();
+}
+
+/* Safe wrapper for Paragraphs to catch bad text early */
+function safeParagraph(text, opts = {}) {
+  return new Paragraph({
+    ...opts,
+    text: safeText(text)
   });
 }
 
 /* ---------------------------------------------
-   1) Extract ANY filename ending in image extension
+   HTML → plain text (sanitized)
+---------------------------------------------- */
+function htmlToPlain(html) {
+  if (!html) return "";
+  const out = htmlToText.fromString(html, {
+    wordwrap: false,
+    ignoreHref: true,
+    ignoreImage: true
+  });
+  return safeText(out);
+}
+
+/* ---------------------------------------------
+   Extract image filenames from any object
 ---------------------------------------------- */
 function extractImageFilenames(obj) {
   const results = [];
@@ -32,21 +58,18 @@ function extractImageFilenames(obj) {
   function walk(value) {
     if (!value) return;
 
-    // string = check for image filename
     if (typeof value === "string") {
-      if (value.match(/\.(png|jpg|jpeg|gif|svg)$/i)) {
+      if (value.match(/\.(png|jpe?g|gif|svg)$/i)) {
         results.push(path.basename(value));
       }
       return;
     }
 
-    // array
     if (Array.isArray(value)) {
       value.forEach(walk);
       return;
     }
 
-    // object
     if (typeof value === "object") {
       Object.values(value).forEach(walk);
     }
@@ -57,41 +80,31 @@ function extractImageFilenames(obj) {
 }
 
 /* ---------------------------------------------
-   2) Match filenames to storyboard assets
+   Match filenames to storyboard assets
 ---------------------------------------------- */
 function findAssetsByFilenames(filenames, assetMap) {
-  const list = Object.values(assetMap);
-  return list.filter(a => filenames.includes(a.filename));
+  return Object.values(assetMap).filter(a => filenames.includes(a.filename));
 }
 
 /* ---------------------------------------------
-   3) Load image binary using filestorage
-      Adapt 0.10.x uses:
-        storage.createReadStream(asset.path)
+   Correct + Safe Asset Stream Loader
 ---------------------------------------------- */
 async function fetchImageBufferViaFileStorage(asset) {
   return new Promise((resolve, reject) => {
     filestorage.getStorage(asset.repository, (err, storage) => {
       if (err) return reject(err);
 
-      try {
-        storage.createReadStream(asset.path, (readStream) => {
-          const chunks = [];
-
-          readStream.on("data", chunk => chunks.push(chunk));
-          readStream.on("end", () => resolve(Buffer.concat(chunks)));
-          readStream.on("error", reject);
-        });
-
-      } catch (e) {
-        reject(e);
-      }
+      // Use safe, atomic file read — avoids all stream corruption
+      storage.getFileContents(asset.path, (err, buffer) => {
+        if (err) return reject(err);
+        resolve(buffer);
+      });
     });
   });
 }
 
 /* ---------------------------------------------
-   4) Render ALL images detected inside component
+   Render embedded images
 ---------------------------------------------- */
 async function renderAnyImages(component, assetMap) {
   const filenames = extractImageFilenames(component);
@@ -100,35 +113,64 @@ async function renderAnyImages(component, assetMap) {
   const assets = findAssetsByFilenames(filenames, assetMap);
   if (assets.length === 0) return [];
 
-  const out = [new Paragraph("Images:")];
+  const out = [safeParagraph("Images:")];
 
   for (const asset of assets) {
+
+    // Skip SVG (docx does not support this)
+    if (asset.filename.toLowerCase().endsWith(".svg")) {
+      out.push(
+        safeParagraph(`(SVG not supported in DOCX) ${asset.filename}`)
+      );
+      continue;
+    }
+
     let buffer;
     try {
       buffer = await fetchImageBufferViaFileStorage(asset);
     } catch (err) {
-      console.log('Error loading image:', err);
-      out.push(new Paragraph(`Could not load image for asset: ${asset._id}`));
+      console.error("Error loading image:", err);
+      out.push(
+        safeParagraph(`Could not load image for asset: ${asset._id}`)
+      );
       continue;
     }
 
-    console.log("Image:", asset.filename, "Buffer length:", buffer.length);
+    // Determine image dimensions safely
+    let width = 400;
+    let height = 300;
 
-    // Embed image
+    try {
+      const dim = sizeOf(buffer);
+      width = dim.width;
+      height = dim.height;
+
+      const MAX_WIDTH = 600;
+      if (width > MAX_WIDTH) {
+        const scale = MAX_WIDTH / width;
+        width = MAX_WIDTH;
+        height = Math.round(height * scale);
+      }
+
+    } catch (e) {
+      console.warn("Could not detect dimensions; using defaults");
+    }
+
     out.push(
       new Paragraph({
         children: [
           new ImageRun({
             data: buffer,
-            transformation: { width: 400, height: 300 }
+            transformation: { width, height }
           })
         ]
       })
     );
 
-    out.push(new Paragraph(`Filename: ${asset.filename}`));
+    out.push(safeParagraph(`Filename: ${asset.filename}`));
+
     if (asset.description) {
-      out.push(new Paragraph(`Description: ${asset.description}`));
+      out.push(safeParagraph(`Description: ${safeText(asset.description)}`));
     }
   }
 
@@ -136,23 +178,25 @@ async function renderAnyImages(component, assetMap) {
 }
 
 /* ---------------------------------------------
-   5) Render structured MCQ content
+   Render MCQ fields
 ---------------------------------------------- */
 function renderStructuredComponent(component) {
   const out = [];
 
   if (Array.isArray(component._items)) {
-    out.push(new Paragraph("Choices:"));
+    out.push(safeParagraph("Choices:"));
     component._items.forEach(i => {
       const mark = i._isCorrect ? " ✔" : "";
-      out.push(new Paragraph(`- ${i.text || i.title || ""}${mark}`));
+      out.push(
+        safeParagraph(`- ${safeText(i.text || i.title || "")}${mark}`)
+      );
     });
   }
 
   if (component._feedback) {
-    out.push(new Paragraph("Feedback:"));
+    out.push(safeParagraph("Feedback:"));
     Object.entries(component._feedback).forEach(([key, val]) => {
-      out.push(new Paragraph(`- ${key}: ${val}`));
+      out.push(safeParagraph(`- ${safeText(key)}: ${safeText(val)}`));
     });
   }
 
@@ -160,7 +204,7 @@ function renderStructuredComponent(component) {
 }
 
 /* ---------------------------------------------
-   6) Dump remaining component fields
+   Dump remaining component fields (safe)
 ---------------------------------------------- */
 function objectToParagraphs(obj, indent = 0) {
   const out = [];
@@ -169,7 +213,6 @@ function objectToParagraphs(obj, indent = 0) {
   for (const key of Object.keys(obj)) {
     const val = obj[key];
 
-    // skip internal noise
     if (
       key.startsWith("_") &&
       !["_component", "_items", "_feedback", "_graphic"].includes(key)
@@ -178,17 +221,17 @@ function objectToParagraphs(obj, indent = 0) {
     if (val === null || val === "" || val === undefined) continue;
 
     if (typeof val === "string") {
-      out.push(new Paragraph(`${pad}${key}: ${val}`));
+      out.push(safeParagraph(`${pad}${safeText(key)}: ${safeText(val)}`));
       continue;
     }
 
     if (Array.isArray(val)) {
-      out.push(new Paragraph(`${pad}${key}:`));
+      out.push(safeParagraph(`${pad}${safeText(key)}:`));
       val.forEach((item, idx) => {
         if (typeof item === "string")
-          out.push(new Paragraph(`${pad}- ${item}`));
+          out.push(safeParagraph(`${pad}- ${safeText(item)}`));
         else {
-          out.push(new Paragraph(`${pad}- Item ${idx + 1}:`));
+          out.push(safeParagraph(`${pad}- Item ${idx + 1}:`));
           out.push(...objectToParagraphs(item, indent + 1));
         }
       });
@@ -196,7 +239,7 @@ function objectToParagraphs(obj, indent = 0) {
     }
 
     if (typeof val === "object") {
-      out.push(new Paragraph(`${pad}${key}:`));
+      out.push(safeParagraph(`${pad}${safeText(key)}:`));
       out.push(...objectToParagraphs(val, indent + 1));
     }
   }
@@ -205,28 +248,30 @@ function objectToParagraphs(obj, indent = 0) {
 }
 
 /* ---------------------------------------------
-   7) Render full component section
+   Render entire component section
 ---------------------------------------------- */
 async function renderComponent(component, assetMap) {
   const out = [];
 
   out.push(
-    new Paragraph({
-      text: `Component: ${component.title || component.displayTitle}`,
-      heading: HeadingLevel.HEADING_4
-    })
+    safeParagraph(
+      `Component: ${safeText(component.title || component.displayTitle)}`,
+      { heading: HeadingLevel.HEADING_4 }
+    )
   );
 
   out.push(
-    new Paragraph(`Type: ${component._component || component._type}`)
+    safeParagraph(
+      `Type: ${safeText(component._component || component._type)}`
+    )
   );
 
   if (component.instruction)
-    out.push(new Paragraph(`Instruction: ${component.instruction}`));
+    out.push(safeParagraph(`Instruction: ${safeText(component.instruction)}`));
 
   if (component.body) {
-    out.push(new Paragraph("Body:"));
-    out.push(new Paragraph(htmlToPlain(component.body)));
+    out.push(safeParagraph("Body:"));
+    out.push(safeParagraph(htmlToPlain(component.body)));
   }
 
   out.push(...renderStructuredComponent(component));
@@ -235,37 +280,35 @@ async function renderComponent(component, assetMap) {
   out.push(...imgs);
 
   out.push(...objectToParagraphs(component));
-  out.push(new Paragraph("-------------------------------"));
+
+  out.push(safeParagraph("-------------------------------"));
 
   return out;
 }
 
 /* ---------------------------------------------
-   8) Main DOCX builder
+   Main DOCX builder
 ---------------------------------------------- */
 module.exports = async function buildDocx(data, outputPath, done) {
   try {
     const hierarchy = data._storyboardHierarchy || [];
     const assetMap = data._storyboardAssets || {};
-    const courseTitle = data.course.title || "Storyboard Export";
+    const courseTitle = safeText(data.course.title || "Storyboard Export");
 
     const children = [];
 
     children.push(
-      new Paragraph({ text: courseTitle, heading: HeadingLevel.TITLE }),
-      new Paragraph({
-        text: "Course Storyboard Export",
+      safeParagraph(courseTitle, { heading: HeadingLevel.HEADING_1 }),
+      safeParagraph("Course Storyboard Export", {
         heading: HeadingLevel.HEADING_2
       })
     );
 
-    // Walk course structure
     for (const pageWrap of hierarchy) {
       const page = pageWrap.page;
 
       children.push(
-        new Paragraph({
-          text: page.title,
+        safeParagraph(safeText(page.title), {
           heading: HeadingLevel.HEADING_1
         })
       );
@@ -274,8 +317,7 @@ module.exports = async function buildDocx(data, outputPath, done) {
         const article = articleWrap.article;
 
         children.push(
-          new Paragraph({
-            text: `Article: ${article.title}`,
+          safeParagraph(`Article: ${safeText(article.title)}`, {
             heading: HeadingLevel.HEADING_2
           })
         );
@@ -284,8 +326,7 @@ module.exports = async function buildDocx(data, outputPath, done) {
           const block = blockWrap.block;
 
           children.push(
-            new Paragraph({
-              text: `Block: ${block.title}`,
+            safeParagraph(`Block: ${safeText(block.title)}`, {
               heading: HeadingLevel.HEADING_3
             })
           );
