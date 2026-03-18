@@ -127,43 +127,46 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
         if (err) return cb(err);
 
         db.retrieve(
-          'courseasset',
-          { _courseId: courseId, _contentType: { $ne: 'theme' } },
-          function (err, results) {
+          "courseasset",
+          { _courseId: courseId, _contentType: { $ne: "theme" } },
+          function (err, mappings) {
             if (err) return cb(err);
 
-            if (!results || results.length === 0) {
+            if (!mappings || mappings.length === 0) {
               sanitized._storyboardAssets = {};
               return cb();
             }
 
-            const assetIds = results.map(r => r._assetId);
-            const assetmanager = require('../../../lib/assetmanager');
+            const assetIds = mappings.map(m => m._assetId);
+            const assetmanager = require("../../../lib/assetmanager");
+            const config = require("../../../lib/configuration");
+
+            const tenantAssetRoot = path.join(
+              config.tempDir,
+              tenantId.toString(),
+              "assets"
+            );
 
             assetmanager.retrieveAsset(
               { _id: { $in: assetIds } },
               function (err, assets) {
                 if (err) return cb(err);
 
-                const config = require('../../../lib/configuration');
-                const tenantAssetRoot = path.join(
-                  config.tempDir,
-                  tenantId.toString(),
-                  "assets"
-                );
-
                 const map = {};
 
                 assets.forEach(a => {
-                  // Normalize the virtual DB path "\assets\e5\a5\..."
-                  const cleaned = a.path.replace(/\\/g, path.sep);
+                  const raw = a._doc || a;                    // <-- Normalize Mongoose
+                  const cleaned = raw.path.replace(/\\/g, path.sep);
 
-                  // Build real filesystem path
                   const realPath = path.join(tenantAssetRoot, cleaned);
 
-                  // Add realPath so docxBuilder can load the image
-                  map[a._id] = {
-                    ...a,
+                  map[raw._id] = {
+                    _id: raw._id,
+                    filename: raw.filename,
+                    path: raw.path,
+                    title: raw.title,
+                    description: raw.description,
+                    repository: raw.repository,
                     realPath
                   };
                 });
