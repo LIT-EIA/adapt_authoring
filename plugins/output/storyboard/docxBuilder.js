@@ -117,34 +117,56 @@ async function renderAnyImages(component, assetMap) {
 
   for (const asset of assets) {
 
-    // Skip SVG (docx does not support this)
-    if (asset.filename.toLowerCase().endsWith(".svg")) {
-      out.push(
-        safeParagraph(`(SVG not supported in DOCX) ${asset.filename}`)
-      );
+    const lower = asset.filename.toLowerCase();
+
+    if (lower.endsWith(".svg")) {
+      out.push(safeParagraph(`(SVG not supported in DOCX) ${asset.filename}`));
       continue;
     }
+
+    // Explicit type (CRITICAL FIX)
+    let imgType = "jpg";
+    if (lower.endsWith(".png")) imgType = "png";
+    if (lower.endsWith(".gif")) imgType = "gif";
 
     let buffer;
+
     try {
       buffer = await fetchImageBufferViaFileStorage(asset);
+
+      if (!Buffer.isBuffer(buffer)) {
+        throw new Error("Image data is not a valid Buffer");
+      }
+
+      // Remove UTF-8 BOM if present
+      if (buffer.length > 3 && buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
+        buffer = buffer.slice(3);
+      }
+
+      // Normalize Buffer (fixes odd ArrayBuffer cases)
+      buffer = Buffer.from(buffer);
+
     } catch (err) {
       console.error("Error loading image:", err);
-      out.push(
-        safeParagraph(`Could not load image for asset: ${asset._id}`)
-      );
+      out.push(safeParagraph(`Could not load image: ${asset.filename}`));
       continue;
     }
 
-    // Determine image dimensions safely
+    // ---- SAFE DIMENSION HANDLING ----
     let width = 400;
     let height = 300;
 
     try {
       const dim = sizeOf(buffer);
+
+      if (!dim || !dim.width || !dim.height) {
+        throw new Error("Invalid image dimensions");
+      }
+
       width = dim.width;
       height = dim.height;
 
+      // Constrain maximum width
       const MAX_WIDTH = 600;
       if (width > MAX_WIDTH) {
         const scale = MAX_WIDTH / width;
@@ -153,14 +175,17 @@ async function renderAnyImages(component, assetMap) {
       }
 
     } catch (e) {
-      console.warn("Could not detect dimensions; using defaults");
+      console.warn("Could not detect dimensions:", e);
+      // Keep defaults
     }
 
+    // ---- IMAGE INSERTION ----
     out.push(
       new Paragraph({
         children: [
           new ImageRun({
             data: buffer,
+            type: imgType, // CRITICAL
             transformation: { width, height }
           })
         ]
@@ -168,7 +193,6 @@ async function renderAnyImages(component, assetMap) {
     );
 
     out.push(safeParagraph(`Filename: ${asset.filename}`));
-
     if (asset.description) {
       out.push(safeParagraph(`Description: ${safeText(asset.description)}`));
     }
