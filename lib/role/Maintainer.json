@@ -1,0 +1,27 @@
+{
+  "name": "Maintainer",
+  "version": "0.0.1",
+  "default": false,
+  "statement" : [
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/course/*", "action":["create", "update", "delete"], "effect":"deny" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/*", "action":["read", "update"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/config", "action":["update"], "effect":"deny" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/glossary", "action":["update"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/resources", "action":["update"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/shared/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/asset/*", "action":["create", "read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/user/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/user/me", "action":["read", "update"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/output/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extensiontype/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/componenttype/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/themetype/*", "action":["update", "read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/menutype/*", "action":["update", "read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/theme/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/themepreset/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/menu/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/autocomplete/*", "action":["read"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/messages/*", "action":["read"], "effect":"allow" }
+  ]
+}

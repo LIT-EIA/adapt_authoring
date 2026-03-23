@@ -371,17 +371,17 @@ function toggleExtensions(courseId, action, extensions, cb) {
       async.eachSeries(results, function (extensionItem, nextItem) {
         const resource = permissions.buildResourceString(user.tenant._id, `/api/extension/${extensionItem.extension}`);
         permissions.hasPermission(user._id, 'update', resource, function (err, isAllowed) {
-          if (isAllowed) {
-            nextItem();
-          } else {
-            var permissionQuery = _.extend({ _courseId: courseId }, extensionItem);
-            helpers.hasCoursePermission('update', user._id, user.tenant._id, permissionQuery, function (err, isAllowed) {
-              if (!isAllowed) {
-                return cb(new ContentPermissionError());
-              }
-              nextItem();
-            });
+          if (!isAllowed) {
+            return cb(new ContentPermissionError());
           }
+
+          var permissionQuery = _.extend({ _courseId: courseId }, extensionItem);
+          helpers.hasCoursePermission('update', user._id, user.tenant._id, permissionQuery, function (err, isAllowed) {
+            if (!isAllowed) {
+              return cb(new ContentPermissionError());
+            }
+            nextItem();
+          });
         });
       }, processExtensions);
 

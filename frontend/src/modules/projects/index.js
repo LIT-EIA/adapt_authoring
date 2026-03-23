@@ -77,13 +77,25 @@ define(function(require) {
     };
     const { titleKey, Coll } = typeMappings[type] || typeMappings.default;
 
+
     // Data for permissions check
-    const data = {
-      featurePermissions: ["{{tenantid}}/content/*:read"]
+    const ownData = {
+      featurePermissions: ["{{tenantid}}/course/own:read"]
     };
 
     // Block user access if required permissions are not met
-    if (type === 'all' && !Origin.permissions.hasPermissions(data.featurePermissions)) {
+    if (type === 'own' && !Origin.permissions.hasPermissions(ownData.featurePermissions)) {
+      Origin.router.blockUserAccess();
+      return;
+    }
+
+    // Data for permissions check
+    const allData = {
+      featurePermissions: ["{{tenantid}}/course/all:read"]
+    };
+
+    // Block user access if required permissions are not met
+    if (type === 'all' && !Origin.permissions.hasPermissions(allData.featurePermissions)) {
       Origin.router.blockUserAccess();
       return;
     }
@@ -98,7 +110,18 @@ define(function(require) {
   });
 
   Origin.on('origin:dataReady login:changed', function() {
-    Origin.router.setHomeRoute('dashboard');
+
+    // Data for permissions check
+    const ownData = {
+      featurePermissions: ["{{tenantid}}/course/own:read"]
+    };
+
+    if(Origin.permissions.hasPermissions(ownData.featurePermissions)){
+      Origin.router.setHomeRoute('dashboard');
+    } else {
+      Origin.router.setHomeRoute('dashboard/shared');
+    }
+
     Origin.globalMenu.addItem({
       "location": "global",
       "text": Origin.l10n.t('app.dashboard'),
