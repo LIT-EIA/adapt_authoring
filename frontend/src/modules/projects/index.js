@@ -80,7 +80,7 @@ define(function(require) {
 
     // Data for permissions check
     const ownData = {
-      featurePermissions: ["{{tenantid}}/course/own:read"]
+      featurePermissions: ["{{tenantid}}/content/course/own:read"]
     };
 
     // Block user access if required permissions are not met
@@ -91,7 +91,7 @@ define(function(require) {
 
     // Data for permissions check
     const allData = {
-      featurePermissions: ["{{tenantid}}/course/all:read"]
+      featurePermissions: ["{{tenantid}}/content/*:read"]
     };
 
     // Block user access if required permissions are not met
@@ -113,7 +113,7 @@ define(function(require) {
 
     // Data for permissions check
     const ownData = {
-      featurePermissions: ["{{tenantid}}/course/own:read"]
+      featurePermissions: ["{{tenantid}}/content/course/own:read"]
     };
 
     if(Origin.permissions.hasPermissions(ownData.featurePermissions)){

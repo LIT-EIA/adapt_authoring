@@ -3,9 +3,10 @@
   "version": "0.0.1",
   "default": false,
   "statement" : [
-    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/course/*", "action":["create", "update", "delete"], "effect":"deny" },
-    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/*", "action":["read", "update"], "effect":"allow" },
-    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/config", "action":["update"], "effect":"deny" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/course/*", "action":["create", "delete"], "effect":"deny" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/global/content", "action":["read", "update"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/global/content/config", "action":["update"], "effect":"deny" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/global/content/course", "action":["update"], "effect":"deny" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/*", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/glossary", "action":["update"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/resources", "action":["update"], "effect":"allow" },

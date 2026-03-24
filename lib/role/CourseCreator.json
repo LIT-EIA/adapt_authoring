@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "default": true,
   "statement" : [
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/edit/*", "action":["read", "update", "create", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/course/own", "action":["read", "create", "update", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/themepreset/*", "action":["read", "create", "update", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/shared/*", "action":["create","read"], "effect":"allow" },
@@ -22,6 +23,6 @@
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/helpdialogs/*", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/messages/*", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/clipboard/me", "action":["read"], "effect":"allow" }
-    
+
   ]
 }

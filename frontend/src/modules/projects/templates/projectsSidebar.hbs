@@ -1,7 +1,7 @@
 <div class="sidebar-item-inner">
 
 
-  {{#ifHasPermissions "{{tenantid}}/course/own:read"}}
+  {{#ifHasPermissions "{{tenantid}}/content/course/own:read"}}
   <div class="separator"></div>
   <button class="projects-sidebar-add-course action-primary">
     <span class="projects-sidebar-add-course-inner">{{t 'app.addnewproject'}}</span>
@@ -15,7 +15,7 @@
   </button>
   {{/ifHasPermissions}}
 
-  {{#ifHasPermissions "{{tenantid}}/course/own:read"}}
+  {{#ifHasPermissions "{{tenantid}}/content/course/own:read"}}
   <div class="separator"></div>
   <div class="sidebar-row">
     <button class="projects-sidebar-my-courses">
