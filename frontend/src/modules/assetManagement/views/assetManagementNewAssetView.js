@@ -92,9 +92,12 @@ define(function(require){
           this.model.set({title: title, description: description, hideAsset: privateAsset});
           this.model.save(null, {
             error: function(model, response, options) {
+              console.log('asset update error: ', response);
+              var errorMessage = response && response.responseJSON && response.responseJSON.message || Origin.l10n.t('app.errorassetupdate');
+
               Origin.Notify.alert({
                 type: 'error',
-                text: Origin.l10n.t('app.errorassetupdate')
+                text: errorMessage
               });
             },
             success: function(model, response, options) {

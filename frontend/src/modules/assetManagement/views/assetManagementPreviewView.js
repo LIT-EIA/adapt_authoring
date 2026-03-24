@@ -68,10 +68,13 @@ define(function(require){
             Origin.trigger('assetManagement:assetPreviewView:delete');
             self.remove();
           },
-          error: function(data) {
+          error: function(error) {
+            console.log('asset delete error: ', error);
+            var errorMessage = error && error.responseJSON && error.responseJSON.message || "";
+
             Origin.Notify.alert({
               type: 'error',
-              text: Origin.l10n.t('app.errordeleteasset', { message: data.message })
+              text: Origin.l10n.t('app.errordeleteasset', { message: errorMessage })
             });
           }
         });
