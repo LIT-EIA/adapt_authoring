@@ -19,7 +19,7 @@ define(function(require) {
         var fragments = Backbone.history.getFragment().split('/');
         var route = fragments[0] + '/' + fragments[1];
         if(route && route !== 'user/login' && route !== 'user/loginMfa' && route !== 'user/logout' && route !== 'user/forgot' && route !== 'user/reset'){
-          if(xhr.status === 403 && xhr.responseJSON.statusCode === 'not-authenticated'){
+          if(xhr.status === 403 && xhr.responseJSON && xhr.responseJSON.statusCode === 'not-authenticated'){
             self.blockUserAccess(Origin.l10n.t('app.errorsessionexpired'), true);
           }
         }

@@ -70,11 +70,14 @@ define(function(require){
           },
           error: function(error) {
             console.log('asset delete error: ', error);
-            var errorMessage = error && error.responseJSON && error.responseJSON.message || "";
+            let errorText = error && error.responseJSON && error.responseJSON.message || "";
+            if (error.status === 403) {
+              errorText = Origin.l10n.t('app.errorpermission');
+            }
 
             Origin.Notify.alert({
               type: 'error',
-              text: Origin.l10n.t('app.errordeleteasset', { message: errorMessage })
+              text: Origin.l10n.t('app.errordeleteasset', { message: errorText })
             });
           }
         });

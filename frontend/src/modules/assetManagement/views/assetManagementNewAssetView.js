@@ -93,11 +93,13 @@ define(function(require){
           this.model.save(null, {
             error: function(model, response, options) {
               console.log('asset update error: ', response);
-              var errorMessage = response && response.responseJSON && response.responseJSON.message || Origin.l10n.t('app.errorassetupdate');
-
+              let errorText = response && response.responseJSON && response.responseJSON.message || Origin.l10n.t('app.errorassetupdate');
+              if (response.status === 403) {
+                errorText = Origin.l10n.t('app.errorpermission');
+              }
               Origin.Notify.alert({
                 type: 'error',
-                text: errorMessage
+                text: errorText
               });
             },
             success: function(model, response, options) {
@@ -128,9 +130,13 @@ define(function(require){
 
         error: function(xhr, status, error) {
           Origin.trigger('sidebar:resetButtons');
+          let errorText = xhr.status === 413 ? Origin.l10n.t('app.uploadsizeerror') : xhr.responseJSON.message
+          if (xhr.status === 403) {
+            errorText = Origin.l10n.t('app.errorpermission');
+          }
           Origin.Notify.alert({
             type: 'error',
-            text: xhr.status === 413 ? Origin.l10n.t('app.uploadsizeerror') : xhr.responseJSON.message
+            text: errorText
           });
         },
 
