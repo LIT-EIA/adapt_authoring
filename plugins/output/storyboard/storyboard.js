@@ -75,6 +75,9 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
         const blocks = sanitized.block || [];
         const components = sanitized.component || [];
 
+        console.log("build ordered course hierarchy sanitized:");
+        console.dir(sanitized, { depth: null, colors: true });
+
         const articlesByPage = {};
         const blocksByArticle = {};
         const componentsByBlock = {};

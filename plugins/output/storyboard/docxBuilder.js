@@ -298,6 +298,46 @@ async function renderComponent(component, assetMap) {
     out.push(safeParagraph(htmlToPlain(component.body)));
   }
 
+  if (component.type === "dnd-multiple") {
+    out.push(safeParagraph("DND Items:", { bold: true }));
+
+    for (const item of component.items || []) {
+      out.push(safeParagraph(`• ${item.title}`));
+
+      // Options inside each item
+      for (const opt of item.options || []) {
+        out.push(safeParagraph(`   - ${opt.title}`));
+
+        // If graphic exists, print details AND embed image
+        if (opt.graphic && opt.graphic.src) {
+          out.push(safeParagraph(`     Image: ${opt.graphic.src}`));
+
+          // ✅ Try embedding the image just like other components
+          const filenames = [path.basename(opt.graphic.src)];
+          const assets = findAssetsByFilenames(filenames, assetMap);
+
+          if (assets.length > 0) {
+            const embed = await renderAnyImages({ _graphic: { src: opt.graphic.src } }, assetMap);
+            out.push(...embed);
+          }
+
+          if (opt.graphic.alt) {
+            out.push(safeParagraph(`     Alt: ${opt.graphic.alt}`));
+          }
+        }
+      }
+    }
+
+    if (component.feedback) {
+      out.push(safeParagraph("Feedback:", { bold: true }));
+      out.push(safeParagraph(`Correct: ${component.feedback.correct}`));
+      out.push(safeParagraph(`Incorrect (final): ${component.feedback.incorrect_final}`));
+      out.push(safeParagraph(`Incorrect (not final): ${component.feedback.incorrect_notFinal}`));
+      out.push(safeParagraph(`Partly Correct (final): ${component.feedback.partly_final}`));
+      out.push(safeParagraph(`Partly Correct (not final): ${component.feedback.partly_notFinal}`));
+    }
+  }
+
   out.push(...renderStructuredComponent(component));
 
   const imgs = await renderAnyImages(component, assetMap);
@@ -360,7 +400,7 @@ module.exports = async function buildDocx(data, outputPath, done) {
         );
 
         if (article.instruction)
-            children.push(safeParagraph(`Instruction: ${article.instruction}`));
+          children.push(safeParagraph(`Instruction: ${article.instruction}`));
 
         if (article.body) {
           children.push(safeParagraph("Body:"));
