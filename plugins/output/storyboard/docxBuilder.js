@@ -337,6 +337,19 @@ module.exports = async function buildDocx(data, outputPath, done) {
         })
       );
 
+      if (page.instruction)
+        children.push(safeParagraph(`Instruction: ${page.instruction}`));
+
+      if (page.body) {
+        children.push(safeParagraph("Body:"));
+        children.push(safeParagraph(page.body));
+      }
+
+      if (page.pageBody) {
+        children.push(safeParagraph("Page Body:"));
+        children.push(safeParagraph(page.pageBody));
+      }
+
       for (const articleWrap of pageWrap.articles) {
         const article = articleWrap.article;
 
@@ -346,6 +359,14 @@ module.exports = async function buildDocx(data, outputPath, done) {
           })
         );
 
+        if (article.instruction)
+            children.push(safeParagraph(`Instruction: ${article.instruction}`));
+
+        if (article.body) {
+          children.push(safeParagraph("Body:"));
+          children.push(safeParagraph(article.body));
+        }
+
         for (const blockWrap of articleWrap.blocks) {
           const block = blockWrap.block;
 
@@ -354,6 +375,14 @@ module.exports = async function buildDocx(data, outputPath, done) {
               heading: HeadingLevel.HEADING_3
             })
           );
+
+          if (block.instruction)
+            children.push(safeParagraph(`Instruction: ${block.instruction}`));
+
+          if (block.body) {
+            children.push(safeParagraph("Body:"));
+            children.push(safeParagraph(block.body));
+          }
 
           for (const component of blockWrap.components) {
             const compNodes = await renderComponent(component, assetMap);

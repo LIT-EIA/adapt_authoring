@@ -11,6 +11,14 @@ const logger = require('../../../lib/logger');
 // Our docx builder (we will create this in the next step)
 const buildDocx = require('./docxBuilder');
 
+const {
+  cleanPage,
+  cleanArticle,
+  cleanBlock,
+  cleanComponent
+} = require("./cleaners");
+
+
 module.exports = function storyboard(courseId, mode, req, res, next) {
   const self = this;
   const user = usermanager.getCurrentUser();
@@ -60,7 +68,6 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
     // 5. Build ordered course hierarchy
     function storyboardBuildHierarchy(cb) {
       try {
-        // Normalize ID and parentId values consistently as strings
         const norm = v => (v == null ? "" : v.toString());
 
         const pages = sanitized.contentobject.filter(o => o._type === "page");
@@ -72,41 +79,37 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
         const blocksByArticle = {};
         const componentsByBlock = {};
 
-        // Group articles under pages
-        pages.forEach(page => {
-          const pageId = norm(page._id);
-          articlesByPage[pageId] = articles.filter(a => norm(a._parentId) === pageId);
+        pages.forEach(p => {
+          const pid = norm(p._id);
+          articlesByPage[pid] = articles.filter(a => norm(a._parentId) === pid);
         });
 
-        // Group blocks under articles
-        articles.forEach(article => {
-          const artId = norm(article._id);
-          blocksByArticle[artId] = blocks.filter(b => norm(b._parentId) === artId);
+        articles.forEach(a => {
+          const aid = norm(a._id);
+          blocksByArticle[aid] = blocks.filter(b => norm(b._parentId) === aid);
         });
 
-        // Group components under blocks
-        blocks.forEach(block => {
-          const blockId = norm(block._id);
-          componentsByBlock[blockId] = components.filter(c => norm(c._parentId) === blockId);
+        blocks.forEach(b => {
+          const bid = norm(b._id);
+          componentsByBlock[bid] = components.filter(c => norm(c._parentId) === bid);
         });
 
-        // Build final hierarchy
-        const hierarchy = pages.map(page => {
-          const pageId = norm(page._id);
+        sanitized._storyboardHierarchy = pages.map(p => {
+          const pid = norm(p._id);
 
           return {
-            page,
-            articles: (articlesByPage[pageId] || []).map(article => {
-              const artId = norm(article._id);
+            page: cleanPage(p),
+            articles: (articlesByPage[pid] || []).map(a => {
+              const aid = norm(a._id);
 
               return {
-                article,
-                blocks: (blocksByArticle[artId] || []).map(block => {
-                  const blockId = norm(block._id);
+                article: cleanArticle(a),
+                blocks: (blocksByArticle[aid] || []).map(b => {
+                  const bid = norm(b._id);
 
                   return {
-                    block,
-                    components: componentsByBlock[blockId] || []
+                    block: cleanBlock(b),
+                    components: (componentsByBlock[bid] || []).map(cleanComponent)
                   };
                 })
               };
@@ -114,7 +117,6 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
           };
         });
 
-        sanitized._storyboardHierarchy = hierarchy;
         cb();
       } catch (e) {
         cb(e);
