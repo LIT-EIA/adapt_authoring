@@ -31,20 +31,20 @@ function addLabelValue(children, label, value) {
   );
 }
 
-/* --- IMAGE HANDLER (UNCHANGED PIPELINE) --- */
+/* --- IMAGE HANDLER --- */
 async function renderImages(component, assetMap, children) {
+  // Find all "course/assets/..." strings in the component JSON
   const findAssets = (obj) => {
-    let found = [];
+    const found = [];
     const walk = (v) => {
       if (typeof v === "string" && v.indexOf("course/assets/") !== -1) {
         found.push(path.basename(v));
       } else if (v && typeof v === "object") {
-        Object.keys(v).forEach(function (k) {
-          walk(v[k]);
-        });
+        Object.keys(v).forEach(function (k) { walk(v[k]); });
       }
     };
     walk(obj);
+    // unique
     return found.filter(function (item, pos) {
       return found.indexOf(item) === pos;
     });
@@ -52,16 +52,22 @@ async function renderImages(component, assetMap, children) {
 
   const filenames = findAssets(component);
   const assets = Object.keys(assetMap)
-    .map(function (key) {
-      return assetMap[key];
-    })
-    .filter(function (a) {
-      return filenames.indexOf(a.filename) !== -1;
-    });
+    .map(function (key) { return assetMap[key]; })
+    .filter(function (a) { return filenames.indexOf(a.filename) !== -1; });
+
+  // Alt text
+  const altText =
+    component &&
+      component._graphic &&
+      typeof component._graphic.alt === "string" &&
+      component._graphic.alt.trim()
+      ? component._graphic.alt.trim()
+      : "";
 
   for (let i = 0; i < assets.length; i++) {
     const asset = assets[i];
     try {
+      // Load binary via filestorage (same pipeline as before)
       let buffer = await new Promise((resolve, reject) => {
         filestorage.getStorage(asset.repository, function (err, s) {
           if (err) return reject(err);
@@ -76,24 +82,26 @@ async function renderImages(component, assetMap, children) {
       // Strip UTF‑8 BOM if present
       if (
         buffer.length > 3 &&
-        buffer[0] === 0xef &&
-        buffer[1] === 0xbb &&
-        buffer[2] === 0xbf
+        buffer[0] === 0xEF &&
+        buffer[1] === 0xBB &&
+        buffer[2] === 0xBF
       ) {
         buffer = buffer.slice(3);
       }
 
+      // Determine image type from filename
       const lower = asset.filename.toLowerCase();
       let imgType = "jpg";
       if (lower.endsWith(".png")) imgType = "png";
       else if (lower.endsWith(".gif")) imgType = "gif";
       else if (lower.endsWith(".jpeg")) imgType = "jpg";
 
-      // Skip SVG (DOCX doesn’t support it)
+      // SVG not supported in DOCX
       if (lower.endsWith(".svg")) {
         continue;
       }
 
+      // Safe dimension handling
       let width = 400;
       let height = 300;
       try {
@@ -112,6 +120,34 @@ async function renderImages(component, assetMap, children) {
         // keep defaults
       }
 
+      // Normalize path like _normalize_relpath
+      let relpath = asset.path || "";
+      relpath = relpath.trim().replace(/^[\/\\]+/, "").replace(/\\/g, "/");
+
+      // Adapt Image File SCORM Location
+      addLabelValue(
+        children,
+        "Adapt Image File SCORM Location",
+        relpath || "(none)"
+      );
+
+      // Original Image file Adapt Asset Name
+      const title = (asset.title || "").trim();
+      const desc = (asset.description || "").trim();
+      let originalLine = title || asset.filename;
+      if (desc) {
+        originalLine += " Image Description in Metatag: " + desc;
+      }
+      addLabelValue(
+        children,
+        "Original Image file Adapt Asset Name",
+        originalLine
+      );
+
+      // Alt text
+      addLabelValue(children, "Alt text", altText || "(none)");
+
+      // --- EMBED IMAGE (unchanged, safe) ---
       children.push(
         new Paragraph({
           alignment: AlignmentType.CENTER,
@@ -124,23 +160,23 @@ async function renderImages(component, assetMap, children) {
           ]
         })
       );
+
+      children.push(new Paragraph({ text: "" }));
     } catch (e) {
-      // silently skip on error (keeps DOCX valid)
+      addLabelValue(
+        children,
+        "Image embed warning",
+        "Could not embed image: " + asset.filename
+      );
     }
   }
 }
 
-/* --- COMPONENT HANDLERS (PYTHON-ALIGNED LABELS/STRUCTURE, SIMPLIFIED) --- */
-
 const HANDLERS = {
   text: function (children, c) {
-    // Python _handle_text: only heading + common fields
-    // Already handled in main loop; nothing extra here
   },
 
   graphic: function (children, c) {
-    // Python _handle_graphic: heading + common fields + image
-    // Image is handled globally via renderImages
   },
 
   media: function (children, c) {
@@ -247,8 +283,74 @@ const HANDLERS = {
   },
 
   gmcq: function (children, c) {
-    // Simplified: reuse MCQ behavior
     HANDLERS.mcq(children, c);
+  },
+
+  "dnd-multiple": function (children, c) {
+
+    if (c.instruction) {
+      addLabelValue(children, "Instruction", safeText(c.instruction));
+    }
+
+    // --- ARIA Question (optional) ---
+    if (c.ariaQuestion) {
+      addLabelValue(children, "ARIA question", safeText(c.ariaQuestion));
+    }
+
+    // --- Items ---
+    const items = Array.isArray(c._items) ? c._items : [];
+    addLabelValue(children, "Number of items", String(items.length));
+
+    items.forEach((item, idx) => {
+      const title = safeText(item.title || "") || "(no title)";
+
+      // Item heading
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `Item ${idx + 1}: ${title}`, bold: true })
+          ]
+        })
+      );
+
+      // --- Options under each item ---
+      const opts = Array.isArray(item._options) ? item._options : [];
+      addLabelValue(children, "Options", String(opts.length));
+
+      opts.forEach((opt, j) => {
+        const optTitle = safeText(opt.title || "") || "(blank)";
+
+        children.push(
+          new Paragraph({
+            text: `• ${optTitle}`,
+            bullet: { level: 0 }
+          })
+        );
+
+        // --- Option graphic (large/small/src) ---
+        if (opt._graphic) {
+          const g = opt._graphic;
+
+          if (g.src || g.large || g.small) {
+            addLabelValue(children, "Graphic source", g.src || g.large || g.small);
+          }
+
+          if (g.alt) {
+            addLabelValue(children, "Graphic alt text", g.alt);
+          }
+
+          // Let your existing safe image pipeline embed the image
+          // (it will detect course/assets/... automatically)
+        }
+      });
+
+      children.push(new Paragraph({ text: "" }));
+    });
+
+    // --- Attempts ---
+    if (c._attempts !== undefined && c._attempts !== null) {
+      addLabelValue(children, "Attempts", String(c._attempts));
+    }
   },
 
   matching: function (children, c) {
@@ -416,7 +518,9 @@ const HANDLERS = {
 
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: "Simulation: Screens and steps", bold: true })]
+        children: [
+          new TextRun({ text: "Simulation: Screens and steps", bold: true })
+        ]
       })
     );
     addLabelValue(children, "Number of screens", String(screens.length));
@@ -574,7 +678,9 @@ module.exports = async function buildDocx(data, outputPath, done) {
       const p = hierarchy[i];
       children.push(
         new Paragraph({
-          text: "PAGE: " + (p.page && p.page.title ? p.page.title : "(no title)"),
+          text:
+            "PAGE: " +
+            (p.page && p.page.title ? p.page.title : "(no title)"),
           heading: HeadingLevel.HEADING_1
         })
       );
@@ -604,9 +710,8 @@ module.exports = async function buildDocx(data, outputPath, done) {
           for (let l = 0; l < b.components.length; l++) {
             const c = b.components[l];
 
-            // Component heading (Python _component_heading)
             const ctype = c.type || c._component || "(unknown)";
-            const layout = c.layout || c._layoutName || "";
+            const layout = c.layout || c._layout || c._layoutName || "";
             const headingLine =
               "Component: " + ctype + (layout ? " — " + layout : "");
             children.push(
@@ -625,7 +730,6 @@ module.exports = async function buildDocx(data, outputPath, done) {
               })
             );
 
-            // Common fields (Python _add_common_fields, simplified)
             const bodyRaw = c.body || "";
             addLabelValue(
               children,
@@ -641,12 +745,12 @@ module.exports = async function buildDocx(data, outputPath, done) {
             );
 
             // Component-specific handler
-            const typeKey = (c.type || "").toString();
+            const typeKey = (c.type || c._component || "").toString();
             if (typeKey && HANDLERS[typeKey]) {
               HANDLERS[typeKey](children, c);
             }
 
-            // Images (global scan, but stable and working)
+            // Images (global scan, but uses SCORM-like paths from JSON)
             await renderImages(c, assetMap, children);
 
             // Separator line between components
@@ -704,14 +808,13 @@ module.exports = async function buildDocx(data, outputPath, done) {
           {
             id: "IntenseQuote",
             name: "Intense Quote",
-            basedOn: "Normal",
-            next: "Normal",
             run: { font: "Arial", size: 24, italic: true, color: "444444" },
             paragraph: {
               indent: { left: 400, right: 400 },
               spacing: { before: 100, after: 100 }
             }
-          }
+          },
+
         ]
       },
       sections: [{ children: children }]
