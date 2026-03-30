@@ -5,19 +5,18 @@ const fs = require('fs-extra');
 const { Constants } = require('../../../lib/outputmanager');
 const database = require('../../../lib/database');
 const usermanager = require('../../../lib/usermanager');
-const outputHelpers = require('../adapt/outputHelpers'); // reuse validation & sortContentObjects
+const outputHelpers = require('../adapt/outputHelpers');
 const logger = require('../../../lib/logger');
+const config = require('../../../lib/configuration');
 
-// Our docx builder (we will create this in the next step)
+// Updated Builder and Cleaners
 const buildDocx = require('./docxBuilder');
-
 const {
   cleanPage,
   cleanArticle,
   cleanBlock,
   cleanComponent
 } = require("./cleaners");
-
 
 module.exports = function storyboard(courseId, mode, req, res, next) {
   const self = this;
@@ -27,17 +26,16 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
   let courseJson = null;
   let sanitized = null;
 
-  // target file path: temp/<tenant>/<course>/storyboard/<filename>.docx
-  const temp = require('../../../lib/configuration').tempDir;
-  const outputFolder = path.join(temp, tenantId.toString(), courseId.toString(), 'storyboard');
+  const tempDir = config.tempDir;
+  const outputFolder = path.join(tempDir, tenantId.toString(), courseId.toString(), 'storyboard');
 
   async.waterfall([
-    // 1. Ensure output folder exists
+    // 1. Prepare Environment
     function storyboardEnsureOutputFolder(cb) {
       fs.ensureDir(outputFolder, cb);
     },
 
-    // 2. Retrieve raw JSON for the course
+    // 2. Get Raw Course Data
     function storyBoardRetrieveRawJSON(jsonData, cb) {
       self.getCourseJSON(tenantId, courseId, function (err, json) {
         if (err) return cb(err);
@@ -46,7 +44,7 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
       });
     },
 
-    // 3. Validate basic course structure (optional but recommended)
+    // 3. Validation
     function storyboardValidateCourseStructure(cb) {
       outputHelpers.validateCourse(courseJson, function (err, isValid) {
         if (err || !isValid) {
@@ -56,7 +54,7 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
       });
     },
 
-    // 4. Sanitize JSON using Adapt’s logic
+    // 4. Adapt-Standard Sanitization
     function storyboardSanitizeJSON(cb) {
       self.sanitizeCourseJSON(Constants.Modes.Storyboard, courseJson, function (err, data) {
         if (err) return cb(err);
@@ -65,7 +63,7 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
       });
     },
 
-    // 5. Build ordered course hierarchy
+    // 5. Build Hierarchy (The "Glue" between Database and Storyboard)
     function storyboardBuildHierarchy(cb) {
       try {
         const norm = v => (v == null ? "" : v.toString());
@@ -78,41 +76,24 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
         console.log("build ordered course hierarchy sanitized:");
         console.dir(sanitized, { depth: null, colors: true });
 
-        const articlesByPage = {};
-        const blocksByArticle = {};
-        const componentsByBlock = {};
-
-        pages.forEach(p => {
-          const pid = norm(p._id);
-          articlesByPage[pid] = articles.filter(a => norm(a._parentId) === pid);
-        });
-
-        articles.forEach(a => {
-          const aid = norm(a._id);
-          blocksByArticle[aid] = blocks.filter(b => norm(b._parentId) === aid);
-        });
-
-        blocks.forEach(b => {
-          const bid = norm(b._id);
-          componentsByBlock[bid] = components.filter(c => norm(c._parentId) === bid);
-        });
-
+        // Map children to parents
         sanitized._storyboardHierarchy = pages.map(p => {
           const pid = norm(p._id);
 
           return {
-            page: cleanPage(p),
-            articles: (articlesByPage[pid] || []).map(a => {
+            page: cleanPage(p), // Now preserves _graphic for the builder
+            articles: articles.filter(a => norm(a._parentId) === pid).map(a => {
               const aid = norm(a._id);
 
               return {
                 article: cleanArticle(a),
-                blocks: (blocksByArticle[aid] || []).map(b => {
+                blocks: blocks.filter(b => norm(b._parentId) === aid).map(b => {
                   const bid = norm(b._id);
 
                   return {
                     block: cleanBlock(b),
-                    components: (componentsByBlock[bid] || []).map(cleanComponent)
+                    // Crucial Change: cleanComponent now keeps the data needed for MCQ/Talk/Sim
+                    components: components.filter(c => norm(c._parentId) === bid).map(cleanComponent)
                   };
                 })
               };
@@ -126,97 +107,70 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
       }
     },
 
-    // 6. Retrieve all asset metadata for this course
+    // 6. Map Assets (Real Server Paths)
     function storyboardRetrieveAssetMetadata(cb) {
       database.getDatabase(function (err, db) {
         if (err) return cb(err);
 
-        db.retrieve(
-          "courseasset",
-          { _courseId: courseId, _contentType: { $ne: "theme" } },
-          function (err, mappings) {
+        db.retrieve("courseasset", { _courseId: courseId, _contentType: { $ne: "theme" } }, function (err, mappings) {
+          if (err) return cb(err);
+          if (!mappings || mappings.length === 0) {
+            sanitized._storyboardAssets = {};
+            return cb();
+          }
+
+          const assetIds = mappings.map(m => m._assetId);
+          const assetmanager = require("../../../lib/assetmanager");
+          const tenantAssetRoot = path.join(config.tempDir, tenantId.toString(), "assets");
+
+          assetmanager.retrieveAsset({ _id: { $in: assetIds } }, function (err, assets) {
             if (err) return cb(err);
 
-            if (!mappings || mappings.length === 0) {
-              sanitized._storyboardAssets = {};
-              return cb();
-            }
+            const map = {};
+            assets.forEach(a => {
+              const raw = a._doc || a;
+              const cleanedPath = raw.path.replace(/\\/g, path.sep);
 
-            const assetIds = mappings.map(m => m._assetId);
-            const assetmanager = require("../../../lib/assetmanager");
-            const config = require("../../../lib/configuration");
+              map[raw._id.toString()] = {
+                _id: raw._id.toString(),
+                filename: raw.filename,
+                path: raw.path,
+                title: raw.title,
+                description: raw.description,
+                repository: raw.repository,
+                realPath: path.join(tenantAssetRoot, cleanedPath)
+              };
+            });
 
-            const tenantAssetRoot = path.join(
-              config.tempDir,
-              tenantId.toString(),
-              "assets"
-            );
-
-            assetmanager.retrieveAsset(
-              { _id: { $in: assetIds } },
-              function (err, assets) {
-                if (err) return cb(err);
-
-                const map = {};
-
-                assets.forEach(a => {
-                  const raw = a._doc || a;                    // <-- Normalize Mongoose
-                  const cleaned = raw.path.replace(/\\/g, path.sep);
-
-                  const realPath = path.join(tenantAssetRoot, cleaned);
-
-                  map[raw._id] = {
-                    _id: raw._id,
-                    filename: raw.filename,
-                    path: raw.path,
-                    title: raw.title,
-                    description: raw.description,
-                    repository: raw.repository,
-                    realPath
-                  };
-                });
-
-                sanitized._storyboardAssets = map;
-                cb();
-              }
-            );
-          }
-        );
+            sanitized._storyboardAssets = map;
+            cb();
+          });
+        });
       });
     },
 
-    // 7. Generate DOCX file (call the docxBuilder)
+    // 7. Generate Document
     function storyboardGenerateDocx(cb) {
-      try {
-        const courseTitle = sanitized.course.title || 'course';
-        const safeTitle = courseTitle.replace(/[\/\\?%*:|"<>]/g, '-'); // sanitize for filename
+      const courseTitle = sanitized.course.title || 'course';
+      const safeTitle = courseTitle.replace(/[\/\\?%*:|"<>]/g, '-');
+      const filename = `${safeTitle} - Storyboard.docx`;
+      const filepath = path.join(outputFolder, filename);
 
-        const filename = `${safeTitle} - Storyboard.docx`;
-        const filepath = path.join(outputFolder, filename);
+      // Call the refactored Builder
+      buildDocx(sanitized, filepath, function (err) {
+        if (err) return cb(err);
 
-        // Now call our builder
-        buildDocx(sanitized, filepath, function (err) {
-          if (err) return cb(err);
-
-          // Store filename for final response
-          sanitized._storyboardFile = {
-            filename,
-            path: filepath
-          };
-          cb();
-        });
-
-      } catch (e) {
-        cb(e);
-      }
-    },
+        sanitized._storyboardFile = { filename, path: filepath };
+        cb();
+      });
+    }
 
   ], function (err) {
     if (err) {
       logger.log('error', err);
       return next(err);
     }
-
+    // Return final success with the filename for the UI
     return next(null, {
       success: true,
       filename: sanitized._storyboardFile.filename
