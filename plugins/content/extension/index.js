@@ -296,6 +296,7 @@ function ContentPermissionError(message) {
 };
 
 function toggleExtensions(courseId, action, extensions, cb) {
+  console.log('toggling extensions', courseId, action, extensions);
   if (!extensions || 'object' !== typeof extensions) {
     return cb(new Error('Incorrect parameters passed'));
   }
@@ -369,19 +370,27 @@ function toggleExtensions(courseId, action, extensions, cb) {
 
       // verify if user has permissions for all extenstions, if all permissions ok process extensions
       async.eachSeries(results, function (extensionItem, nextItem) {
-        const resource = permissions.buildResourceString(user.tenant._id, `/api/extension/${extensionItem.extension}`);
+        const resource = permissions.buildResourceString(user.tenant._id, `/api/master/extension/${extensionItem.extension}`);
+        console.log(resource);
         permissions.hasPermission(user._id, 'update', resource, function (err, isAllowed) {
-          if (!isAllowed) {
-            return cb(new ContentPermissionError());
-          }
-
-          var permissionQuery = _.extend({ _courseId: courseId }, extensionItem);
-          helpers.hasCoursePermission('update', user._id, user.tenant._id, permissionQuery, function (err, isAllowed) {
-            if (!isAllowed) {
-              return cb(new ContentPermissionError());
-            }
+          if (isAllowed) {
             nextItem();
-          });
+          } else {
+            const resource = permissions.buildResourceString(user.tenant._id, `/api/extension/${extensionItem.extension}`);
+            permissions.hasPermission(user._id, 'update', resource, function (err, isAllowed) {
+              if (!isAllowed) {
+                return cb(new ContentPermissionError());
+              }
+              var permissionQuery = _.extend({ _courseId: courseId }, extensionItem);
+              console.log(permissionQuery)
+              helpers.hasCoursePermission('update', user._id, user.tenant._id, permissionQuery, function (err, isAllowed) {
+                if (!isAllowed) {
+                  return cb(new ContentPermissionError());
+                }
+                nextItem();
+              });
+            });
+          }
         });
       }, processExtensions);
 
