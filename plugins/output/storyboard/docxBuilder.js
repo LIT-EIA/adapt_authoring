@@ -1,13 +1,13 @@
 const fs = require("fs");
 const path = require("path");
-const { 
-  Document, 
-  Packer, 
-  Paragraph, 
-  TextRun, 
-  HeadingLevel, 
-  ImageRun, 
-  AlignmentType 
+const {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  ImageRun,
+  AlignmentType
 } = require("docx");
 const filestorage = require("../../../lib/filestorage");
 const sizeOf = require("image-size");
@@ -51,26 +51,68 @@ async function renderImages(component, assetMap, children) {
   for (let i = 0; i < assets.length; i++) {
     const asset = assets[i];
     try {
-      const buffer = await new Promise((resolve, reject) => {
+      let buffer = await new Promise((resolve, reject) => {
         filestorage.getStorage(asset.repository, function(err, s) {
           if (err) return reject(err);
           s.getFileContents(asset.path, function(e, b) { e ? reject(e) : resolve(b); });
         });
       });
 
+      // Normalize buffer (like old code)
+      if (!Buffer.isBuffer(buffer)) buffer = Buffer.from(buffer);
+
+      // Strip UTF‑8 BOM if present
+      if (buffer.length > 3 && buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
+        buffer = buffer.slice(3);
+      }
+
       addLabelValue(children, "Adapt Image File SCORM Location", asset.path);
       const metaStr = (asset.title || "") + (asset.description ? " Image Description in Metatag: " + asset.description : "");
       addLabelValue(children, "Original Image file Adapt Asset Name", metaStr);
 
-      const dim = sizeOf(buffer);
-      let width = dim.width > 400 ? 400 : dim.width;
-      let height = Math.round(dim.height * (width / dim.width));
+      // Determine image type from filename (CRITICAL)
+      const lower = asset.filename.toLowerCase();
+      let imgType = "jpg";
+      if (lower.endsWith(".png")) imgType = "png";
+      else if (lower.endsWith(".gif")) imgType = "gif";
+      else if (lower.endsWith(".jpeg")) imgType = "jpg";
+
+      // SVG not supported in DOCX
+      if (lower.endsWith(".svg")) {
+        addLabelValue(children, "Image embed warning", "SVG not supported in DOCX: " + asset.filename);
+        continue;
+      }
+
+      // Safe dimension handling
+      let width = 400;
+      let height = 300;
+      try {
+        const dim = sizeOf(buffer);
+        if (dim && dim.width && dim.height) {
+          width = dim.width;
+          height = dim.height;
+          const MAX_WIDTH = 600;
+          if (width > MAX_WIDTH) {
+            const scale = MAX_WIDTH / width;
+            width = MAX_WIDTH;
+            height = Math.round(height * scale);
+          }
+        }
+      } catch (e) {
+        // keep defaults
+      }
 
       children.push(new Paragraph({
         alignment: AlignmentType.CENTER,
-        children: [new ImageRun({ data: buffer, transformation: { width: width, height: height } })]
+        children: [
+          new ImageRun({
+            data: buffer,
+            type: imgType,              // <-- restored
+            transformation: { width, height }
+          })
+        ]
       }));
-      
+
       addLabelValue(children, "Alt text", (component._graphic && component._graphic.alt) || "(none)");
     } catch (e) {
       addLabelValue(children, "Image embed warning", "Could not embed image: " + asset.filename);
@@ -142,7 +184,7 @@ module.exports = async function buildDocx(data, outputPath, done) {
     for (let i = 0; i < hierarchy.length; i++) {
       const p = hierarchy[i];
       children.push(new Paragraph({ text: "PAGE: " + p.page.title, heading: HeadingLevel.HEADING_1 }));
-      
+
       for (let j = 0; j < p.articles.length; j++) {
         const a = p.articles[j];
         children.push(new Paragraph({ text: "Article: " + a.article.title, heading: HeadingLevel.HEADING_2 }));
@@ -153,7 +195,7 @@ module.exports = async function buildDocx(data, outputPath, done) {
 
           for (let l = 0; l < b.components.length; l++) {
             const c = b.components[l];
-            
+
             // --- SYNCED COMPONENT HEADING (Line 1) ---
             const ctype = c.type || "(unknown)";
             const layout = c.layout || "";
@@ -177,10 +219,10 @@ module.exports = async function buildDocx(data, outputPath, done) {
             if (HANDLERS[typeKey]) HANDLERS[typeKey](children, c);
 
             await renderImages(c, assetMap, children);
-            
-            children.push(new Paragraph({ 
-                text: "__________________________________________________________________", 
-                spacing: { before: 200, after: 400 } 
+
+            children.push(new Paragraph({
+                text: "__________________________________________________________________",
+                spacing: { before: 200, after: 400 }
             }));
           }
         }
@@ -196,9 +238,9 @@ module.exports = async function buildDocx(data, outputPath, done) {
           { id: "Heading3", name: "Heading 3", run: { font: "Arial", size: 28, bold: true, color: "0070C0" } },
           { id: "Heading4", name: "Heading 4", run: { font: "Arial", size: 26, bold: true, color: "808240" } },
           // SYNCED INTENSE QUOTE STYLE
-          { 
-            id: "IntenseQuote", 
-            name: "Intense Quote", 
+          {
+            id: "IntenseQuote",
+            name: "Intense Quote",
             run: { font: "Arial", size: 24, italic: true, color: "444444" },
             paragraph: { indent: { left: 400, right: 400 }, spacing: { before: 100, after: 100 } }
           }
