@@ -111,16 +111,7 @@ define(function(require) {
 
   Origin.on('origin:dataReady login:changed', function() {
 
-    // Data for permissions check
-    const ownData = {
-      featurePermissions: ["{{tenantid}}/content/course/own:read"]
-    };
-
-    if(Origin.permissions.hasPermissions(ownData.featurePermissions)){
-      Origin.router.setHomeRoute('dashboard');
-    } else {
-      Origin.router.setHomeRoute('dashboard/shared');
-    }
+    Origin.router.setHomeRoute('dashboard');
 
     Origin.globalMenu.addItem({
       "location": "global",

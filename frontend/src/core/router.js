@@ -137,6 +137,12 @@ define(function(require) {
     },
 
     navigateTo: function(route) {
+      const ownData = {
+        featurePermissions: ["{{tenantid}}/content/course/own:read"]
+      };
+      if(route === "dashboard" && !Origin.permissions.hasPermissions(ownData.featurePermissions)){
+        route = "dashboard/shared";
+      }
       // use Origin.router.navigate in case we don't have a valid 'this' reference
       Origin.router.navigate(this.formatRoute(route), { trigger: true });
     },
