@@ -159,7 +159,7 @@ module.exports = async function buildDocx(data, outputPath, done) {
           {
             id: "IntenseQuote",
             name: "Intense Quote",
-            run: { font: "Arial", size: 24, italic: true, color: "444444" },
+            run: { font: "Arial", size: 24, italic: true, bold: true, underline: true, color: "4472C4" },
             paragraph: {
               indent: { left: 400, right: 400 },
               spacing: { before: 100, after: 100 }

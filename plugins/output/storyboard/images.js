@@ -82,6 +82,10 @@ async function renderImages(component, assetMap, children) {
       let relpath = asset.path || "";
       relpath = relpath.trim().replace(/^[\/\\]+/, "").replace(/\\/g, "/");
 
+      children.push(
+        new Paragraph({ spacing: { before: 400 }, text: "" })
+      );
+
       addLabelValue(children, "Adapt Image File SCORM Location", relpath || "(none)");
 
       const title = (asset.title || "").trim();
@@ -97,6 +101,7 @@ async function renderImages(component, assetMap, children) {
       children.push(
         new Paragraph({
           alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
           children: [
             new ImageRun({
               data: buffer,
