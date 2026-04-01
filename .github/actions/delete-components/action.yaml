@@ -19,7 +19,7 @@ runs:
         echo "Namespace: $NAMESPACE"
         echo "====================================="
 
-        kubectl delete deployment mongodb "$NAMESPACE"
+        kubectl delete deployment mongodb -n "$NAMESPACE"
         kubectl delete service mongodb -n "$NAMESPACE"
 
 
