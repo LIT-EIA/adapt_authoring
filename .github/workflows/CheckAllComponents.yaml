@@ -73,15 +73,10 @@ jobs:
             --name "$CLOUDK8SCLUSTERNAME" \
             --resource-group "$CLOUDK8SRG"
 
+
       # Step 5: Check Kubernetes Components
       - name: Check Kubernetes Components
-        run: |
-          echo "Checking components in the Kubernetes namespace..."
-          kubectl get all -n $NAMESPACE
-          kubectl get ingress -n $NAMESPACE
-          kubectl get configmaps -n $NAMESPACE
-          helm list -n $NAMESPACE
-          kubectl get pods -n $NAMESPACE
-          kubectl get -n $NAMESPACE all,secret,secretstore
-          kubectl get pvc -n $NAMESPACE
-          echo "No deployment actions will be taken."
+        uses: ./.github/actions/checkcomponents
+        with:
+          namespace: ${{ env.NAMESPACE }}
+

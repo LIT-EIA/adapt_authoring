@@ -1,4 +1,4 @@
-name: Check Kubernetes Components and Import Secrets
+name:  Import Secrets, Login and Call files
 
 on:
   workflow_dispatch: # Allows manual triggering
