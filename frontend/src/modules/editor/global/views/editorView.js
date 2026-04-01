@@ -434,9 +434,20 @@ define(function(require) {
           });
         }
       }).fail(function(jqXHR, textStatus, errorThrown) {
+        console.log('clipboard me error: ', jqXHR);
+        let errorText;
+
+        if (jqXHR.status === 403) {
+          errorText = Origin.l10n.t('app.errorpermission');
+        } else {
+          // Default behavior
+          const msg = jqXHR.message ? '\n\n' + jqXHR.message : 'Unknown error with clipboard API';
+          errorText = Origin.l10n.t('app.errorpaste') + msg;
+        }
+
         Origin.Notify.alert({
           type: 'error',
-          text: Origin.l10n.t('app.errorpaste') + (jqXHR.message ? '\n\n' + jqXHR.message : 'Unknown error with clipboard API')
+          text: errorText
         });
       });
     },
