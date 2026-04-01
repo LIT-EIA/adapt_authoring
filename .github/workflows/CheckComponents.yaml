@@ -23,14 +23,14 @@ jobs:
         id: import-secrets
         uses: hashicorp/vault-action@v2
         with:
-          url: https://vault.dev-dp.admin.dts-stn.com:8200
+          url: https://vault.dev-dp.admin.dts-stn.com
           method: approle
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            /v1/adapt-authoring/data/AZURE!/SPN_APP_ID% | AZURESPNAPPID
-            /v1/adapt-authoring/data/AZURE!/SPN_NAME | AZURESPNNAME
-            /v1/adapt-authoring/data/AZURE/SPN_SECRET | AZURESPNSECRET
+            adapt-authoring/data/AZURE!/SPN_APP_ID% | AZURESPNAPPID
+            adapt-authoring/data/AZURE!/SPN_NAME | AZURESPNNAME
+            adapt-authoring/data/AZURE/SPN_SECRET | AZURESPNSECRET
             /v1/adapt-authoring/data/AZURE/TENANT_ID | CLOUDTENANTID
             /v1/adapt-authoring/data/AZURE/ACR_DOMAIN | CLOUDACRDOMAIN
             /v1/adapt-authoring/data/AZURE/CLOUD_SUBSCRIPTION | CLOUDSUBSCRIPTION
