@@ -1,4 +1,4 @@
-name: Delete Kubernetes Components
+name: Check Kubernetes Components and Import Secrets
 
 on:
   workflow_dispatch: # Allows manual triggering
@@ -74,14 +74,9 @@ jobs:
             --resource-group "$CLOUDK8SRG"
 
 
-      # Step 5: Delete Kubernetes Components
-      - name: Check Kubernetes Components
-        uses: ./.github/actions/delete-components
-        with:
-          namespace: ${{ env.NAMESPACE }}
-
-      # Step 6: Check Kubernetes Components
+      # Step 5: Check Kubernetes Components
       - name: Check Kubernetes Components
         uses: ./.github/actions/check-components
         with:
           namespace: ${{ env.NAMESPACE }}
+
