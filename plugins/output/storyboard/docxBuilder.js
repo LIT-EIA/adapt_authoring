@@ -98,11 +98,8 @@ module.exports = async function buildDocx(data, outputPath, done) {
             // Component-specific handler
             const typeKey = (c.type || c._component || "").toString();
             if (typeKey && HANDLERS[typeKey]) {
-              HANDLERS[typeKey](children, c);
+              await HANDLERS[typeKey](children, c, assetMap);
             }
-
-            // Images
-            await renderImages(c, assetMap, children);
 
             // Separator
             children.push(

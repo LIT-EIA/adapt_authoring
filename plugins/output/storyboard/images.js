@@ -2,7 +2,7 @@ const path = require("path");
 const { Paragraph, ImageRun, AlignmentType } = require("docx");
 const filestorage = require("../../../lib/filestorage");
 const sizeOf = require("image-size");
-const { addLabelValue } = require("./utils");
+const { addLabelValue, safeText } = require("./utils");
 
 /* --- IMAGE HANDLER --- */
 async function renderImages(component, assetMap, children) {
@@ -26,9 +26,9 @@ async function renderImages(component, assetMap, children) {
 
   const altText =
     component &&
-    component._graphic &&
-    typeof component._graphic.alt === "string" &&
-    component._graphic.alt.trim()
+      component._graphic &&
+      typeof component._graphic.alt === "string" &&
+      component._graphic.alt.trim()
       ? component._graphic.alt.trim()
       : "";
 
@@ -75,7 +75,7 @@ async function renderImages(component, assetMap, children) {
           width = TARGET_WIDTH;
           height = Math.round(dim.height * scale);
         }
-      } catch (e) {}
+      } catch (e) { }
 
       let relpath = asset.path || "";
       relpath = relpath.trim().replace(/^[\/\\]+/, "").replace(/\\/g, "/");
@@ -121,6 +121,134 @@ async function renderImages(component, assetMap, children) {
   }
 }
 
+/* Normalize Adapt/SCORM asset paths */
+function normalizeSrc(src) {
+  if (!src) return "";
+
+  // Remove query params
+  src = src.split("?")[0];
+
+  // Normalize slashes
+  src = src.replace(/\\/g, "/");
+
+  // Remove leading ./ or ../
+  src = src.replace(/^(\.\/|\.\.\/)+/, "");
+
+  // Ensure we anchor at course/assets/
+  const idx = src.indexOf("course/assets/");
+  if (idx !== -1) {
+    src = src.substring(idx);
+  }
+
+  return src.trim();
+}
+
+async function addImageBlock(children, src, altText, assetMap) {
+  if (!src) {
+    addLabelValue(children, "Adapt Image File SCORM Location", "(none)");
+    return;
+  }
+  addLabelValue(children, "Graphic source", src);
+  if (altText) addLabelValue(children, "Graphic alt text", altText);
+
+  // Normalize the incoming src so it matches assetMap entries
+  const normalized = normalizeSrc(src);
+  const filename = path.basename(normalized);
+
+  // Find the asset by filename
+  const asset = Object.values(assetMap).find(a => a.filename === filename);
+
+  if (!asset) {
+    addLabelValue(children, "Adapt Image File SCORM Location", normalized);
+    addLabelValue(children, "Image embed warning", "Image file not found.");
+    return;
+  }
+
+  // Load binary data from filestorage
+  let buffer = await new Promise((resolve, reject) => {
+    filestorage.getStorage(asset.repository, (err, storage) => {
+      if (err) return reject(err);
+      storage.getFileContents(asset.path, (e, data) => {
+        if (e) reject(e);
+        else resolve(data);
+      });
+    });
+  });
+
+  if (!Buffer.isBuffer(buffer)) buffer = Buffer.from(buffer);
+
+  // Strip UTF‑8 BOM if present
+  if (
+    buffer.length > 3 &&
+    buffer[0] === 0xef &&
+    buffer[1] === 0xbb &&
+    buffer[2] === 0xbf
+  ) {
+    buffer = buffer.slice(3);
+  }
+
+  const lower = asset.filename.toLowerCase();
+
+  // Skip SVGs (docx cannot embed them)
+  if (lower.endsWith(".svg")) {
+    addLabelValue(children, "Image embed warning", `${asset.filename} is SVG and cannot be embedded.`);
+    return;
+  }
+
+  // Determine image type
+  let imgType = "jpg";
+  if (lower.endsWith(".png")) imgType = "png";
+  else if (lower.endsWith(".gif")) imgType = "gif";
+  else if (lower.endsWith(".jpeg")) imgType = "jpg";
+
+  const TARGET_WIDTH = 336;
+  let width = TARGET_WIDTH;
+  let height = 200; // fallback
+
+  try {
+    const dim = sizeOf(buffer);
+    if (dim && dim.width && dim.height) {
+      const scale = TARGET_WIDTH / dim.width;
+      width = TARGET_WIDTH;
+      height = Math.round(dim.height * scale);
+    }
+  } catch (e) {
+    // Keep fallback height
+  }
+
+  children.push(
+    new Paragraph({ spacing: { before: 400 }, text: "" })
+  );
+
+  addLabelValue(children, "Adapt Image File SCORM Location", asset.path || "(none)");
+
+  const title = safeText(asset.title || "");
+  const desc = safeText(asset.description || "");
+  let originalLine = title || asset.filename;
+  if (desc) originalLine += " Image Description in Metatag: " + desc;
+
+  addLabelValue(children, "Original Image file Adapt Asset Name", originalLine);
+  addLabelValue(children, "Alt text", altText || "(none)");
+
+  // Embed the image
+  children.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 300 },
+      children: [
+        new ImageRun({
+          data: buffer,
+          type: imgType,
+          transformation: { width, height }
+        })
+      ]
+    })
+  );
+
+  children.push(new Paragraph({ text: "" }));
+}
+
 module.exports = {
-  renderImages
+  renderImages,
+  addImageBlock
 };

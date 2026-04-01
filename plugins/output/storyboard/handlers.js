@@ -1,10 +1,33 @@
 const { Paragraph, TextRun } = require("docx");
-const { safeText, addLabelValue } = require("./utils");
+const {
+  safeText,
+  addLabelValue,
+  htmlToText,
+  resolveAssetRef,
+  renderStandardQuestionFeedback
+} = require("./utils");
+const { addImageBlock } = require("./images");
 
 const HANDLERS = {
   text: function () { },
 
-  graphic: function () { },
+  graphic: async function (children, c, assetMap) {
+    const g = c._graphic || {};
+
+    const rel =
+      (g.large && g.large.trim()) ||
+      (g.small && g.small.trim()) ||
+      (g.src && g.src.trim()) ||
+      "";
+
+    const alt = g.alt || "";
+
+    if (rel) {
+      await addImageBlock(children, rel, alt, assetMap);
+    } else {
+      addLabelValue(children, "Adapt Image File SCORM Location", "(none)");
+    }
+  },
 
   media: function (children, c) {
     const m = c._media || {};
@@ -93,8 +116,65 @@ const HANDLERS = {
     }
   },
 
-  gmcq: function (children, c) {
-    HANDLERS.mcq(children, c);
+  gmcq: async function (children, c, assetMap, utils) {
+    // Optional layout hint
+    const cols = c._columns;
+    if (cols !== undefined && cols !== null) {
+      addLabelValue(children, "Columns", String(cols));
+    }
+
+    const items = Array.isArray(c._items) ? c._items : [];
+    if (items.length > 0) {
+      children.push(new Paragraph({ text: "Options" }));
+
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        if (!it || typeof it !== "object") continue;
+
+        const txt = htmlToText(it.text || "");
+        const should = it._shouldBeSelected;
+        const fb = htmlToText(it.feedback || "");
+
+        let line = `${i + 1}. ${txt || "(blank)"}`;
+        if (should === true) line += " [Correct]";
+        else if (should === false) line += " [Incorrect]";
+
+        children.push(
+          new Paragraph({
+            text: line,
+            bullet: { level: 0 }
+          })
+        );
+
+        // Option-level graphic
+        const g = it._graphic || {};
+        if (g && typeof g === "object") {
+          const rel =
+            (g.large && g.large.trim()) ||
+            (g.small && g.small.trim()) ||
+            (g.src && g.src.trim()) ||
+            "";
+
+          const alt = g.alt || "";
+
+          if (rel) {
+            const resolved = resolveAssetRef(rel, assetMap);
+            if (resolved) {
+              await addImageBlock(children, resolved, alt, assetMap);
+            }
+          }
+        }
+
+        if (fb) {
+          addLabelValue(children, "Option feedback", fb);
+        }
+      }
+    }
+
+    // Standard question-level feedback
+    if (renderStandardQuestionFeedback) {
+      renderStandardQuestionFeedback(children, c);
+    }
   },
 
   "dnd-multiple": function (children, c) {
@@ -259,62 +339,261 @@ const HANDLERS = {
     children.push(new Paragraph({ text: "" }));
   },
 
-  narrative: function (children, c) {
+  narrative: async function (children, c, assetMap) {
     const items = Array.isArray(c._items) ? c._items : [];
+
     addLabelValue(children, "Narrative panels", String(items.length));
 
-    items.forEach(function (it, idx) {
-      if (!it || typeof it !== "object") return;
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (!it || typeof it !== "object") continue;
+
       const title = safeText(it.title || "") || "(no title)";
 
       children.push(
         new Paragraph({
           children: [
-            new TextRun({
-              text: "Panel " + (idx + 1) + ": " + title,
-              bold: true
-            })
+            new TextRun({ text: `Panel ${i + 1}: ${title}`, bold: true })
           ]
         })
       );
 
-      const body = it.body || "";
-      if (body) addLabelValue(children, "Panel body", body);
+      const body = htmlToText(it.body || "");
+      if (body) {
+        addLabelValue(children, "Panel body", body);
+      }
 
-      const strap = it.strapline || "";
-      if (strap) addLabelValue(children, "Panel strapline", strap);
+      const strap = htmlToText(it.strapline || "");
+      if (strap) {
+        addLabelValue(children, "Panel strapline", strap);
+      }
+
+      const g = it._graphic || {};
+      if (g && typeof g === "object") {
+        const rel =
+          (g.src && g.src.trim()) ||
+          (g.large && g.large.trim()) ||
+          (g.small && g.small.trim()) ||
+          "";
+
+        const alt = g.alt || "";
+
+        if (rel) {
+          await addImageBlock(children, rel, alt, assetMap);
+        }
+      }
 
       children.push(new Paragraph({ text: "" }));
-    });
+    }
   },
 
-  accordion: function (children, c) {
+  accordion: async function (children, c, assetMap) {
     const items = Array.isArray(c._items) ? c._items : [];
+
     addLabelValue(children, "Accordion items", String(items.length));
 
-    items.forEach(function (it, idx) {
-      if (!it || typeof it !== "object") return;
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (!it || typeof it !== "object") continue;
+
       const title = safeText(it.title || "") || "(no title)";
 
       children.push(
         new Paragraph({
           children: [
-            new TextRun({
-              text: "Accordion " + (idx + 1) + ": " + title,
-              bold: true
-            })
+            new TextRun({ text: `Accordion ${i + 1}: ${title}`, bold: true })
           ]
         })
       );
 
-      const body = it.body || "";
+      const body = htmlToText(it.body || "");
       addLabelValue(children, "Accordion body", body || "(none)");
 
+      const g = it._graphic || {};
+      if (g && typeof g === "object") {
+        const rel =
+          (g.src && g.src.trim()) ||
+          (g.large && g.large.trim()) ||
+          (g.small && g.small.trim()) ||
+          "";
+
+        const alt = g.alt || "";
+
+        if (rel) {
+          await addImageBlock(children, rel, alt, assetMap);
+        }
+      }
+
       children.push(new Paragraph({ text: "" }));
-    });
+    }
   },
 
-  simulation: function (children, c) {
+  hotgraphic: async function (children, c, assetMap) {
+    // Base graphic (main image)
+    const g = c._graphic || {};
+    if (g && typeof g === "object") {
+      const rel =
+        (g.src && g.src.trim()) ||
+        (g.large && g.large.trim()) ||
+        (g.small && g.small.trim()) ||
+        "";
+
+      const alt = g.alt || "";
+
+      if (rel) {
+        await addImageBlock(children, rel, alt, assetMap);
+        children.push(new Paragraph({ text: "" }));
+      }
+    }
+
+    // Hotspots
+    const items = Array.isArray(c._items) ? c._items : [];
+    addLabelValue(children, "Hotspots", String(items.length));
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (!it || typeof it !== "object") continue;
+
+      const title = safeText(it.title || "") || "(no title)";
+
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Hotspot " + (i + 1) + ": " + title, bold: true })
+          ]
+        })
+      );
+
+      const strap = htmlToText(it.strapline || "");
+      if (strap) {
+        addLabelValue(children, "Strapline", strap);
+      }
+
+      const body = htmlToText(it.body || "");
+      addLabelValue(children, "Hotspot body", body || "(none)");
+
+      // Node 12-safe fallback for left/top
+      const left = (typeof it._left === "number" || typeof it._left === "string")
+        ? it._left
+        : "?";
+
+      const top = (typeof it._top === "number" || typeof it._top === "string")
+        ? it._top
+        : "?";
+
+      const coords = "left: " + left + "%, top: " + top + "%";
+      addLabelValue(children, "Position", coords);
+
+      // Hotspot-level graphic
+      const ig = it._graphic || {};
+      if (ig && typeof ig === "object") {
+        const rel =
+          (ig.src && ig.src.trim()) ||
+          (ig.large && ig.large.trim()) ||
+          (ig.small && ig.small.trim()) ||
+          "";
+
+        const alt = ig.alt || "";
+
+        if (rel) {
+          await addImageBlock(children, rel, alt, assetMap);
+        }
+      }
+
+      children.push(new Paragraph({ text: "" }));
+    }
+  },
+
+  hotgrid: async function (children, c, assetMap) {
+    const items = Array.isArray(c._items) ? c._items : [];
+
+    addLabelValue(children, "Hotgrid items", String(items.length));
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (!it || typeof it !== "object") continue;
+
+      const title = safeText(it.title || "") || "(no title)";
+
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `Hotgrid tile ${i + 1}: ${title}`, bold: true })
+          ]
+        })
+      );
+
+      const body = htmlToText(it.body || "");
+      addLabelValue(children, "Tile body", body || "(none)");
+
+      const g = it._graphic || {};
+      if (g && typeof g === "object") {
+        const rel =
+          (g.src && g.src.trim()) ||
+          (g.large && g.large.trim()) ||
+          (g.small && g.small.trim()) ||
+          "";
+
+        const alt = g.alt || "";
+
+        if (rel) {
+          await addImageBlock(children, rel, alt, assetMap);
+        }
+      }
+
+      children.push(new Paragraph({ text: "" }));
+    }
+  },
+
+  guidedtour: async function (children, c, assetMap) {
+    const items = Array.isArray(c._items) ? c._items : [];
+
+    addLabelValue(children, "Tour steps", String(items.length));
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (!it || typeof it !== "object") continue;
+
+      const title = safeText(it.title || "") || "(no title)";
+
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `Step ${i + 1}: ${title}`, bold: true })
+          ]
+        })
+      );
+
+      const body = htmlToText(it.body || "");
+      addLabelValue(children, "Step body", body || "(none)");
+
+      // Step-level graphic
+      const g = it._graphic || {};
+      if (g && typeof g === "object") {
+        const rel =
+          (g.src && g.src.trim()) ||
+          (g.large && g.large.trim()) ||
+          (g.small && g.small.trim()) ||
+          "";
+
+        const alt = g.alt || "";
+
+        if (rel) {
+          await addImageBlock(children, rel, alt, assetMap);
+        }
+      }
+
+      const pin = it._pin || {};
+      if (pin && typeof pin === "object" && (pin.src || pin.alt)) {
+        const pinText = `${pin.src || ""} ${pin.alt || ""}`.trim() || "(none)";
+        addLabelValue(children, "Pin", pinText);
+      }
+
+      children.push(new Paragraph({ text: "" }));
+    }
+  },
+
+  simulation: async function (children, c, assetMap) {
     const screens = Array.isArray(c._items) ? c._items : [];
 
     children.push(
@@ -326,8 +605,9 @@ const HANDLERS = {
     );
     addLabelValue(children, "Number of screens", String(screens.length));
 
-    screens.forEach(function (screen, sIdx) {
-      if (!screen || typeof screen !== "object") return;
+    for (let sIdx = 0; sIdx < screens.length; sIdx++) {
+      const screen = screens[sIdx];
+      if (!screen || typeof screen !== "object") continue;
 
       const title = safeText(screen.title || "") || "Screen " + (sIdx + 1);
       const disp = safeText(screen.displayTitle || "");
@@ -347,6 +627,11 @@ const HANDLERS = {
       const body = screen.body || "";
       if (body) addLabelValue(children, "Screen body", body);
 
+      const g = screen._graphic || {};
+      if (g.src) {
+        await addImageBlock(children, g.src, g.alt || "", assetMap);
+      }
+
       children.push(new Paragraph({ text: "" }));
 
       const steps = Array.isArray(screen._childItems) ? screen._childItems : [];
@@ -362,8 +647,9 @@ const HANDLERS = {
       );
       addLabelValue(children, "Number of steps", String(steps.length));
 
-      steps.forEach(function (step, stIdx) {
-        if (!step || typeof step !== "object") return;
+      for (let stIdx = 0; stIdx < steps.length; stIdx++) {
+        const step = steps[stIdx];
+        if (!step || typeof step !== "object") continue;
         const stTitle = safeText(step.title || "") || "Step " + (stIdx + 1);
 
         children.push(
@@ -382,8 +668,12 @@ const HANDLERS = {
         if (typeof taskLabel === "string" && taskLabel.trim()) {
           addLabelValue(children, "Task label", taskLabel.trim());
         }
-      });
-    });
+        const sg = step._graphic || {};
+        if (sg.src) {
+          await addImageBlock(children, sg.src, sg.alt || "", assetMap);
+        }
+      }
+    }
   },
 
   quicknav: function (children, c) {
@@ -459,7 +749,7 @@ const HANDLERS = {
     });
   },
 
-  talk: function (children, c) {
+  talk: async function (children, c, assetMap) {
     // --- Characters section ---
     children.push(
       new Paragraph({
@@ -470,8 +760,9 @@ const HANDLERS = {
     const chars = Array.isArray(c._characters) ? c._characters : [];
     addLabelValue(children, "Number of characters", String(chars.length));
 
-    chars.forEach((ch, idx) => {
-      if (!ch || typeof ch !== "object") return;
+    for (let idx = 0; idx < chars.length; idx++) {
+      const ch = chars[idx];
+      if (!ch || typeof ch !== "object") continue;
 
       const name = safeText(ch.name || "") || `Character ${idx + 1}`;
       const pos = safeText(ch.position || "");
@@ -487,16 +778,13 @@ const HANDLERS = {
         })
       );
 
-      // Graphic (placeholder — depends on your image helper)
       const g = ch._graphic || {};
       if (g && typeof g === "object" && g.src) {
-        // TODO: insert image block once your image helper is ready
-        addLabelValue(children, "Graphic source", g.src);
-        if (g.alt) addLabelValue(children, "Graphic alt text", g.alt);
+        await addImageBlock(children, g.src, g.alt || "", assetMap);
       }
 
       children.push(new Paragraph({ text: "" }));
-    });
+    }
 
     // --- Messages section ---
     children.push(
