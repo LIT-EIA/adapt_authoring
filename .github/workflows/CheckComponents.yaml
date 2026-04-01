@@ -28,14 +28,7 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            adapt-authoring/data/AZURE!/SPN_APP_ID% | AZURESPNAPPID
-            adapt-authoring/data/AZURE!/SPN_NAME | AZURESPNNAME
             adapt-authoring/data/AZURE/SPN_SECRET | AZURESPNSECRET
-            /v1/adapt-authoring/data/AZURE/TENANT_ID | CLOUDTENANTID
-            /v1/adapt-authoring/data/AZURE/ACR_DOMAIN | CLOUDACRDOMAIN
-            /v1/adapt-authoring/data/AZURE/CLOUD_SUBSCRIPTION | CLOUDSUBSCRIPTION
-            /v1/adapt-authoring/data/AZURE/K8S_CLUSTER_NAME | CLOUDK8SCLUSTERNAME
-            /v1/adapt-authoring/data/AZURE/K8S_RG | CLOUDK8SRG
 
       # Step 3: Verify Loaded Secrets
       - name: Verify Loaded Secrets
