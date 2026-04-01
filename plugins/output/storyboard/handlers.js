@@ -177,60 +177,68 @@ const HANDLERS = {
     }
   },
 
-  "dnd-multiple": function (children, c) {
-    if (c.instruction) {
-      addLabelValue(children, "Instruction", safeText(c.instruction));
-    }
-
-    if (c.ariaQuestion) {
-      addLabelValue(children, "ARIA question", safeText(c.ariaQuestion));
-    }
-
+  "dnd-multiple": async function (children, c, assetMap) {
     const items = Array.isArray(c._items) ? c._items : [];
     addLabelValue(children, "Number of items", String(items.length));
 
-    items.forEach((item, idx) => {
+    for (let idx = 0; idx < items.length; idx++) {
+      const item = items[idx];
+      if (!item || typeof item !== "object") continue;
+
       const title = safeText(item.title || "") || "(no title)";
 
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `Item ${idx + 1}: ${title}`, bold: true })
+            new TextRun({ text: "Item " + (idx + 1) + ": " + title, bold: true })
           ]
         })
       );
 
+      // Options (draggable items)
       const opts = Array.isArray(item._options) ? item._options : [];
       addLabelValue(children, "Options", String(opts.length));
 
-      opts.forEach((opt, j) => {
+      for (let j = 0; j < opts.length; j++) {
+        const opt = opts[j];
+        if (!opt || typeof opt !== "object") continue;
+
         const optTitle = safeText(opt.title || "") || "(blank)";
 
         children.push(
           new Paragraph({
-            text: `• ${optTitle}`,
+            text: "• " + optTitle,
             bullet: { level: 0 }
           })
         );
 
-        if (opt._graphic) {
-          const g = opt._graphic;
+        // Option-level graphic
+        const g = opt._graphic || {};
+        if (g && typeof g === "object") {
+          const rel =
+            (g.src && g.src.trim()) ||
+            (g.large && g.large.trim()) ||
+            (g.small && g.small.trim()) ||
+            "";
 
-          if (g.src || g.large || g.small) {
-            addLabelValue(children, "Graphic source", g.src || g.large || g.small);
-          }
+          const alt = g.alt || "";
 
-          if (g.alt) {
-            addLabelValue(children, "Graphic alt text", g.alt);
+          if (rel) {
+            await addImageBlock(children, rel, alt, assetMap);
           }
         }
-      });
+      }
 
       children.push(new Paragraph({ text: "" }));
-    });
+    }
 
+    // Attempts
     if (c._attempts !== undefined && c._attempts !== null) {
       addLabelValue(children, "Attempts", String(c._attempts));
+    }
+
+    if (c._feedback) {
+      renderStandardQuestionFeedback(children, c, htmlToText);
     }
   },
 
