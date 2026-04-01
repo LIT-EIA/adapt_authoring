@@ -63,19 +63,17 @@ async function renderImages(component, assetMap, children) {
 
       if (lower.endsWith(".svg")) continue;
 
-      let width = 400;
-      let height = 300;
+      const TARGET_WIDTH = 336;
+
+      let width = TARGET_WIDTH;
+      let height = 200; // fallback
+
       try {
         const dim = sizeOf(buffer);
         if (dim && dim.width && dim.height) {
-          width = dim.width;
-          height = dim.height;
-          const MAX_WIDTH = 600;
-          if (width > MAX_WIDTH) {
-            const scale = MAX_WIDTH / width;
-            width = MAX_WIDTH;
-            height = Math.round(height * scale);
-          }
+          const scale = TARGET_WIDTH / dim.width;
+          width = TARGET_WIDTH;
+          height = Math.round(dim.height * scale);
         }
       } catch (e) {}
 
