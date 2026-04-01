@@ -457,7 +457,110 @@ const HANDLERS = {
         })
       );
     });
-  }
+  },
+
+  talk: function (children, c) {
+    // --- Characters section ---
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: "Talk: Characters", bold: true })]
+      })
+    );
+
+    const chars = Array.isArray(c._characters) ? c._characters : [];
+    addLabelValue(children, "Number of characters", String(chars.length));
+
+    chars.forEach((ch, idx) => {
+      if (!ch || typeof ch !== "object") return;
+
+      const name = safeText(ch.name || "") || `Character ${idx + 1}`;
+      const pos = safeText(ch.position || "");
+
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: pos ? `${name} (${pos})` : name,
+              bold: true
+            })
+          ]
+        })
+      );
+
+      // Graphic (placeholder — depends on your image helper)
+      const g = ch._graphic || {};
+      if (g && typeof g === "object" && g.src) {
+        // TODO: insert image block once your image helper is ready
+        addLabelValue(children, "Graphic source", g.src);
+        if (g.alt) addLabelValue(children, "Graphic alt text", g.alt);
+      }
+
+      children.push(new Paragraph({ text: "" }));
+    });
+
+    // --- Messages section ---
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: "Talk: Message sequence", bold: true })]
+      })
+    );
+
+    const items = Array.isArray(c._items) ? c._items : [];
+    addLabelValue(children, "Number of messages", String(items.length));
+
+    // Speaker resolver
+    function resolveSpeaker(it) {
+      const cname = safeText(it._characterName || "");
+      if (cname) return cname;
+
+      let idx = parseInt(it._character, 10);
+      if (isNaN(idx)) return "(unknown speaker)";
+
+      if (idx === 0) return "Narrator";
+      if (idx >= 1 && idx <= chars.length) {
+        const nm = safeText(chars[idx - 1].name || "");
+        return nm || `Character ${idx}`;
+      }
+
+      return "(unknown speaker)";
+    }
+
+    items.forEach((it, idx) => {
+      if (!it || typeof it !== "object") return;
+
+      const speaker = resolveSpeaker(it);
+      const text = safeText(it.text || "");
+      const mp3 = safeText(it._mp3 || "");
+      const g = it._graphic || {};
+
+      // Message heading
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `Message ${idx + 1}: ${speaker}`,
+              bold: true
+            })
+          ]
+        })
+      );
+
+      addLabelValue(children, "Dialogue", text || "(none)");
+
+      if (mp3) {
+        addLabelValue(children, "Audio file (mp3)", mp3);
+      }
+
+      if (g && typeof g === "object" && g.src) {
+        // TODO: insert image block once your image helper is ready
+        addLabelValue(children, "Graphic source", g.src);
+        if (g.alt) addLabelValue(children, "Graphic alt text", g.alt);
+      }
+
+      children.push(new Paragraph({ text: "" }));
+    });
+  },
+
 };
 
 module.exports = HANDLERS;
