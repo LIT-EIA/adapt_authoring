@@ -28,7 +28,7 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            /v1/adapt-authoring/data/AZURE!/SPN_APP_ID | AZURESPNAPPID
+            /v1/adapt-authoring/data/AZURE!/SPN_APP_ID% | AZURESPNAPPID
             /v1/adapt-authoring/data/AZURE!/SPN_NAME | AZURESPNNAME
             /v1/adapt-authoring/data/AZURE/SPN_SECRET | AZURESPNSECRET
             /v1/adapt-authoring/data/AZURE/TENANT_ID | CLOUDTENANTID
