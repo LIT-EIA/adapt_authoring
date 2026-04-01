@@ -28,13 +28,13 @@ jobs:
           roleId: ${{ secrets.APPROLE_ROLE_ID }}
           secretId: ${{ secrets.APPROLE_SECRET_ID }}
           secrets: |
-            adapt-authoring/data/AZURE SPN_SECRET | AZURESPNSECRET
-            adapt-authoring/data/AZURE SPN_APP_ID | AZURESPNAPPID
-            adapt-authoring/data/AZURE SPN_NAME | AZURESPNNAME
-            adapt-authoring/data/AZURE TENANT_ID | CLOUDTENANTID
-            adapt-authoring/data/AZURE ACR_DOMAIN | CLOUDACRDOMAIN
-            adapt-authoring/data/AZURE CLOUD_SUBSCRIPTION | CLOUDSUBSCRIPTION
-            adapt-authoring/data/AZURE K8S_CLUSTER_NAME | CLOUDK8SCLUSTERNAME
+            adapt-authoring/data/AZURE SPN_SECRET | AZURESPNSECRET ;
+            adapt-authoring/data/AZURE SPN_APP_ID | AZURESPNAPPID ;
+            adapt-authoring/data/AZURE SPN_NAME | AZURESPNNAME ;
+            adapt-authoring/data/AZURE TENANT_ID | CLOUDTENANTID ;
+            adapt-authoring/data/AZURE ACR_DOMAIN | CLOUDACRDOMAIN ;
+            adapt-authoring/data/AZURE CLOUD_SUBSCRIPTION | CLOUDSUBSCRIPTION ;
+            adapt-authoring/data/AZURE K8S_CLUSTER_NAME | CLOUDK8SCLUSTERNAME ;
             adapt-authoring/data/AZURE K8S_RG | CLOUDK8SRG
 
       # Step 3: Verify Loaded Secrets
