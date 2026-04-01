@@ -81,9 +81,9 @@ define(function(require) {
           $('html').css('overflow-y', '');
           $.scrollTo('.block[data-id=' + parentId + ']');
         }, this),
-        error: function() {
+        error: function(response, error) {
           $('html').css('overflow-y', '');
-          Origin.Notify.alert({ type: 'error', text: Origin.l10n.t('app.erroraddingcomponent') });
+          Origin.Notify.alert({ type: 'error', text: error.responseJSON.message || Origin.l10n.t('app.erroraddingcomponent') });
         }
       });
     }

@@ -4,18 +4,18 @@
  */
 
 var contentmanager = require('../../../lib/contentmanager'),
-    ContentPlugin = contentmanager.ContentPlugin,
-    ContentPermissionError = contentmanager.errors.ContentPermissionError,
-    configuration = require('../../../lib/configuration'),
-    permissions = require('../../../lib/permissions'),
-    logger = require('../../../lib/logger'),
-    usermanager = require('../../../lib/usermanager'),
-    util = require('util'),
-    path = require('path'),
-    helpers = require('../../../lib/helpers'),
-    async = require('async');
+  ContentPlugin = contentmanager.ContentPlugin,
+  ContentPermissionError = contentmanager.errors.ContentPermissionError,
+  configuration = require('../../../lib/configuration'),
+  permissions = require('../../../lib/permissions'),
+  logger = require('../../../lib/logger'),
+  usermanager = require('../../../lib/usermanager'),
+  util = require('util'),
+  path = require('path'),
+  helpers = require('../../../lib/helpers'),
+  async = require('async');
 
-function ContentObject () {
+function ContentObject() {
 }
 
 util.inherits(ContentObject, ContentPlugin);
@@ -28,7 +28,7 @@ util.inherits(ContentObject, ContentPlugin);
  * @param {callback} next (function (err, isAllowed))
  */
 ContentObject.prototype.hasPermission = function (action, userId, tenantId, contentItem, next) {
-  helpers.hasCoursePermission(action, userId, tenantId, contentItem, function(err, isAllowed) {
+  helpers.hasCoursePermission(action, userId, tenantId, contentItem, function (err, isAllowed) {
     if (err) {
       return next(err);
     }
@@ -79,12 +79,12 @@ ContentObject.prototype.updateSiblingSortOrder = function (data, next) {
     doc.save(cb);
     ++index;
   },
-  function (err) {
-    if (err) {
-      return next(err);
-    }
-    next(null, data);
-  });
+    function (err) {
+      if (err) {
+        return next(err);
+      }
+      next(null, data);
+    });
 };
 
 /**
@@ -108,7 +108,7 @@ ContentObject.prototype.getMaxSortOrder = function (parentId, cb) {
       }
 
       return cb(null, sortOrder);
-  });
+    });
 };
 
 /**
@@ -135,7 +135,7 @@ ContentObject.prototype.create = function (data, next) {
         return error;
       }
 
-      data._sortOrder = max+1;
+      data._sortOrder = max + 1;
       return self.create(data, next);
     });
     // you shall not pass
@@ -214,13 +214,13 @@ ContentObject.prototype.update = function (search, delta, next) {
         }
 
         self.retrieve({ _id: docs[0]._id }, function (error, docs) {
-            if (delta._parentId && (oldParentId != delta._parentId)) {
-              self.updateSiblingSortOrder({ _parentId: oldParentId }, function (error) {
-                self.updateSiblingSortOrder(docs[0], next);
-              });
-            } else {
+          if (delta._parentId && (oldParentId != delta._parentId)) {
+            self.updateSiblingSortOrder({ _parentId: oldParentId }, function (error) {
               self.updateSiblingSortOrder(docs[0], next);
-            }
+            });
+          } else {
+            self.updateSiblingSortOrder(docs[0], next);
+          }
         });
       });
     } else {
@@ -273,11 +273,20 @@ ContentObject.prototype.destroy = function (search, force, next) {
           docs,
           function (doc, cb) {
             self.destroyChildren(doc._id, function (err) {
+              if (err instanceof ContentPermissionError) {
+                return cb(err);
+              }
               // then destroy self and update sibling sort order
               ContentPlugin.prototype.destroy.call(self, { _id: doc._id }, true, function (error) {
+
+                if (error instanceof ContentPermissionError) {
+                  return cb(error);
+                }
+
                 // if we're retrieving and deleting a bunch of siblings, updating the sort order each
                 // time might be redundant.
-                self.updateSiblingSortOrder({_parentId:doc._parentId, _sortOrder:doc._sortOrder}, cb);
+
+                self.updateSiblingSortOrder({ _parentId: doc._parentId, _sortOrder: doc._sortOrder }, cb);
               });
             });
           },

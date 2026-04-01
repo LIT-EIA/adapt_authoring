@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "default": false,
   "statement" : [
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/global/content", "action":["read", "create", "update", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/*", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/all/course", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/content/course/own", "action":["read", "create", "update", "delete"], "effect":"allow" },
@@ -20,8 +21,8 @@
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/theme/*", "action":["create", "update", "read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/themepreset/*", "action":["create", "update", "read", "delete"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/menu/*", "action":["create", "update", "read"], "effect":"allow" },
-    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/*", "action":["read"], "effect":"allow" },
-    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/devtools", "action":["update"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/extension/*", "action":["update"], "effect":"allow" },
+    { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/master/extension/devtools", "action":["update"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/autocomplete/*", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/helpdialogs/*", "action":["read"], "effect":"allow" },
     { "condition":{}, "resource":"urn:x-adapt:{{tenantid}}/api/messages/*", "action":["read"], "effect":"allow" },

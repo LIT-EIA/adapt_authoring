@@ -92,10 +92,10 @@ define([
         success: function() {
           this.saveModel();
         }.bind(this),
-        error: function(error) {
+        error: function(response, error) {
           Origin.Notify.alert({
             type: 'error',
-            text: Origin.l10n.t('app.errorsaveasset')
+            text: error.responseJSON.message || Origin.l10n.t('app.errorsaveasset')
           });
         }
       });
@@ -176,10 +176,10 @@ define([
           this.render();
           this.trigger('change', this);
         }.bind(this),
-        error: function() {
+        error: function(response, error) {
           Origin.Notify.alert({
             type: 'error',
-            text: Origin.l10n.t('app.errorsaveasset')
+            text: error.responseJSON.message || Origin.l10n.t('app.errorsaveasset')
           });
         }
       });
