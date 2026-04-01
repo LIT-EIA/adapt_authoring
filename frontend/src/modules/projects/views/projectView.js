@@ -130,8 +130,11 @@ define(function(require) {
         success: function (data) {
           Origin.router.navigateTo('editor/' + data.newCourseId + '/settings');
         },
-        error: function() {
-          Origin.Notify.alert({ type: 'error', text: Origin.l10n.t('app.errorduplication') });
+        error: function(error) {
+          console.log('duplicate project error', error);
+          var errorMessage = error && error.responseJSON && error.responseJSON.message || Origin.l10n.t('app.errorcloneasset');
+
+          Origin.Notify.alert({ type: 'error', text: errorMessage });
         }
       });
     },
