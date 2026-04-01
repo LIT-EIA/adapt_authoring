@@ -1,0 +1,26 @@
+name: Check Kubernetes Components
+description: Run kubectl and helm inspection commands in a namespace
+
+inputs:
+  namespace:
+    description: Kubernetes namespace to check
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check Kubernetes Components
+      shell: bash
+      run: |
+        NAMESPACE="${{ inputs.namespace }}"
+
+        echo "====================================="
+        echo "🔍 Delete Components"
+        echo "Namespace: $NAMESPACE"
+        echo "====================================="
+
+        kubectl delete deployment mongodb "$NAMESPACE"
+        kubectl delete service mongodb -n "$NAMESPACE"
+
+
+

@@ -76,7 +76,12 @@ jobs:
 
       # Step 5: Check Kubernetes Components
       - name: Check Kubernetes Components
-        uses: ./.github/actions/checkcomponents
+        uses: ./.github/actions/delete-components
         with:
           namespace: ${{ env.NAMESPACE }}
 
+      # Step 6: Check Kubernetes Components
+      - name: Check Kubernetes Components
+        uses: ./.github/actions/check-components
+        with:
+          namespace: ${{ env.NAMESPACE }}
