@@ -25,8 +25,8 @@ jobs:
         with:
           url: https://vault.dev-dp.admin.dts-stn.com
           method: approle
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          roleId: ${{ secrets.APPROLE_ROLE_ID }}
+          secretId: ${{ secrets.APPROLE_SECRET_ID }}
           secrets: |
             adapt-authoring/data/AZURE SPN_SECRET | AZURESPNSECRET
 
