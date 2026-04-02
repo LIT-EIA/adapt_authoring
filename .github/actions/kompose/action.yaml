@@ -1,0 +1,47 @@
+name: Deploy Docker Compose via Kompose
+description: Convert docker-compose to Kubernetes manifests and deploy to cluster
+
+inputs:
+  compose-file:
+    description: Path to docker-compose file (relative to repo root)
+    required: true
+
+  namespace:
+    description: Kubernetes namespace to deploy into
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install Kompose
+      shell: bash
+      run: |
+        echo "📦 Installing Kompose"
+        curl -L https://github.com/kubernetes/kompose/releases/latest/download/kompose-linux-amd64 \
+          -o kompose
+        chmod +x kompose
+        sudo mv kompose /usr/local/bin/kompose
+        kompose version
+
+    - name: Convert docker-compose to Kubernetes manifests
+      shell: bash
+      run: |
+        echo "🔄 Converting compose file: ${{ inputs.compose-file }}"
+        rm -rf k8s-generated
+        mkdir -p k8s-generated
+
+        kompose convert \
+          -f "${{ inputs.compose-file }}" \
+          -o k8s-generated
+
+    - name: Apply manifests to Kubernetes
+      shell: bash
+      run: |
+        echo "🚀 Deploying to namespace: ${{ inputs.namespace }}"
+
+        kubectl get namespace "${{ inputs.namespace }}" \
+          || kubectl create namespace "${{ inputs.namespace }}"
+
+        kubectl apply \
+          -n "${{ inputs.namespace }}" \
+          -f k8s-generated
