@@ -143,13 +143,13 @@ function normalizeSrc(src) {
   return src.trim();
 }
 
-async function addImageBlock(children, src, altText, assetMap) {
+async function addImageBlock(children, src, altText, assetMap, locPolyglot) {
   if (!src) {
-    addLabelValue(children, "Adapt Image File SCORM Location", "(none)");
+    addLabelValue(children, locPolyglot.t('app.adaptfilescormlocation'), `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`);
     return;
   }
-  addLabelValue(children, "Graphic source", src);
-  if (altText) addLabelValue(children, "Graphic alt text", altText);
+  addLabelValue(children, locPolyglot.t('app.graphic.source'), src);
+  if (altText) addLabelValue(children, locPolyglot.t('app.graphic.alt'), altText);
 
   // Normalize the incoming src so it matches assetMap entries
   const normalized = normalizeSrc(src);
@@ -159,8 +159,8 @@ async function addImageBlock(children, src, altText, assetMap) {
   const asset = Object.values(assetMap).find(a => a.filename === filename);
 
   if (!asset) {
-    addLabelValue(children, "Adapt Image File SCORM Location", normalized);
-    addLabelValue(children, "Image embed warning", "Image file not found.");
+    addLabelValue(children, locPolyglot.t('app.adaptfilescormlocation'), normalized);
+    addLabelValue(children, locPolyglot.t('app.imageembedwarning'), locPolyglot.t('app.imagefilenotfound'));
     return;
   }
 
@@ -191,7 +191,7 @@ async function addImageBlock(children, src, altText, assetMap) {
 
   // Skip SVGs (docx cannot embed them)
   if (lower.endsWith(".svg")) {
-    addLabelValue(children, "Image embed warning", `${asset.filename} is SVG and cannot be embedded.`);
+    addLabelValue(children, locPolyglot.t('app.imageembedwarning'), locPolyglot.t('app.svgimagecannotbeembedded', { filename: asset.filename }));
     return;
   }
 
@@ -217,24 +217,23 @@ async function addImageBlock(children, src, altText, assetMap) {
   }
 
   children.push(
-    new Paragraph({ spacing: { before: 400 }, text: "" })
+    new Paragraph({ spacing: { before: 300 }, text: "" })
   );
 
-  addLabelValue(children, "Adapt Image File SCORM Location", asset.path || "(none)");
+  addLabelValue(children, locPolyglot.t('app.adaptfilescormlocation'), asset.path || `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`);
 
   const title = safeText(asset.title || "");
   const desc = safeText(asset.description || "");
   let originalLine = title || asset.filename;
-  if (desc) originalLine += " Image Description in Metatag: " + desc;
+  if (desc) originalLine += ` ${locPolyglot.t('app.imagedescriptioninmetatag')}: ` + desc;
 
-  addLabelValue(children, "Original Image file Adapt Asset Name", originalLine);
-  addLabelValue(children, "Alt text", altText || "(none)");
+  addLabelValue(children, locPolyglot.t('app.originalimagefileadaptassetname'), originalLine);
+  addLabelValue(children, locPolyglot.t('app.alttext'), altText || `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`);
 
   // Embed the image
   children.push(
     new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 300 },
+      spacing: { after: 200 },
       children: [
         new ImageRun({
           data: buffer,
@@ -245,7 +244,8 @@ async function addImageBlock(children, src, altText, assetMap) {
     })
   );
 
-  children.push(new Paragraph({ text: "" }));
+  children.push(new Paragraph({ spacing: { after: 100 }, text: "" }));
+
 }
 
 module.exports = {

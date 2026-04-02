@@ -11,7 +11,7 @@ const { addImageBlock } = require("./images");
 const HANDLERS = {
   text: function () { },
 
-  graphic: async function (children, c, assetMap) {
+  graphic: async function (children, c, assetMap, locPolyglot) {
     const g = c._graphic || {};
 
     const rel =
@@ -23,13 +23,13 @@ const HANDLERS = {
     const alt = g.alt || "";
 
     if (rel) {
-      await addImageBlock(children, rel, alt, assetMap);
+      await addImageBlock(children, rel, alt, assetMap, locPolyglot);
     } else {
-      addLabelValue(children, "Adapt Image File SCORM Location", "(none)");
+      addLabelValue(children, locPolyglot.t('app.adaptfilescormlocation'), `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`);
     }
   },
 
-  media: function (children, c) {
+  media: function (children, c, assetMap, locPolyglot) {
     const m = c._media || {};
     const lines = [];
 
@@ -53,7 +53,7 @@ const HANDLERS = {
       addMediaLine(lang ? "cc (" + lang + ")" : "cc", src);
     });
 
-    addLabelValue(children, "Media files", lines.length ? lines.join("\n") : "(none)");
+    addLabelValue(children, locPolyglot.t("app.mediafiles"), lines.length ? lines.join("\n") : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`);
     children.push(new Paragraph({ text: "" }));
 
     const tr = c._transcript;
@@ -62,23 +62,23 @@ const HANDLERS = {
       const external = !!tr._externalTranscript;
       addLabelValue(
         children,
-        "Transcript settings",
-        "Inline: " + inline + "; External: " + external
+        locPolyglot.t("app.transcript.settings"),
+        locPolyglot.t("app.inline") + ": " + inline + "; " + locPolyglot.t("app.external") + ": " + external
       );
       const body = tr.inlineTranscriptBody || "";
-      if (body) addLabelValue(children, "Transcript (inline)", body);
+      if (body) addLabelValue(children, locPolyglot.t("app.transcript.inline"), body);
     } else if (typeof tr === "string") {
-      addLabelValue(children, "Transcript", tr);
+      addLabelValue(children, locPolyglot.t("app.transcript"), tr);
     }
   },
 
-  mcq: function (children, c) {
+  mcq: function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
     if (items.length) {
       children.push(new Paragraph({ text: "Options" }));
       items.forEach(function (it, idx) {
         if (!it || typeof it !== "object") return;
-        const txt = safeText(it.text || "") || "(blank)";
+        const txt = safeText(it.text || "") || `(${locPolyglot.t("app.blank")})`;
         const should = it._shouldBeSelected;
         let line = (idx + 1) + ". " + txt;
         if (should === true) line += " [Correct]";
@@ -97,30 +97,17 @@ const HANDLERS = {
       children.push(new Paragraph({ text: "" }));
     }
 
-    const fb = c._feedback || {};
-    if (fb && typeof fb === "object" && Object.keys(fb).length) {
-      const corr = safeText(fb.correct || "") || "(none)";
-      const inc = fb._incorrect || {};
-      const pc = fb._partlyCorrect || {};
-
-      const incFinal = safeText((inc.final || "") || "");
-      const incNotFinal = safeText((inc.notFinal || "") || "");
-      const pcFinal = safeText((pc.final || "") || "");
-
-      addLabelValue(children, "Feedback (correct)", corr);
-      addLabelValue(children, "Feedback (incorrect - final)", incFinal || "(none)");
-      if (incNotFinal)
-        addLabelValue(children, "Feedback (incorrect - not final)", incNotFinal);
-      if (pcFinal)
-        addLabelValue(children, "Feedback (partly correct - final)", pcFinal);
+    // Standard question-level feedback
+    if (renderStandardQuestionFeedback) {
+      renderStandardQuestionFeedback(children, c, locPolyglot);
     }
   },
 
-  gmcq: async function (children, c, assetMap, utils) {
+  gmcq: async function (children, c, assetMap, locPolyglot) {
     // Optional layout hint
     const cols = c._columns;
     if (cols !== undefined && cols !== null) {
-      addLabelValue(children, "Columns", String(cols));
+      addLabelValue(children, locPolyglot.t("app.columns"), String(cols));
     }
 
     const items = Array.isArray(c._items) ? c._items : [];
@@ -135,7 +122,7 @@ const HANDLERS = {
         const should = it._shouldBeSelected;
         const fb = htmlToText(it.feedback || "");
 
-        let line = `${i + 1}. ${txt || "(blank)"}`;
+        let line = `${i + 1}. ${txt || ("(" + locPolyglot.t("app.blank") + ")")}`;
         if (should === true) line += " [Correct]";
         else if (should === false) line += " [Incorrect]";
 
@@ -160,7 +147,7 @@ const HANDLERS = {
           if (rel) {
             const resolved = resolveAssetRef(rel, assetMap);
             if (resolved) {
-              await addImageBlock(children, resolved, alt, assetMap);
+              await addImageBlock(children, resolved, alt, assetMap, locPolyglot);
             }
           }
         }
@@ -173,11 +160,11 @@ const HANDLERS = {
 
     // Standard question-level feedback
     if (renderStandardQuestionFeedback) {
-      renderStandardQuestionFeedback(children, c);
+      renderStandardQuestionFeedback(children, c, locPolyglot);
     }
   },
 
-  "dnd-multiple": async function (children, c, assetMap) {
+  "dnd-multiple": async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
     addLabelValue(children, "Number of items", String(items.length));
 
@@ -203,7 +190,7 @@ const HANDLERS = {
         const opt = opts[j];
         if (!opt || typeof opt !== "object") continue;
 
-        const optTitle = safeText(opt.title || "") || "(blank)";
+        const optTitle = safeText(opt.title || "") || `(${locPolyglot.t("app.blank")})`;
 
         children.push(
           new Paragraph({
@@ -224,7 +211,7 @@ const HANDLERS = {
           const alt = g.alt || "";
 
           if (rel) {
-            await addImageBlock(children, rel, alt, assetMap);
+            await addImageBlock(children, rel, alt, assetMap, locPolyglot);
           }
         }
       }
@@ -238,11 +225,11 @@ const HANDLERS = {
     }
 
     if (c._feedback) {
-      renderStandardQuestionFeedback(children, c, htmlToText);
+      renderStandardQuestionFeedback(children, c, locPolyglot);
     }
   },
 
-  matching: function (children, c) {
+  matching: function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
     addLabelValue(children, "Matching items", String(items.length));
 
@@ -282,7 +269,7 @@ const HANDLERS = {
     });
   },
 
-  openTextInput: function (children, c) {
+  openTextInput: function (children, c, assetMap, locPolyglot) {
     const placeholder = c.placeholder || "";
     const model = c.modelAnswer || "";
     const allowed = c._allowedCharacters;
@@ -300,7 +287,7 @@ const HANDLERS = {
     children.push(new Paragraph({ text: "" }));
   },
 
-  slider: function (children, c) {
+  slider: function (children, c, assetMap, locPolyglot) {
     addLabelValue(
       children,
       "Scale start",
@@ -347,7 +334,7 @@ const HANDLERS = {
     children.push(new Paragraph({ text: "" }));
   },
 
-  narrative: async function (children, c, assetMap) {
+  narrative: async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
 
     addLabelValue(children, "Narrative panels", String(items.length));
@@ -387,7 +374,7 @@ const HANDLERS = {
         const alt = g.alt || "";
 
         if (rel) {
-          await addImageBlock(children, rel, alt, assetMap);
+          await addImageBlock(children, rel, alt, assetMap, locPolyglot);
         }
       }
 
@@ -395,7 +382,7 @@ const HANDLERS = {
     }
   },
 
-  accordion: async function (children, c, assetMap) {
+  accordion: async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
 
     addLabelValue(children, "Accordion items", String(items.length));
@@ -428,7 +415,7 @@ const HANDLERS = {
         const alt = g.alt || "";
 
         if (rel) {
-          await addImageBlock(children, rel, alt, assetMap);
+          await addImageBlock(children, rel, alt, assetMap, locPolyglot);
         }
       }
 
@@ -436,7 +423,7 @@ const HANDLERS = {
     }
   },
 
-  hotgraphic: async function (children, c, assetMap) {
+  hotgraphic: async function (children, c, assetMap, locPolyglot) {
     // Base graphic (main image)
     const g = c._graphic || {};
     if (g && typeof g === "object") {
@@ -449,7 +436,7 @@ const HANDLERS = {
       const alt = g.alt || "";
 
       if (rel) {
-        await addImageBlock(children, rel, alt, assetMap);
+        await addImageBlock(children, rel, alt, assetMap, locPolyglot);
         children.push(new Paragraph({ text: "" }));
       }
     }
@@ -504,7 +491,7 @@ const HANDLERS = {
         const alt = ig.alt || "";
 
         if (rel) {
-          await addImageBlock(children, rel, alt, assetMap);
+          await addImageBlock(children, rel, alt, assetMap, locPolyglot);
         }
       }
 
@@ -512,7 +499,7 @@ const HANDLERS = {
     }
   },
 
-  hotgrid: async function (children, c, assetMap) {
+  hotgrid: async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
 
     addLabelValue(children, "Hotgrid items", String(items.length));
@@ -545,7 +532,7 @@ const HANDLERS = {
         const alt = g.alt || "";
 
         if (rel) {
-          await addImageBlock(children, rel, alt, assetMap);
+          await addImageBlock(children, rel, alt, assetMap, locPolyglot);
         }
       }
 
@@ -553,7 +540,7 @@ const HANDLERS = {
     }
   },
 
-  guidedtour: async function (children, c, assetMap) {
+  guidedtour: async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
 
     addLabelValue(children, "Tour steps", String(items.length));
@@ -587,7 +574,7 @@ const HANDLERS = {
         const alt = g.alt || "";
 
         if (rel) {
-          await addImageBlock(children, rel, alt, assetMap);
+          await addImageBlock(children, rel, alt, assetMap, locPolyglot);
         }
       }
 
@@ -601,7 +588,7 @@ const HANDLERS = {
     }
   },
 
-  simulation: async function (children, c, assetMap) {
+  simulation: async function (children, c, assetMap, locPolyglot) {
     const screens = Array.isArray(c._items) ? c._items : [];
 
     children.push(
@@ -637,7 +624,7 @@ const HANDLERS = {
 
       const g = screen._graphic || {};
       if (g.src) {
-        await addImageBlock(children, g.src, g.alt || "", assetMap);
+        await addImageBlock(children, g.src, g.alt || "", assetMap, locPolyglot);
       }
 
       children.push(new Paragraph({ text: "" }));
@@ -678,7 +665,7 @@ const HANDLERS = {
         }
         const sg = step._graphic || {};
         if (sg.src) {
-          await addImageBlock(children, sg.src, sg.alt || "", assetMap);
+          await addImageBlock(children, sg.src, sg.alt || "", assetMap, locPolyglot);
         }
       }
     }
@@ -757,7 +744,7 @@ const HANDLERS = {
     });
   },
 
-  talk: async function (children, c, assetMap) {
+  talk: async function (children, c, assetMap, locPolyglot) {
     // --- Characters section ---
     children.push(
       new Paragraph({
@@ -788,7 +775,7 @@ const HANDLERS = {
 
       const g = ch._graphic || {};
       if (g && typeof g === "object" && g.src) {
-        await addImageBlock(children, g.src, g.alt || "", assetMap);
+        await addImageBlock(children, g.src, g.alt || "", assetMap, locPolyglot);
       }
 
       children.push(new Paragraph({ text: "" }));

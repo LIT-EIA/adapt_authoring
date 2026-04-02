@@ -8,10 +8,15 @@ const {
 
 const { safeText, addLabelValue } = require("./utils");
 const HANDLERS = require("./handlers");
-const { renderImages } = require("./images");
+const polyglot = require('node-polyglot');
+var origin = require('../../../lib/application');
+var app = origin();
 
 /* --- MAIN BUILDER --- */
 module.exports = async function buildDocx(data, outputPath, done) {
+  const defaultLocale = data.config ? data.config._defaultLanguage : "en";
+  const locPolyglot = new polyglot({ phrases: app.polyglotPhrases[defaultLocale] });
+
   try {
     const children = [];
     const hierarchy = data._storyboardHierarchy || [];
@@ -20,7 +25,8 @@ module.exports = async function buildDocx(data, outputPath, done) {
     // Course title
     children.push(
       new Paragraph({
-        text: data.course && data.course.title ? data.course.title : "Course",
+        spacing: { after: 100 },
+        text: data.course && data.course.title ? data.course.title : `${locPolyglot.t('app.course')}`,
         heading: HeadingLevel.HEADING_1
       })
     );
@@ -29,9 +35,10 @@ module.exports = async function buildDocx(data, outputPath, done) {
       const p = hierarchy[i];
       children.push(
         new Paragraph({
+          spacing: { after: 100 },
           text:
             "PAGE: " +
-            (p.page && p.page.title ? p.page.title : "(no title)"),
+            (p.page && p.page.title ? p.page.title : `(${locPolyglot.t('app.notitle')})`),
           heading: HeadingLevel.HEADING_1
         })
       );
@@ -40,9 +47,10 @@ module.exports = async function buildDocx(data, outputPath, done) {
         const a = p.articles[j];
         children.push(
           new Paragraph({
+            spacing: { after: 100 },
             text:
               "Article: " +
-              (a.article && a.article.title ? a.article.title : "(no title)"),
+              (a.article && a.article.title ? a.article.title : `(${locPolyglot.t('app.notitle')})`),
             heading: HeadingLevel.HEADING_2
           })
         );
@@ -51,9 +59,10 @@ module.exports = async function buildDocx(data, outputPath, done) {
           const b = a.blocks[k];
           children.push(
             new Paragraph({
+              spacing: { after: 100 },
               text:
-                "Block: " +
-                (b.block && b.block.title ? b.block.title : "(no title)"),
+                `${locPolyglot.t('app.scaffold._level.block.variable')}: ` +
+                (b.block && b.block.title ? b.block.title : `(${locPolyglot.t('app.notitle')})`),
               heading: HeadingLevel.HEADING_3
             })
           );
@@ -61,12 +70,13 @@ module.exports = async function buildDocx(data, outputPath, done) {
           for (let l = 0; l < b.components.length; l++) {
             const c = b.components[l];
 
-            const ctype = c.type || c._component || "(unknown)";
+            const ctype = c.type || c._component || `(${locPolyglot.t('app.unknown')})`;
             const layout = c.layout || c._layout || c._layoutName || "";
             const headingLine =
-              "Component: " + ctype + (layout ? " — " + layout : "");
+              `${locPolyglot.t('app.scaffold._level.component.variable')} ` + ctype + (layout ? " — " + layout : "");
             children.push(
               new Paragraph({
+                spacing: { after: 100 },
                 text: headingLine,
                 heading: HeadingLevel.HEADING_4
               })
@@ -76,7 +86,8 @@ module.exports = async function buildDocx(data, outputPath, done) {
             const compTitle = safeText(c.title || c.displayTitle || "");
             children.push(
               new Paragraph({
-                text: compTitle || "(no component title)",
+                spacing: { after: 100 },
+                text: compTitle || `(${locPolyglot.t('app.notitle')})`,
                 style: "IntenseQuote"
               })
             );
@@ -85,25 +96,26 @@ module.exports = async function buildDocx(data, outputPath, done) {
             addLabelValue(
               children,
               "Body text",
-              bodyRaw ? bodyRaw : "(none)"
+              bodyRaw ? bodyRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
             );
 
             const instrRaw = c.instruction || "";
             addLabelValue(
               children,
               "Instructions",
-              instrRaw ? instrRaw : "(none)"
+              instrRaw ? instrRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
             );
 
             // Component-specific handler
             const typeKey = (c.type || c._component || "").toString();
             if (typeKey && HANDLERS[typeKey]) {
-              await HANDLERS[typeKey](children, c, assetMap);
+              await HANDLERS[typeKey](children, c, assetMap, locPolyglot);
             }
 
             // Separator
             children.push(
               new Paragraph({
+                spacing: { after: 100 },
                 text:
                   "__________________________________________________________________"
               })

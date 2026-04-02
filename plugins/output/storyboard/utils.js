@@ -40,7 +40,7 @@ function safeText(str) {
   return s.trim();
 }
 
-function addLabelValue(children, label, value) {
+function addLabelValue(children, label, value, locPolyglot) {
   children.push(
     new Paragraph({
       children: [
@@ -75,7 +75,7 @@ function resolveAssetRef(rel, assetMap) {
   return asset.path.replace(/\\/g, "/");
 }
 
-function renderStandardQuestionFeedback(children, comp) {
+function renderStandardQuestionFeedback(children, comp, locPolyglot) {
   const fb = comp._feedback || {};
   if (!fb || typeof fb !== "object") return;
 
@@ -89,17 +89,17 @@ function renderStandardQuestionFeedback(children, comp) {
   const pcFinal = htmlToText(pc.final || "");
   const pcNotFinal = htmlToText(pc.notFinal || "");
 
-  addLabelValue(children, "Feedback (correct)", corr || "(none)");
-  addLabelValue(children, "Feedback (incorrect - final)", incFinal || "(none)");
+  addLabelValue(children, locPolyglot.t("app.feedback.correct"), corr || `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`);
+  addLabelValue(children, locPolyglot.t("app.feedback.incorrect.final"), incFinal || `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`);
 
   if (incNotFinal) {
-    addLabelValue(children, "Feedback (incorrect - not final)", incNotFinal);
+    addLabelValue(children, locPolyglot.t("app.feedback.incorrect.notfinal"), incNotFinal);
   }
   if (pcFinal) {
-    addLabelValue(children, "Feedback (partly correct - final)", pcFinal);
+    addLabelValue(children, locPolyglot.t("app.feedback.partlycorrect.final"), pcFinal);
   }
   if (pcNotFinal) {
-    addLabelValue(children, "Feedback (partly correct - not final)", pcNotFinal);
+    addLabelValue(children, locPolyglot.t("app.feedback.partlycorrect.notfinal"), pcNotFinal);
   }
 
   children.push(new Paragraph({ text: "" }));
