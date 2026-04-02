@@ -1,6 +1,15 @@
 name: Azure + AKS Login
 description: Import secrets from Vault and log in to Azure, ACR, and AKS
 
+
+inputs:
+  APPROLE_ROLE_ID: 
+    description: Vault AppRole Role ID
+    required: true
+  APPROLE_SECRET_ID:
+    description: Vault AppRole Secret ID
+    required: true
+
 runs:
   using: composite
   steps:
@@ -10,6 +19,8 @@ runs:
       with:
         url: https://vault.dev-dp.admin.dts-stn.com
         method: approle
+        roleId: ${{ inputs.APPROLE_ROLE_ID }}
+        secretId: ${{ inputs.APPROLE_SECRET_ID }}
         
         secrets: |
           adapt-authoring/data/AZURE SPN_SECRET | AZURESPNSECRET ;
