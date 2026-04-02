@@ -22,8 +22,6 @@ jobs:
       - name: Azure + AKS Login
         uses: ./.github/actions/actions
         with: 
-          url: https://vault.dev-dp.admin.dts-stn.com
-          method: approle
           roleId: ${{ secrets.APPROLE_ROLE_ID }}
           secretId: ${{ secrets.APPROLE_SECRET_ID }}
 
