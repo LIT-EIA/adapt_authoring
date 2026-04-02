@@ -3,7 +3,7 @@ description: Run docker compose using a compose file from anywhere in the repo
 
 inputs:
   compose-file:
-    description: Path to docker-compose file (relative to repo root)
+    description: docker/docker-compose.yml
     required: true
 
   command:
