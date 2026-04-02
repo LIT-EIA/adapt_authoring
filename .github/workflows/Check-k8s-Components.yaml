@@ -18,63 +18,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Import Secrets from Vault using AppRole
-      - name: Import Secrets
-        id: import-secrets
-        uses: hashicorp/vault-action@v2
-        with:
-          url: https://vault.dev-dp.admin.dts-stn.com
-          method: approle
-          roleId: ${{ secrets.APPROLE_ROLE_ID }}
-          secretId: ${{ secrets.APPROLE_SECRET_ID }}
-          secrets: |
-            adapt-authoring/data/AZURE SPN_SECRET | AZURESPNSECRET ;
-            adapt-authoring/data/AZURE SPN_APP_ID | AZURESPNAPPID ;
-            adapt-authoring/data/AZURE SPN_NAME | AZURESPNNAME ;
-            adapt-authoring/data/AZURE TENANT_ID | CLOUDTENANTID ;
-            adapt-authoring/data/AZURE ACR_DOMAIN | CLOUDACRDOMAIN ;
-            adapt-authoring/data/AZURE CLOUD_SUBSCRIPTION | CLOUDSUBSCRIPTION ;
-            adapt-authoring/data/AZURE K8S_CLUSTER_NAME | CLOUDK8SCLUSTERNAME ;
-            adapt-authoring/data/AZURE K8S_RG | CLOUDK8SRG
+      # Step 2: Azure + AKS Login     
+      - name: Azure + AKS Login
+        uses: ./.github/actions/actions
 
-      # Step 3: Verify Loaded Secrets
-      - name: Verify Loaded Secrets
-        run: |
-          echo "Secrets loaded from Vault:"
-          printenv | grep -E "AZURESPNAPPID|AZURESPNNAME|AZURESPNSECRET|CLOUDTENANTID|CLOUDACRDOMAIN|CLOUDSUBSCRIPTION|CLOUDK8SCLUSTERNAME|CLOUDK8SRG" || true
-
-      # Step 4: Azure Login and AKS Configuration
-      - name: Azure Login and AKS Configuration
-        env:
-        # Output from Vault
-          AZURESPNAPPID: ${{ steps.import-secrets.outputs.AZURESPNAPPID }}
-          AZURESPNNAME: ${{ steps.import-secrets.outputs.AZURESPNNAME }}        
-          AZURESPNSECRET: ${{ steps.import-secrets.outputs.AZURESPNSECRET }}     
-          CLOUDTENANTID: ${{ steps.import-secrets.outputs.CLOUDTENANTID }}       
-          CLOUDACRDOMAIN: ${{ steps.import-secrets.outputs.CLOUDACRDOMAIN }}     
-          CLOUDSUBSCRIPTION: ${{ steps.import-secrets.outputs.CLOUDSUBSCRIPTION }} 
-          CLOUDK8SCLUSTERNAME: ${{ steps.import-secrets.outputs.CLOUDK8SCLUSTERNAME }} 
-          CLOUDK8SRG: ${{ steps.import-secrets.outputs.CLOUDK8SRG }}           
-        run: |
-          echo "====================================="
-          echo "☁️ Azure, ACR & AKS Login"
-          echo "====================================="
-          az login --service-principal \
-            --tenant "$CLOUDTENANTID" \
-            --username "$AZURESPNAPPID" \
-            --password "$AZURESPNSECRET"
-          
-          echo "------------- ACR Login with token"
-          az acr login --name "$CLOUDACRDOMAIN" \
-            --subscription "$CLOUDSUBSCRIPTION"
-          
-          echo "------------- AKS Login"
-          az aks get-credentials --overwrite-existing \
-            --name "$CLOUDK8SCLUSTERNAME" \
-            --resource-group "$CLOUDK8SRG"
-
-
-      # Step 5: Check Kubernetes Components
+      # Step 3: Check Kubernetes Components
       - name: Check Kubernetes Components
         uses: ./.github/actions/check-components
         with:
