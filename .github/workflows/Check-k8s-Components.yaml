@@ -21,6 +21,9 @@ jobs:
       # Step 2: Azure + AKS Login     
       - name: Azure + AKS Login
         uses: ./.github/actions/actions
+        with:
+          roleId: ${{ secrets.APPROLE_ROLE_ID }}
+          secretId: ${{ secrets.APPROLE_SECRET_ID }}
 
       # Step 3: Check Kubernetes Components
       - name: Check Kubernetes Components
