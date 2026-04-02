@@ -25,7 +25,7 @@ jobs:
       - name: Azure + AKS Login
         uses: ./.github/actions/actions
         with:
-          roleId: ${{ env.roleID}}
+          roleId: ${{ env.roleId}}
           secretId: ${{ env.secretId }}
         
 
