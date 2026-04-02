@@ -1,4 +1,4 @@
-name: Delete Kubernetes Components 
+name: Build Kubernetes Components 
 
 on:
   workflow_dispatch: # Allows manual triggering
@@ -27,10 +27,10 @@ jobs:
         with:
           roleId: ${{ env.roleId}}
           secretId: ${{ env.secretId }}
-
-      # Step 3: Delete Kubernetes Components
-      - name: Delete Kubernetes Components
-        uses: ./.github/actions/delete-components
+        
+      # Step 3: Build Kubernetes Components
+      - name: Build Kubernetes Components
+        uses: ./.github/actions/build-components
         with:
           namespace: ${{ env.NAMESPACE }}
 
@@ -39,3 +39,4 @@ jobs:
         uses: ./.github/actions/check-components
         with:
           namespace: ${{ env.NAMESPACE }}
+
