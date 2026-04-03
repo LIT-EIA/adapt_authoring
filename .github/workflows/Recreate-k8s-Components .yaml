@@ -13,7 +13,7 @@ env:
 
 
 jobs:
-  DeleteK8Components:
+  RecreateK8Components:
     runs-on: arc-runners-dshp-dev
 
     steps:
@@ -30,7 +30,7 @@ jobs:
 
       # Step 3: Delete Kubernetes Components
       - name: Delete Kubernetes Components
-        uses: ./.github/actions/delete-components
+        uses: ./.github/actions/recreate-components
         with:
           namespace: ${{ env.NAMESPACE }}
 

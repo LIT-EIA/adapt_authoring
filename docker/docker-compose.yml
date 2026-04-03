@@ -1,9 +1,7 @@
 services:
   mongo:
     image: mongo:6.0.11
-    restart: unless-stopped
-    ports:
-      - 27017:27017
+    restart: always
     volumes:
       - db:/data/db
     networks:
@@ -21,7 +19,7 @@ services:
       - mongo
       - migration
     image: ghcr.io/lit-eia/adapt-authoring:latest
-    restart: unless-stopped
+    restart: always
     ports:
       - 5000:5000
     volumes:
@@ -32,7 +30,7 @@ services:
     networks:
       - default
     environment:
-      - rootUrl=http://localhost:5000/
+      - rootUrl=https://adapt-cms.dev-dp-internal.dts-stn.com/
       - outputPlugin=adapt
       - dbType=mongoose
       - auth=local

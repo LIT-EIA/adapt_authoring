@@ -18,13 +18,9 @@ runs:
         echo "🔍 Delete Components"
         echo "Namespace: $NAMESPACE"
         echo "====================================="
-        kubectl delete deployment adapt-app -n $"$NAMESPACE" || true 
-        kubectl delete deployment app -n "$NAMESPACE" || true
-        kubectl delete deployment migration -n "$NAMESPACE" || true
-        kubectl delete deployment mongo -n "$NAMESPACE" || true
-        kubectl delete service adapt-app -n "$NAMESPACE" || true
-        kubectl delete service app -n "$NAMESPACE" || true
-        kubectl delete service mongo -n "$NAMESPACE" || true
+
+        kubectl delete deployment mongodb -n "$NAMESPACE"
+        kubectl delete service mongodb -n "$NAMESPACE"
 
 
 

@@ -13,7 +13,7 @@ env:
 
 
 jobs:
-  CheckK8Components:
+  KomposeK8Components:
     runs-on: arc-runners-dshp-dev
 
     steps:
