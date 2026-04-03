@@ -18,14 +18,20 @@ runs:
         echo "🔍 Checking Kubernetes components"
         echo "Namespace: $NAMESPACE"
         echo "====================================="
-
+        echo "⏳ All k8s Components in Namespace listed."
         kubectl get all -n "$NAMESPACE"
+        echo "⏳ Ingress."
         kubectl get ingress -n "$NAMESPACE"
+        echo "⏳ ConfigMaps."
         kubectl get configmaps -n "$NAMESPACE"
+        echo "⏳ Helm List."
         helm list -n "$NAMESPACE"
+        echo "⏳ Pods."
         kubectl get pods -n "$NAMESPACE"
+        echo "⏳ All, Secret, Secret Store."
         kubectl get -n "$NAMESPACE" all,secret,secretstore
+        echo "⏳ PVC."
         kubectl get pvc -n "$NAMESPACE"
 
-        echo "✅ No deployment actions were taken."
+        echo "✅ All k8s Components listed."
 
