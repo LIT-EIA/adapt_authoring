@@ -75,7 +75,7 @@ const HANDLERS = {
   mcq: function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
     if (items.length) {
-      children.push(new Paragraph({ text: "Options" }));
+      children.push(new Paragraph({ spacing: { after: 100 }, text: "Options" }));
       items.forEach(function (it, idx) {
         if (!it || typeof it !== "object") return;
         const txt = safeText(it.text || "") || `(${locPolyglot.t("app.blank")})`;
@@ -86,15 +86,16 @@ const HANDLERS = {
 
         children.push(
           new Paragraph({
+            spacing: { after: 100 },
             text: line,
             bullet: { level: 0 }
           })
         );
 
         const fb = it.feedback || "";
-        if (fb) addLabelValue(children, "Option feedback", fb);
+        if (fb) addLabelValue(children, locPolyglot.t("app.optionfeedback"), fb);
       });
-      children.push(new Paragraph({ text: "" }));
+      children.push(new Paragraph({ spacing: { after: 100 }, text: "" }));
     }
 
     // Standard question-level feedback
@@ -153,7 +154,7 @@ const HANDLERS = {
         }
 
         if (fb) {
-          addLabelValue(children, "Option feedback", fb);
+          addLabelValue(children, locPolyglot.t("app.optionfeedback"), fb);
         }
       }
     }
@@ -166,18 +167,18 @@ const HANDLERS = {
 
   "dnd-multiple": async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
-    addLabelValue(children, "Number of items", String(items.length));
+    addLabelValue(children, locPolyglot.t("app.numberofitems"), String(items.length));
 
     for (let idx = 0; idx < items.length; idx++) {
       const item = items[idx];
       if (!item || typeof item !== "object") continue;
 
-      const title = safeText(item.title || "") || "(no title)";
+      const title = safeText(item.title || "") || `(${locPolyglot.t("app.notitle")})`;
 
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: "Item " + (idx + 1) + ": " + title, bold: true })
+            new TextRun({ text: locPolyglot.t("app.item") + " " + (idx + 1) + ": " + title, bold: true })
           ]
         })
       );
@@ -221,7 +222,7 @@ const HANDLERS = {
 
     // Attempts
     if (c._attempts !== undefined && c._attempts !== null) {
-      addLabelValue(children, "Attempts", String(c._attempts));
+      addLabelValue(children, locPolyglot.t("app.attempts"), String(c._attempts));
     }
 
     if (c._feedback) {
@@ -231,16 +232,16 @@ const HANDLERS = {
 
   matching: function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
-    addLabelValue(children, "Matching items", String(items.length));
+    addLabelValue(children, locPolyglot.t("app.matchingitems"), String(items.length));
 
     items.forEach(function (it, idx) {
       if (!it || typeof it !== "object") return;
-      const prompt = safeText(it.text || "") || "(blank)";
+      const prompt = safeText(it.text || "") || `(${locPolyglot.t("app.blank")})`;
       children.push(
         new Paragraph({
           children: [
             new TextRun({
-              text: "Item " + (idx + 1) + ": " + prompt,
+              text: locPolyglot.t("app.item") + " " + (idx + 1) + ": " + prompt,
               bold: true
             })
           ]
@@ -262,7 +263,7 @@ const HANDLERS = {
           );
         });
       } else {
-        addLabelValue(children, "Options", "(none)");
+        addLabelValue(children, "Options", `(${locPolyglot.t("app.scaffold._bubbledirection.none.variable")})`);
       }
 
       children.push(new Paragraph({ text: "" }));
@@ -276,13 +277,13 @@ const HANDLERS = {
     const remaining = c.remainingCharactersText || "";
     const saved = c.savedMessage || "";
 
-    if (placeholder) addLabelValue(children, "Placeholder", placeholder);
+    if (placeholder) addLabelValue(children, locPolyglot.t("app.placeholder"), placeholder);
     if (allowed !== undefined && allowed !== null)
-      addLabelValue(children, "Allowed characters", String(allowed));
+      addLabelValue(children, locPolyglot.t("app.allowedcharacters"), String(allowed));
     if (remaining)
-      addLabelValue(children, "Remaining characters text", remaining);
-    if (saved) addLabelValue(children, "Saved message", saved);
-    if (model) addLabelValue(children, "Model answer", model);
+      addLabelValue(children, locPolyglot.t("app.remainingcharacterstext"), remaining);
+    if (saved) addLabelValue(children, locPolyglot.t("app.savedmessage"), saved);
+    if (model) addLabelValue(children, locPolyglot.t("app.modelanswer"), model);
 
     children.push(new Paragraph({ text: "" }));
   },
@@ -290,45 +291,45 @@ const HANDLERS = {
   slider: function (children, c, assetMap, locPolyglot) {
     addLabelValue(
       children,
-      "Scale start",
+      locPolyglot.t("app.scalestart"),
       c._scaleStart !== undefined && c._scaleStart !== null
         ? String(c._scaleStart)
-        : "(none)"
+        : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
     );
     addLabelValue(
       children,
-      "Scale end",
+      locPolyglot.t("app.scaleend"),
       c._scaleEnd !== undefined && c._scaleEnd !== null
         ? String(c._scaleEnd)
-        : "(none)"
+        : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
     );
     addLabelValue(
       children,
-      "Scale step",
+      locPolyglot.t("app.scalestep"),
       c._scaleStep !== undefined && c._scaleStep !== null
         ? String(c._scaleStep)
-        : "(none)"
+        : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
     );
     addLabelValue(
       children,
-      "Label start",
-      safeText(c.labelStart || "") || "(none)"
+      locPolyglot.t("app.labelstart"),
+      safeText(c.labelStart || "") || `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
     );
     addLabelValue(
       children,
-      "Label end",
-      safeText(c.labelEnd || "") || "(none)"
+      locPolyglot.t("app.labelend"),
+      safeText(c.labelEnd || "") || `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
     );
 
     if (c._correctAnswer !== undefined && c._correctAnswer !== null) {
-      addLabelValue(children, "Correct answer", String(c._correctAnswer));
+      addLabelValue(children, locPolyglot.t("app.correctanswer"), String(c._correctAnswer));
     }
     if (c._correctRange !== undefined && c._correctRange !== null) {
-      addLabelValue(children, "Correct range", String(c._correctRange));
+      addLabelValue(children, locPolyglot.t("app.correctrange"), String(c._correctRange));
     }
 
     if (c._attempts !== undefined && c._attempts !== null) {
-      addLabelValue(children, "Attempts", String(c._attempts));
+      addLabelValue(children, locPolyglot.t("app.attempts"), String(c._attempts));
     }
 
     children.push(new Paragraph({ text: "" }));
@@ -337,30 +338,30 @@ const HANDLERS = {
   narrative: async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
 
-    addLabelValue(children, "Narrative panels", String(items.length));
+    addLabelValue(children, locPolyglot.t("app.narrativepanels"), String(items.length));
 
     for (let i = 0; i < items.length; i++) {
       const it = items[i];
       if (!it || typeof it !== "object") continue;
 
-      const title = safeText(it.title || "") || "(no title)";
+      const title = safeText(it.title || "") || `(${locPolyglot.t("app.notitle")})`;
 
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `Panel ${i + 1}: ${title}`, bold: true })
+            new TextRun({ text: `${locPolyglot.t("app.panel")} ${i + 1}: ${title}`, bold: true })
           ]
         })
       );
 
       const body = htmlToText(it.body || "");
       if (body) {
-        addLabelValue(children, "Panel body", body);
+        addLabelValue(children, locPolyglot.t("app.panelbody"), body);
       }
 
       const strap = htmlToText(it.strapline || "");
       if (strap) {
-        addLabelValue(children, "Panel strapline", strap);
+        addLabelValue(children, locPolyglot.t("app.panelstrapline"), strap);
       }
 
       const g = it._graphic || {};
@@ -385,24 +386,24 @@ const HANDLERS = {
   accordion: async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
 
-    addLabelValue(children, "Accordion items", String(items.length));
+    addLabelValue(children, locPolyglot.t("app.accordionitems"), String(items.length));
 
     for (let i = 0; i < items.length; i++) {
       const it = items[i];
       if (!it || typeof it !== "object") continue;
 
-      const title = safeText(it.title || "") || "(no title)";
+      const title = safeText(it.title || "") || `(${locPolyglot.t("app.notitle")})`;
 
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `Accordion ${i + 1}: ${title}`, bold: true })
+            new TextRun({ text: `${locPolyglot.t("app.accordion")} ${i + 1}: ${title}`, bold: true })
           ]
         })
       );
 
       const body = htmlToText(it.body || "");
-      addLabelValue(children, "Accordion body", body || "(none)");
+      addLabelValue(children, locPolyglot.t("app.accordionbody"), body || `(${locPolyglot.t("app.scaffold._bubbledirection.none.variable")})`);
 
       const g = it._graphic || {};
       if (g && typeof g === "object") {
@@ -449,23 +450,23 @@ const HANDLERS = {
       const it = items[i];
       if (!it || typeof it !== "object") continue;
 
-      const title = safeText(it.title || "") || "(no title)";
+      const title = safeText(it.title || "") || `("${locPolyglot.t("app.notitle")}")`;
 
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: "Hotspot " + (i + 1) + ": " + title, bold: true })
+            new TextRun({ text: locPolyglot.t("app.hotspot") + " " + (i + 1) + ": " + title, bold: true })
           ]
         })
       );
 
       const strap = htmlToText(it.strapline || "");
       if (strap) {
-        addLabelValue(children, "Strapline", strap);
+        addLabelValue(children, locPolyglot.t("app.strapline"), strap);
       }
 
       const body = htmlToText(it.body || "");
-      addLabelValue(children, "Hotspot body", body || "(none)");
+      addLabelValue(children, locPolyglot.t("app.hotspotbody"), body || `(${locPolyglot.t("app.scaffold._bubbledirection.none.variable")})`);
 
       // Node 12-safe fallback for left/top
       const left = (typeof it._left === "number" || typeof it._left === "string")
@@ -476,7 +477,7 @@ const HANDLERS = {
         ? it._top
         : "?";
 
-      const coords = "left: " + left + "%, top: " + top + "%";
+      const coords = `${locPolyglot.t("app.layoutleft")}: ` + left + `%, ${locPolyglot.t("app.top")}: ` + top + "%";
       addLabelValue(children, "Position", coords);
 
       // Hotspot-level graphic
@@ -502,24 +503,24 @@ const HANDLERS = {
   hotgrid: async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
 
-    addLabelValue(children, "Hotgrid items", String(items.length));
+    addLabelValue(children, locPolyglot.t("app.hotgriditems"), String(items.length));
 
     for (let i = 0; i < items.length; i++) {
       const it = items[i];
       if (!it || typeof it !== "object") continue;
 
-      const title = safeText(it.title || "") || "(no title)";
+      const title = safeText(it.title || "") || `("${locPolyglot.t("app.notitle")}")`;
 
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `Hotgrid tile ${i + 1}: ${title}`, bold: true })
+            new TextRun({ text: `${locPolyglot.t("app.hotgridtile")} ${i + 1}: ${title}`, bold: true })
           ]
         })
       );
 
       const body = htmlToText(it.body || "");
-      addLabelValue(children, "Tile body", body || "(none)");
+      addLabelValue(children, locPolyglot.t("app.tilebody"), body || `("${locPolyglot.t("app.scaffold._bubbledirection.none.variable")}")`);
 
       const g = it._graphic || {};
       if (g && typeof g === "object") {
@@ -543,24 +544,24 @@ const HANDLERS = {
   guidedtour: async function (children, c, assetMap, locPolyglot) {
     const items = Array.isArray(c._items) ? c._items : [];
 
-    addLabelValue(children, "Tour steps", String(items.length));
+    addLabelValue(children, locPolyglot.t("app.toursteps"), String(items.length));
 
     for (let i = 0; i < items.length; i++) {
       const it = items[i];
       if (!it || typeof it !== "object") continue;
 
-      const title = safeText(it.title || "") || "(no title)";
+      const title = safeText(it.title || "") || `("${locPolyglot.t("app.notitle")}")`;
 
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `Step ${i + 1}: ${title}`, bold: true })
+            new TextRun({ text: `${locPolyglot.t("app.step")} ${i + 1}: ${title}`, bold: true })
           ]
         })
       );
 
       const body = htmlToText(it.body || "");
-      addLabelValue(children, "Step body", body || "(none)");
+      addLabelValue(children, locPolyglot.t("app.stepbody"), body || `(${locPolyglot.t("app.scaffold._bubbledirection.none.variable")})`);
 
       // Step-level graphic
       const g = it._graphic || {};
@@ -580,8 +581,8 @@ const HANDLERS = {
 
       const pin = it._pin || {};
       if (pin && typeof pin === "object" && (pin.src || pin.alt)) {
-        const pinText = `${pin.src || ""} ${pin.alt || ""}`.trim() || "(none)";
-        addLabelValue(children, "Pin", pinText);
+        const pinText = `${pin.src || ""} ${pin.alt || ""}`.trim() || `(${locPolyglot.t("app.scaffold._bubbledirection.none.variable")})`;
+        addLabelValue(children, locPolyglot.t("app.pin"), pinText);
       }
 
       children.push(new Paragraph({ text: "" }));
@@ -594,21 +595,21 @@ const HANDLERS = {
     children.push(
       new Paragraph({
         children: [
-          new TextRun({ text: "Simulation: Screens and steps", bold: true })
+          new TextRun({ text: locPolyglot.t("app.simulationscreensandsteps"), bold: true })
         ]
       })
     );
-    addLabelValue(children, "Number of screens", String(screens.length));
+    addLabelValue(children, locPolyglot.t("app.numberofscreens"), String(screens.length));
 
     for (let sIdx = 0; sIdx < screens.length; sIdx++) {
       const screen = screens[sIdx];
       if (!screen || typeof screen !== "object") continue;
 
-      const title = safeText(screen.title || "") || "Screen " + (sIdx + 1);
+      const title = safeText(screen.title || "") || locPolyglot.t("app.screen") + " " + (sIdx + 1);
       const disp = safeText(screen.displayTitle || "");
       const sid = safeText(screen._screenID || "");
 
-      let line = "Screen " + (sIdx + 1) + ": " + title;
+      let line = locPolyglot.t("app.screen") + " " + (sIdx + 1) + ": " + title;
       if (disp && disp !== title) line += " — " + disp;
 
       children.push(
@@ -617,10 +618,10 @@ const HANDLERS = {
         })
       );
 
-      if (sid) addLabelValue(children, "Screen ID", sid);
+      if (sid) addLabelValue(children, locPolyglot.t("app.screenid"), sid);
 
       const body = screen.body || "";
-      if (body) addLabelValue(children, "Screen body", body);
+      if (body) addLabelValue(children, locPolyglot.t("app.screenbody"), body);
 
       const g = screen._graphic || {};
       if (g.src) {
@@ -634,24 +635,24 @@ const HANDLERS = {
         new Paragraph({
           children: [
             new TextRun({
-              text: "Steps for Screen " + (sIdx + 1),
+              text: locPolyglot.t("app.stepsforscreen") + " " + (sIdx + 1),
               bold: true
             })
           ]
         })
       );
-      addLabelValue(children, "Number of steps", String(steps.length));
+      addLabelValue(children, locPolyglot.t("app.numberofsteps"), String(steps.length));
 
       for (let stIdx = 0; stIdx < steps.length; stIdx++) {
         const step = steps[stIdx];
         if (!step || typeof step !== "object") continue;
-        const stTitle = safeText(step.title || "") || "Step " + (stIdx + 1);
+        const stTitle = safeText(step.title || "") || locPolyglot.t("app.step") + " " + (stIdx + 1);
 
         children.push(
           new Paragraph({
             children: [
               new TextRun({
-                text: "Step " + (stIdx + 1) + ": " + stTitle,
+                text: locPolyglot.t("app.step") + " " + (stIdx + 1) + ": " + stTitle,
                 bold: true
               })
             ],
@@ -661,7 +662,7 @@ const HANDLERS = {
 
         const taskLabel = step._taskLabel;
         if (typeof taskLabel === "string" && taskLabel.trim()) {
-          addLabelValue(children, "Task label", taskLabel.trim());
+          addLabelValue(children, locPolyglot.t("app.tasklabel"), taskLabel.trim());
         }
         const sg = step._graphic || {};
         if (sg.src) {
@@ -674,16 +675,16 @@ const HANDLERS = {
   quicknav: function (children, c) {
     const buttons = c._buttons || {};
     if (!buttons || typeof buttons !== "object" || !Object.keys(buttons).length) {
-      addLabelValue(children, "QuickNav buttons", "(none)");
+      addLabelValue(children, locPolyglot.t("app.quicknav.buttons"), `(${locPolyglot.t("app.scaffold._bubbledirection.none.variable")})`);
       return;
     }
 
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: "QuickNav: Buttons", bold: true })]
+        children: [new TextRun({ text: locPolyglot.t("app.quicknav.buttons"), bold: true })]
       })
     );
-    addLabelValue(children, "Number of buttons", String(Object.keys(buttons).length));
+    addLabelValue(children, locPolyglot.t("app.numberofbuttons"), String(Object.keys(buttons).length));
 
     const items = [];
     Object.keys(buttons).forEach(function (key) {
@@ -714,11 +715,11 @@ const HANDLERS = {
       if (b && typeof b === "object") {
         label = safeText(b.ariaLabel || b.label || "");
       }
-      const labelDisp = label || keyDisp || "(unlabeled)";
+      const labelDisp = label || keyDisp || `(${locPolyglot.t("app.unlabeled")})`;
 
       let enabledDisp = "";
       if (b && typeof b._isEnabled === "boolean") {
-        enabledDisp = b._isEnabled ? " (Enabled)" : " (Disabled)";
+        enabledDisp = b._isEnabled ? ` (${locPolyglot.t("app.enabled")})` : ` (${locPolyglot.t("app.disabled")})`;
       }
 
       let textVal = "";
@@ -728,7 +729,7 @@ const HANDLERS = {
         textVal = String(b.text);
       }
 
-      const textClean = safeText(textVal) || "(none)";
+      const textClean = safeText(textVal) || `(${locPolyglot.t("app.scaffold._bubbledirection.none.variable")})`;
 
       children.push(
         new Paragraph({
@@ -748,18 +749,18 @@ const HANDLERS = {
     // --- Characters section ---
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: "Talk: Characters", bold: true })]
+        children: [new TextRun({ text: locPolyglot.t("app.talk.characters"), bold: true })]
       })
     );
 
     const chars = Array.isArray(c._characters) ? c._characters : [];
-    addLabelValue(children, "Number of characters", String(chars.length));
+    addLabelValue(children, locPolyglot.t("app.numberofcharacters"), String(chars.length));
 
     for (let idx = 0; idx < chars.length; idx++) {
       const ch = chars[idx];
       if (!ch || typeof ch !== "object") continue;
 
-      const name = safeText(ch.name || "") || `Character ${idx + 1}`;
+      const name = safeText(ch.name || "") || `${locPolyglot.t("app.character")} ${idx + 1}`;
       const pos = safeText(ch.position || "");
 
       children.push(
@@ -784,12 +785,12 @@ const HANDLERS = {
     // --- Messages section ---
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: "Talk: Message sequence", bold: true })]
+        children: [new TextRun({ text: locPolyglot.t("app.talk.messages"), bold: true })]
       })
     );
 
     const items = Array.isArray(c._items) ? c._items : [];
-    addLabelValue(children, "Number of messages", String(items.length));
+    addLabelValue(children, locPolyglot.t("app.numberofmessages"), String(items.length));
 
     // Speaker resolver
     function resolveSpeaker(it) {
@@ -797,15 +798,15 @@ const HANDLERS = {
       if (cname) return cname;
 
       let idx = parseInt(it._character, 10);
-      if (isNaN(idx)) return "(unknown speaker)";
+      if (isNaN(idx)) return `(${locPolyglot.t("app.unknownspeaker")})`;
 
-      if (idx === 0) return "Narrator";
+      if (idx === 0) return locPolyglot.t("app.narrator");
       if (idx >= 1 && idx <= chars.length) {
         const nm = safeText(chars[idx - 1].name || "");
-        return nm || `Character ${idx}`;
+        return nm || `${locPolyglot.t("app.character")} ${idx}`;
       }
 
-      return "(unknown speaker)";
+      return `(${locPolyglot.t("app.unknownspeaker")})`;
     }
 
     items.forEach((it, idx) => {
@@ -828,16 +829,16 @@ const HANDLERS = {
         })
       );
 
-      addLabelValue(children, "Dialogue", text || "(none)");
+      addLabelValue(children, locPolyglot.t("app.dialogue"), text || `(${locPolyglot.t("app.scaffold._bubbledirection.none.variable")})`);
 
       if (mp3) {
-        addLabelValue(children, "Audio file (mp3)", mp3);
+        addLabelValue(children, locPolyglot.t("app.audiofile"), mp3);
       }
 
       if (g && typeof g === "object" && g.src) {
         // TODO: insert image block once your image helper is ready
-        addLabelValue(children, "Graphic source", g.src);
-        if (g.alt) addLabelValue(children, "Graphic alt text", g.alt);
+        addLabelValue(children, locPolyglot.t("app.graphic.source"), g.src);
+        if (g.alt) addLabelValue(children, locPolyglot.t("app.graphic.alt"), g.alt);
       }
 
       children.push(new Paragraph({ text: "" }));
