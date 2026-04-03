@@ -12,15 +12,7 @@ runs:
     - name: Delete Kubernetes Components
       shell: bash
       run: |
-        NAMESPACE="${{ inputs.namespace }}"
-
-        echo "====================================="
-        echo "🔍 Delete Components"
-        echo "Namespace: $NAMESPACE"
-        echo "====================================="
-
-        kubectl delete deployment mongodb -n "$NAMESPACE"
-        kubectl delete service mongodb -n "$NAMESPACE"
+        ls -la k8s-generated
 
 
 

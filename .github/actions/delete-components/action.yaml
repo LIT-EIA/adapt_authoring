@@ -23,11 +23,11 @@ runs:
         kubectl delete deployment mongo -n "$NAMESPACE" || true
         kubectl delete service app -n "$NAMESPACE" || true
         kubectl delete service mongo -n "$NAMESPACE" || true
-        kubectl delete secret mongo-secrets -n "$NAMESPACE" || true
+        kubectl delete configmaps adapt-app-config  -n "$NAMESPACE" || true
+        kubectl delete configmaps mongodb-common-scripts -n "$NAMESPACE" || true
         kubectl delete pvc db -n "$NAMESPACE" || true
-        kubectl delete pvc mongo-pvc  -n "$NAMESPACE" || true
         kubectl delete pvc storage -n "$NAMESPACE" || true
-        kubectl delete pvc storage-pvc -n "$NAMESPACE" || true
+
  
 
 
