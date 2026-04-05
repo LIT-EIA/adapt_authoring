@@ -31,6 +31,14 @@ runs:
         kompose convert \
           -f "${{ inputs.compose-file }}" \
           -o docker/k8s/base
+
+    
+    - name: List Kompose base folder contents
+      shell: bash
+      run: |
+       echo "📂 Contents of docker/k8s/base:"
+       ls -lah docker/k8s/base
+
   
     - name: Upload Kompose base manifests (pre-Kustomize)
       uses: actions/upload-artifact@v4
