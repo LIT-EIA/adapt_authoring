@@ -37,7 +37,7 @@ runs:
       shell: bash
       run: |
        echo "📂 Contents of docker/k8s/base:"
-       ls -lah docker/k8s/base
+       ls -lah docker/k8s
 
   
     - name: Upload Kompose base manifests (pre-Kustomize)
