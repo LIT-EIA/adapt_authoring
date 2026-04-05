@@ -27,12 +27,17 @@ runs:
       shell: bash
       run: |
         echo "🔄 Converting compose file: ${{ inputs.compose-file }}"
-        rm -rf k8s-generated
-        mkdir -p k8s-generated
 
         kompose convert \
           -f "${{ inputs.compose-file }}" \
-          -o k8s-generated
+          -o docker/k8s/base
+  
+    - name: Upload Kompose base manifests (pre-Kustomize)
+      uses: actions/upload-artifact@v4
+      with:
+        name: kompose-base-manifests
+        path: docker/k8s/base
+        retention-days: 2
 
     - name: Apply manifests to Kubernetes
       shell: bash
@@ -44,4 +49,4 @@ runs:
 
         kubectl apply \
           -n "${{ inputs.namespace }}" \
-          -f k8s-generated
+          -f docker/k8s/base
