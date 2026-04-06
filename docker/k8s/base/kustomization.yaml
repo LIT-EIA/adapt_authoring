@@ -4,10 +4,5 @@ kind: Kustomization
 # Pull in all Kompose-generated manifests
 
 resources:
-  - ../kompose/app-deployment.yaml
-  - ../kompose/app-service.yaml
-  - ../kompose/mongo-deployment.yaml
-  - ../kompose/migration-deployment.yaml
-  - ../kompose/db-persistentvolumeclaim.yaml
-  - ../kompose/storage-persistentvolumeclaim.yaml
+  - kompose
 
