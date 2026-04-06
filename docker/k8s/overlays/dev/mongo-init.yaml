@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: mongo
 spec:
-template:
+  template:
     spec:
       initContainers:
         - name: init-mongo-data
