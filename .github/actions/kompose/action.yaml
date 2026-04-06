@@ -30,7 +30,7 @@ runs:
 
         kompose convert \
           -f "${{ inputs.compose-file }}" \
-          -o docker/k8s/base
+          -o docker/k8s/base/
 
     
     - name: List Kompose base folder contents
