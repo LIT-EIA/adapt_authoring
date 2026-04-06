@@ -43,22 +43,33 @@ runs:
     - name: Create kustomization.yaml for Kompose output
       shell: bash
       run: |
-        set -euo pipefail
-        echo "🧩 Creating kustomization.yaml for Kompose output"
+       set -euo pipefail
+       echo "🧩 Creating kustomization.yaml for Kompose output"
 
-        cat <<'EOF' > docker/k8s/base/kompose/kustomization.yaml
-        apiVersion: kustomize.config.k8s.io/v1beta1
-        kind: Kustomization
+       shopt -s nullglob
 
-        resources:
-        EOF
+       FILES=(docker/k8s/base/kompose/*.yaml)
 
-        shopt -s nullglob
-        for f in docker/k8s/kompose/*.yaml; do
-          if [[ "$(basename "$f")" != "kustomization.yaml" ]]; then
-            echo "  - $(basename "$f")" >> docker/k8s/base/kompose/kustomization.yaml
-          fi
-        done
+       if [ ${#FILES[@]} -eq 0 ]; then
+       echo "❌ No YAML files found in docker/k8s/base/kompose"
+       exit 1
+       fi
+
+       cat <<EOF > docker/k8s/base/kompose/kustomization.yaml
+       apiVersion: kustomize.config.k8s.io/v1beta1
+       kind: Kustomization
+
+       resources:
+       EOF
+
+       for f in "${FILES[@]}"; do
+        base=$(basename "$f")
+        if [ "$base" != "kustomization.yaml" ]; then
+         echo "  - $base" >> docker/k8s/base/kompose/kustomization.yaml
+        fi
+       done
+
+       echo "✅ Generated docker/k8s/base/kompose/kustomization.yaml"
 
     - name: List Kompose output
       shell: bash
