@@ -11,7 +11,7 @@ inputs:
     required: true
 
   overlay:
-    description: Kustomize overlay path (e.g. docker/k8s/overlays/dev or docker/k8s/overlays/prod)
+    description: Kustomize overlay path 
     required: true
 
 runs:
