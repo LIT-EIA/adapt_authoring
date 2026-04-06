@@ -39,6 +39,24 @@ runs:
           -f "${{ inputs.compose-file }}" \
           -o docker/k8s/kompose
 
+    - name: Create kustomization.yaml for Kompose output
+      shell: bash
+      run: |
+        echo "🧩 Creating kustomization.yaml for Kompose output"
+
+        cat <<'EOF' > docker/k8s/kompose/kustomization.yaml
+        apiVersion: kustomize.config.k8s.io/v1beta1
+        kind: Kustomization
+
+        resources:
+        EOF
+
+        # Automatically list all generated YAMLs except kustomization.yaml itself
+        for f in docker/k8s/kompose/*.yaml; do
+        filename=$(basename "$f")
+        echo "  - $filename" >> docker/k8s/kompose/kustomization.yaml
+        done
+
     - name: List Kompose output
       shell: bash
       run: |
