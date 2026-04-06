@@ -11,7 +11,7 @@ inputs:
     required: true
 
   overlay:
-    description: Kustomize overlay path 
+    description: Kustomize overlay path
     required: true
 
 runs:
@@ -20,9 +20,9 @@ runs:
     - name: Install Kompose
       shell: bash
       run: |
+        set -euo pipefail
         echo "📦 Installing Kompose"
-        curl -L https://github.com/kubernetes/kompose/releases/latest/download/kompose-linux-amd64 \
-          -o kompose
+        curl -L https://github.com/kubernetes/kompose/releases/latest/download/kompose-linux-amd64 -o kompose
         chmod +x kompose
         sudo mv kompose /usr/local/bin/kompose
         kompose version
@@ -30,6 +30,7 @@ runs:
     - name: Convert docker-compose to Kubernetes manifests (Kompose)
       shell: bash
       run: |
+        set -euo pipefail
         echo "🔄 Converting compose file: ${{ inputs.compose-file }}"
 
         rm -rf docker/k8s/kompose
@@ -42,6 +43,7 @@ runs:
     - name: Create kustomization.yaml for Kompose output
       shell: bash
       run: |
+        set -euo pipefail
         echo "🧩 Creating kustomization.yaml for Kompose output"
 
         cat <<'EOF' > docker/k8s/kompose/kustomization.yaml
@@ -51,15 +53,17 @@ runs:
         resources:
         EOF
 
-        # Automatically list all generated YAMLs except kustomization.yaml itself
+        shopt -s nullglob
         for f in docker/k8s/kompose/*.yaml; do
-        filename=$(basename "$f")
-        echo "  - $filename" >> docker/k8s/kompose/kustomization.yaml
+          if [[ "$(basename "$f")" != "kustomization.yaml" ]]; then
+            echo "  - $(basename "$f")" >> docker/k8s/kompose/kustomization.yaml
+          fi
         done
 
     - name: List Kompose output
       shell: bash
       run: |
+        set -euo pipefail
         echo "📂 Contents of docker/k8s/kompose:"
         ls -lah docker/k8s/kompose
 
@@ -70,15 +74,14 @@ runs:
         path: docker/k8s/kompose
         retention-days: 2
 
-    # ✅ Render Kustomize overlay (DEV/PROD)
     - name: Render manifests with Kustomize
       shell: bash
       run: |
+        set -euo pipefail
         echo "🧩 Rendering overlay: ${{ inputs.overlay }}"
         mkdir -p docker/k8s/rendered
         kubectl kustomize "${{ inputs.overlay }}" > docker/k8s/rendered/all.yaml
 
-    # ✅ Upload what will actually be applied
     - name: Upload rendered manifests (post-Kustomize)
       uses: actions/upload-artifact@v4
       with:
@@ -89,6 +92,7 @@ runs:
     - name: Apply manifests to Kubernetes
       shell: bash
       run: |
+        set -euo pipefail
         echo "🚀 Deploying to namespace: ${{ inputs.namespace }}"
 
         kubectl get namespace "${{ inputs.namespace }}" \
