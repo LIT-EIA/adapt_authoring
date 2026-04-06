@@ -33,12 +33,12 @@ runs:
         set -euo pipefail
         echo "🔄 Converting compose file: ${{ inputs.compose-file }}"
 
-        rm -rf docker/k8s/kompose
-        mkdir -p docker/k8s/kompose
+        rm -rf docker/k8s/base/kompose
+        mkdir -p docker/k8s/base/kompose
 
         kompose convert \
           -f "${{ inputs.compose-file }}" \
-          -o docker/k8s/kompose
+          -o docker/k8s/base/kompose
 
     - name: Create kustomization.yaml for Kompose output
       shell: bash
@@ -46,7 +46,7 @@ runs:
         set -euo pipefail
         echo "🧩 Creating kustomization.yaml for Kompose output"
 
-        cat <<'EOF' > docker/k8s/kompose/kustomization.yaml
+        cat <<'EOF' > docker/k8s/base/kompose/kustomization.yaml
         apiVersion: kustomize.config.k8s.io/v1beta1
         kind: Kustomization
 
@@ -56,7 +56,7 @@ runs:
         shopt -s nullglob
         for f in docker/k8s/kompose/*.yaml; do
           if [[ "$(basename "$f")" != "kustomization.yaml" ]]; then
-            echo "  - $(basename "$f")" >> docker/k8s/kompose/kustomization.yaml
+            echo "  - $(basename "$f")" >> docker/k8s/base/kompose/kustomization.yaml
           fi
         done
 
@@ -64,14 +64,14 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        echo "📂 Contents of docker/k8s/kompose:"
+        echo "📂 Contents of docker/k8s/base/kompose:"
         ls -lah docker/k8s/kompose
 
     - name: Upload Kompose base manifests (pre-Kustomize)
       uses: actions/upload-artifact@v4
       with:
         name: kompose-base-manifests
-        path: docker/k8s/kompose
+        path: docker/k8s/base/kompose
         retention-days: 2
 
     - name: Render manifests with Kustomize

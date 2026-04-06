@@ -6,9 +6,8 @@ resources:
   - mongo-service.yaml
 
 patches:
-  - path: 
-     mongo-init.yaml
-     migration-init.yaml
+  - path: mongo-init.yaml
+  - path: migration-init.yaml
 
 labels:
   - includeSelectors: true
