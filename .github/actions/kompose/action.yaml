@@ -28,23 +28,26 @@ runs:
       run: |
         echo "🔄 Converting compose file: ${{ inputs.compose-file }}"
 
+        rm -rf docker/k8s/kompose
+        mkdir -p docker/k8s/kompose
+
         kompose convert \
           -f "${{ inputs.compose-file }}" \
-          -o docker/k8s/base/
+          -o docker/k8s/kompose
 
     
     - name: List Kompose base folder contents
       shell: bash
       run: |
        echo "📂 Contents of docker/k8s/base:"
-       ls -lah docker/k8s
+       ls -lah docker/k8s/kompose
 
   
     - name: Upload Kompose base manifests (pre-Kustomize)
       uses: actions/upload-artifact@v4
       with:
         name: kompose-base-manifests
-        path: docker/k8s/base
+        path: docker/k8s/kompose
         retention-days: 2
 
     - name: Apply manifests to Kubernetes
