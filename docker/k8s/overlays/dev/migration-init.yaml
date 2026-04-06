@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: migration
+spec:
+template:
+    spec:
+      initContainers:
+        - name: init-storage
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /app/storage"]
+          volumeMounts:
+            - name: storage
+              mountPath: /app/storage

@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+spec:
+template:
+    spec:
+      initContainers:
+        - name: init-mongo-data
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /data/db"]
+          volumeMounts:
+            - name: db
+              mountPath: /data/db

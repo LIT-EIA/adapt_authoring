@@ -1,5 +1,5 @@
 name: Deploy Docker Compose via Kompose
-description: Convert docker-compose to Kubernetes manifests and deploy to cluster
+description: Convert docker-compose to Kubernetes manifests and deploy using Kustomize overlays
 
 inputs:
   compose-file:
@@ -8,6 +8,10 @@ inputs:
 
   namespace:
     description: Kubernetes namespace to deploy into
+    required: true
+
+  overlay:
+    description: Kustomize overlay path (e.g. docker/k8s/overlays/dev or docker/k8s/overlays/prod)
     required: true
 
 runs:
@@ -23,7 +27,7 @@ runs:
         sudo mv kompose /usr/local/bin/kompose
         kompose version
 
-    - name: Convert docker-compose to Kubernetes manifests
+    - name: Convert docker-compose to Kubernetes manifests (Kompose)
       shell: bash
       run: |
         echo "🔄 Converting compose file: ${{ inputs.compose-file }}"
@@ -35,19 +39,33 @@ runs:
           -f "${{ inputs.compose-file }}" \
           -o docker/k8s/kompose
 
-    
-    - name: List Kompose base folder contents
+    - name: List Kompose output
       shell: bash
       run: |
-       echo "📂 Contents of docker/k8s/base:"
-       ls -lah docker/k8s/kompose
+        echo "📂 Contents of docker/k8s/kompose:"
+        ls -lah docker/k8s/kompose
 
-  
     - name: Upload Kompose base manifests (pre-Kustomize)
       uses: actions/upload-artifact@v4
       with:
         name: kompose-base-manifests
         path: docker/k8s/kompose
+        retention-days: 2
+
+    # ✅ Render Kustomize overlay (DEV/PROD)
+    - name: Render manifests with Kustomize
+      shell: bash
+      run: |
+        echo "🧩 Rendering overlay: ${{ inputs.overlay }}"
+        mkdir -p docker/k8s/rendered
+        kubectl kustomize "${{ inputs.overlay }}" > docker/k8s/rendered/all.yaml
+
+    # ✅ Upload what will actually be applied
+    - name: Upload rendered manifests (post-Kustomize)
+      uses: actions/upload-artifact@v4
+      with:
+        name: kustomize-rendered-manifests
+        path: docker/k8s/rendered
         retention-days: 2
 
     - name: Apply manifests to Kubernetes
@@ -60,4 +78,4 @@ runs:
 
         kubectl apply \
           -n "${{ inputs.namespace }}" \
-          -f docker/k8s/base
+          -f docker/k8s/rendered/all.yaml
