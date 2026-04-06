@@ -34,7 +34,7 @@ jobs:
         with:
           namespace: ${{ env.NAMESPACE }}
           compose-file: docker/docker-compose.yml
-          overlay: docker/k8s/overlays/dev/kustomization.yaml
+          overlay: docker/k8s/overlays/dev
 
       # Step 4: Check Kubernetes Components
       - name: Check Kubernetes Components
