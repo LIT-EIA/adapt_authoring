@@ -5,9 +5,10 @@ resources:
   - ../../base
   - mongo-service.yaml
 
-patchesStrategicMerge:
-  - mongo-init.yaml
-  - migration-init.yaml
+patches:
+  - path: 
+     mongo-init.yaml
+     migration-init.yaml
 
 labels:
   - includeSelectors: true
