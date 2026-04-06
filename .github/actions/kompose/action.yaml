@@ -65,7 +65,7 @@ runs:
       run: |
         set -euo pipefail
         echo "📂 Contents of docker/k8s/base/kompose:"
-        ls -lah docker/k8s/kompose
+        ls -lah docker/k8s/base/kompose
 
     - name: Upload Kompose base manifests (pre-Kustomize)
       uses: actions/upload-artifact@v4
