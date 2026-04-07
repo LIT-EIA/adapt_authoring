@@ -1,41 +1,47 @@
-# =========================================
-# Base image
-# =========================================
+# ---------------------------
+# Base image (stable LTS)
+# ---------------------------
 FROM node:18-alpine
 
-# =========================================
-# Set working directory inside the container
-# =========================================
+# ---------------------------
+# App root
+# ---------------------------
 WORKDIR /app
 
-# =========================================
-# Copy dependency manifests first (cache-friendly)
-# =========================================
-COPY package*.json ./
+# ---------------------------
+# Ensure local binaries are usable
+# ---------------------------
+ENV PATH=/app/node_modules/.bin:$PATH
 
-# =========================================
+# ---------------------------
 # Install dependencies
-# Use npm ci for reproducible builds
-# =========================================
-RUN npm ci --only=production
+# ---------------------------
+COPY package.json package-lock.json* ./
+RUN npm install
 
-# =========================================
-# Copy application source code
-# =========================================
+# ---------------------------
+# Copy app source
+# ---------------------------
 COPY . .
 
-# =========================================
-# Create runtime storage directory
-# (PVC will mount over this in Kubernetes)
-# =========================================
-RUN mkdir -p /app/storage
+# ---------------------------
+# Build step (as in old image)
+# ---------------------------
+RUN npm install -g grunt-cli && grunt build:prod
 
-# =========================================
-# Expose application port
-# =========================================
+# ---------------------------
+# Prepare runtime storage dir
+# (PVC will mount here)
+# ---------------------------
+RUN mkdir -p /app/storage/conf \
+ && [ -f /app/storage/conf/config.json ] || echo '{}' > /app/storage/conf/config.json
+
+# ---------------------------
+# Expose app port
+# ---------------------------
 EXPOSE 5000
 
-# =========================================
-# Default startup command
-# =========================================
+# ---------------------------
+# Run the app
+# ---------------------------
 CMD ["npm", "start"]
