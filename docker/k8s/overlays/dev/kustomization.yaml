@@ -5,9 +5,21 @@ resources:
   - ../../base
   - mongo-service.yaml
 
+
 patches:
   - path: mongo-init.yaml
+    target:
+      kind: Deployment
+      name: mongo
   - path: migration-init.yaml
+    target:
+      kind: Deployment
+      name: migration
+  - path: app-init.yaml
+    target:
+      kind: Deployment
+      name: app
+
 
 
 labels:

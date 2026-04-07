@@ -1,3 +1,4 @@
+# kustomize:patch
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,7 +9,20 @@ spec:
       initContainers:
         - name: init-mongo-data
           image: busybox
-          command: ["sh", "-c", "mkdir -p /data/db"]
+          command:
+            - sh
+            - -c
+            - mkdir -p /data/db
           volumeMounts:
-            - name: db
-              mountPath: /data/db
+            - mountPath: /data/db
+              name: db
+
+      containers:
+        - name: mongo
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"

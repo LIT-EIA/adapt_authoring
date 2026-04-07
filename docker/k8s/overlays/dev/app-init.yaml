@@ -8,7 +8,10 @@ spec:
       initContainers:
         - name: init-storage
           image: busybox
-          command: ["sh", "-c", "mkdir -p /app/storage"]
+          command:
+            - sh
+            - -c
+            - mkdir -p /app/storage
           volumeMounts:
             - name: storage
               mountPath: /app/storage
