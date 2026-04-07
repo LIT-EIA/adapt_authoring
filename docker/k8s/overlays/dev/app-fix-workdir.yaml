@@ -8,6 +8,8 @@ spec:
     spec:
       containers:
         - name: app
+          workingDir: /app
+          command: ["npm", "start"]
           volumeMounts:
             - name: storage
               mountPath: /app/storage
