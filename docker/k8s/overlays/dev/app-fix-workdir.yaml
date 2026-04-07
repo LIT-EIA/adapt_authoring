@@ -8,4 +8,6 @@ spec:
     spec:
       containers:
         - name: app
-          workingDir: /app
+          volumeMounts:
+            - name: storage
+              mountPath: /app/storage
