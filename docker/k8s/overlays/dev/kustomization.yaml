@@ -27,9 +27,13 @@ patches:
     target:
       kind: Deployment
       name: migration
-
   
   - path: app-remove-command.yaml
+    target:
+      kind: Deployment
+      name: app
+ 
+  - path: app-fix-workdir.yaml
     target:
       kind: Deployment
       name: app
