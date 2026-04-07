@@ -21,6 +21,7 @@ define(function(require) {
       'click button.editor-common-sidebar-preview': 'previewProject',
       'click button.editor-common-sidebar-preview-force': 'forcePreviewProject',
       'click button.editor-common-sidebar-export': 'exportProject',
+      'click button.editor-common-sidebar-storyboard': 'generateStoryboard',
       'click button.editor-common-sidebar-close': 'closeProject',
       'click .editor-common-sidebar-preview-wrapper .dropdown button': 'toggleDropdown'
     },
@@ -141,6 +142,10 @@ define(function(require) {
 
     exportProject: function() {
       Origin.trigger('editorCommon:export');
+    },
+
+    generateStoryboard: function() {
+      Origin.trigger('editorCommon:generateStoryboard');
     },
 
     closeProject: function() {
