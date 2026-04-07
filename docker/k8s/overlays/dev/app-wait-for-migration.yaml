@@ -1,0 +1,21 @@
+# kustomize:patch
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: adapt-authoring
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: wait-for-migration
+          image: bitnami/kubectl:latest
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for migration Job to complete..."
+              kubectl wait \
+                --for=condition=complete \
+                job/migration \
+                --timeout=300s

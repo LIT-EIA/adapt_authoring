@@ -112,3 +112,16 @@ runs:
         kubectl apply \
           -n "${{ inputs.namespace }}" \
           -f docker/k8s/rendered/all.yaml
+  
+  
+    - name: Wait for migration Job to complete
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "⏳ Waiting for migration Job to complete..."
+        kubectl wait \
+          -n "${{ inputs.namespace }}" \
+          --for=condition=complete \
+          job/migration \
+          --timeout=10m
+

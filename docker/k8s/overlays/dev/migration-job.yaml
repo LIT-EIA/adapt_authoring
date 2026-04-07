@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migration
+  labels:
+    environment: dev
+    io.kompose.service: migration
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        environment: dev
+        io.kompose.service: migration
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        - name: init-storage
+          image: busybox
+          command:
+            - sh
+            - -c
+            - mkdir -p /app/storage
+          volumeMounts:
+            - name: storage
+              mountPath: /app/storage
+      containers:
+        - name: migration
+          image: ghcr.io/lit-eia/adapt-migration-demo:latest
+          volumeMounts:
+            - name: storage
+              mountPath: /app/storage
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: storage

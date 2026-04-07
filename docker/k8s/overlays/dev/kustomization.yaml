@@ -4,23 +4,29 @@ kind: Kustomization
 resources:
   - ../../base
   - mongo-service.yaml
-
+  - migration-job.yaml
+  - app-rbac.yaml
 
 patches:
   - path: mongo-init.yaml
     target:
       kind: Deployment
       name: mongo
-  - path: migration-init.yaml
-    target:
-      kind: Deployment
-      name: migration
+
   - path: app-init.yaml
     target:
       kind: Deployment
       name: app
 
+  - path: app-wait-for-migration.yaml
+    target:
+      kind: Deployment
+      name: app
 
+  - path: migration-delete.yaml
+    target:
+      kind: Deployment
+      name: migration
 
 labels:
   - includeSelectors: true
