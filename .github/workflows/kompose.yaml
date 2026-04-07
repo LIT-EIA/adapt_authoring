@@ -28,6 +28,16 @@ jobs:
           roleId: ${{ env.roleId}}
           secretId: ${{ env.secretId }}
 
+      
+      - name: Build and push app image to ACR
+        uses: ./.github/actions/docker-build
+        with:
+          acr-url: dtsrhpdevscedacr.azurecr.io
+          image-name: cms_adapt_authoring
+          image-tag: 1.0
+          build-context: .
+
+
       # Step 3: Build Kubernetes Components Using Kompose
       - name: Build Kubernetes Components Using Kompose
         uses: ./.github/actions/kompose

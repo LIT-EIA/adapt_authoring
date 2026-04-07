@@ -38,6 +38,11 @@ patches:
       kind: Deployment
       name: app
 
+  - path: app-image-pull.yaml
+    target:
+      kind: Deployment
+      name: app
+
 
 labels:
   - includeSelectors: true
