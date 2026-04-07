@@ -672,7 +672,7 @@ const HANDLERS = {
     }
   },
 
-  quicknav: function (children, c) {
+  quicknav: function (children, c, assetMap, locPolyglot) {
     const buttons = c._buttons || {};
     if (!buttons || typeof buttons !== "object" || !Object.keys(buttons).length) {
       addLabelValue(children, locPolyglot.t("app.quicknav.buttons"), `(${locPolyglot.t("app.scaffold._bubbledirection.none.variable")})`);
