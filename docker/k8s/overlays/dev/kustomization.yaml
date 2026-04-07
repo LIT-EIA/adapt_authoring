@@ -28,6 +28,13 @@ patches:
       kind: Deployment
       name: migration
 
+  
+  - path: app-remove-command.yaml
+    target:
+      kind: Deployment
+      name: app
+
+
 labels:
   - includeSelectors: true
     pairs:
