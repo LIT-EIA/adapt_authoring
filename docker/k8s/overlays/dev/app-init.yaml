@@ -12,23 +12,22 @@ spec:
             - sh
             - -c
             - |
+              set -e
 
-              mkdir -p /app/storage/plugins
+              # Base directories
               mkdir -p /app/storage/content
               mkdir -p /app/storage/uploads
+              mkdir -p /app/storage/plugins/content
 
-              cd /app/storage/plugins || exit 0
+              cd /app/storage/plugins/content
 
-              if [ ! -f package.json ]; then
-                echo "Initializing plugin directory..."
-                npm init -y || true
-              fi
-
-              if [ ! -d node_modules ]; then
+              # Install content plugins ONLY if not already installed
+              if [ ! -d adapt-contrib-text ]; then
                 echo "Installing Adapt content plugins..."
+                npm init -y >/dev/null 2>&1
                 npm install \
                   adapt-contrib-text \
-                  adapt-contrib-mcq || true
+                  adapt-contrib-mcq
               fi
           volumeMounts:
             - name: storage
