@@ -39,8 +39,18 @@ RUN npm install -g grunt-cli \
  && grunt build:prod
 
 # ============================
+# ✅ FIX: Build Adapt plugins at IMAGE BUILD TIME
+# (NO runtime npm installs in Kubernetes)
+# ============================
+RUN mkdir -p /app/default-plugins/content \
+ && cd /app/default-plugins/content \
+ && npm init -y \
+ && npm install adapt-contrib-text adapt-contrib-mcq
+
+# ============================
 # Prepare runtime storage path
 # (PVC mounts here in Kubernetes)
+# NOTE: plugins will be COPIED here by initContainer
 # ============================
 RUN mkdir -p /app/storage/conf \
  && [ -f /app/storage/conf/config.json ] || echo '{}' > /app/storage/conf/config.json

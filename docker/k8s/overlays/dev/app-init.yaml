@@ -7,27 +7,22 @@ spec:
     spec:
       initContainers:
         - name: init-storage
-          image: node:18
+          image: busybox
           command:
             - sh
             - -c
             - |
-              set -e
 
               # Base directories
+              mkdir -p /app/storage/plugins/content
               mkdir -p /app/storage/content
               mkdir -p /app/storage/uploads
-              mkdir -p /app/storage/plugins/content
 
               cd /app/storage/plugins/content
 
-              # Install content plugins ONLY if not already installed
-              if [ ! -d adapt-contrib-text ]; then
-                echo "Installing Adapt content plugins..."
-                npm init -y >/dev/null 2>&1
-                npm install \
-                  adapt-contrib-text \
-                  adapt-contrib-mcq
+              # Copy default plugins ONLY if PVC is empty
+              if [ ! -d /app/storage/plugins/content/adapt-contrib-text ]; then
+                cp -r /app/default-plugins/content/* /app/storage/plugins/content/
               fi
           volumeMounts:
             - name: storage
