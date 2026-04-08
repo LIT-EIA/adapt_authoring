@@ -20,19 +20,16 @@ spec:
 
               cd /app/storage/plugins
 
-              # Initialize npm project only once
               if [ ! -f package.json ]; then
                 echo "Initializing plugin directory..."
                 npm init -y
               fi
 
-              # Install default Adapt plugins only once
               if [ ! -d node_modules ]; then
                 echo "Installing Adapt content plugins..."
                 npm install \
                   adapt-contrib-text \
-                  adapt-contrib-mcq \
-                  adapt-contrib-graphic
+                  adapt-contrib-mcq
               fi
           volumeMounts:
             - name: storage
