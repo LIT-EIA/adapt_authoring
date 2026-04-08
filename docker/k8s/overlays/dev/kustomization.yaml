@@ -7,6 +7,11 @@ resources:
   - migration-job.yaml
   - app-rbac.yaml
 
+images:
+  - name: ghcr.io/lit-eia/adapt-authoring
+    newName: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring
+    newTag: "1.0"
+
 patches:
   - path: mongo-init.yaml
     target:

@@ -28,7 +28,7 @@ jobs:
           roleId: ${{ env.roleId}}
           secretId: ${{ env.secretId }}
 
-      
+      # Step 3: Build and push app image to ACR
       - name: Build and push app image to ACR
         uses: ./.github/actions/docker-build
         with:
@@ -38,7 +38,7 @@ jobs:
           build-context: .
 
 
-      # Step 3: Build Kubernetes Components Using Kompose
+      # Step 4: Build Kubernetes Components Using Kompose
       - name: Build Kubernetes Components Using Kompose
         uses: ./.github/actions/kompose
         with:
@@ -46,7 +46,7 @@ jobs:
           compose-file: docker/docker-compose.yml
           overlay: docker/k8s/overlays/dev
 
-      # Step 4: Check Kubernetes Components
+      # Step 5: Check Kubernetes Components
       - name: Check Kubernetes Components
         uses: ./.github/actions/check-components
         with:
