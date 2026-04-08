@@ -12,18 +12,15 @@ spec:
             - sh
             - -c
             - |
+              set -e
 
-              # Base directories
               mkdir -p /app/storage/plugins/content
               mkdir -p /app/storage/content
               mkdir -p /app/storage/uploads
 
-              cd /app/storage/plugins/content
-
-              # Copy default plugins ONLY if PVC is empty
-              if [ ! -d /app/storage/plugins/content/adapt-contrib-text ]; then
+              # Only copy if the source exists AND target is empty
+              if [ -d /app/default-plugins/content ] && \
+                 [ -z "$(ls -A /app/storage/plugins/content 2>/dev/null)" ]; then
+                echo "Copying default Adapt plugins to PVC..."
                 cp -r /app/default-plugins/content/* /app/storage/plugins/content/
-              fi
-          volumeMounts:
-            - name: storage
-              mountPath: /app/storage
+              else
