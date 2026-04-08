@@ -11,7 +11,10 @@ spec:
           command:
             - sh
             - -c
-            - mkdir -p /app/storage
+            - 
+             mkdir -p /app/storage/plugins
+             mkdir -p /app/storage/content
+             mkdir -p /app/storage/uploads
           volumeMounts:
             - name: storage
               mountPath: /app/storage
