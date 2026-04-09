@@ -1,0 +1,45 @@
+{
+  "type":"object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "properties": {
+    "userId": {
+      "type" : "objectid",
+      "required": true,
+      "ref": "user",
+      "protect": true
+    },
+    "tokenId": {
+      "type": "string",
+      "required": true,
+      "protect": true
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "required": true,
+      "protect": true
+    },
+    "validationToken": {
+      "type": "string",
+      "required": false,
+      "protect": true
+    },
+    "validationTokenIssueDate": {
+      "type": "date",
+      "required": true,
+      "protect": true
+    },
+    "validationDate": {
+      "type": "date",
+      "required": false,
+      "protect": true
+    },
+    "sessionId": {
+      "type": "string",
+      "required": true,
+      "ref": "session",
+      "protect": true
+    }
+  }
+}

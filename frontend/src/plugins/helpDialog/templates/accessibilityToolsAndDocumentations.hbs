@@ -1,0 +1,25 @@
+<h3>{{{ helpDialogTitle }}}</h3>
+
+<nav aria-label="Breadcrumb" class="breadcrumbs">
+  <ol class="breadcrumbs-list">
+    <li class="item">
+      <a href="#TypeOfIssueView" class="next-view-link" data-help-dialog-next-view="TypeOfIssueView">{{{ t 'app.typeofissue' }}}</a>
+    </li>
+    <li aria-hidden="true" class="separator unselectable">&gt;</li>
+    <li class="item">
+      <a href="#AccessibilityIssueView" class="next-view-link" data-help-dialog-next-view="AccessibilityIssueView">{{{ t 'app.helpdialog.accessibilityissue.link' }}}</a>
+    </li>
+    <li aria-hidden="true" class="separator unselectable">&gt;</li>
+    <li class="item">
+      <a href="#AccessibilityToolsAndDocumentationsView" class="next-view-link" aria-current="page">{{{ t 'app.helpdialog.technicalissuewithcourse.link' }}}</a>
+    </li>
+  </ol>
+</nav>
+
+<p>
+  {{{ td 'app.heldialog.accessibility.toolsanddocumentations.text' '{"classname": "next-view-link", "nextview": "AccessibilityIssueWithCourseView"}' }}}
+</p>
+
+<div>
+  <button class="help-dialog-back-button action-primary" data-help-dialog-previous-view="AccessibilityIssueView">{{ t 'app.back' }}</button>
+</div>

@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - mongo-service.yaml
+  - migration-job.yaml
+  - app-rbac.yaml
+
+images:
+  - name: ghcr.io/lit-eia/adapt-authoring
+    newName: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_app
+    newTag: "1"
+
+patches:
+  - path: mongo-init.yaml
+    target:
+      kind: Deployment
+      name: mongo
+
+  - path: app-init.yaml
+    target:
+      kind: Deployment
+      name: app
+
+  - path: app-wait-for-migration.yaml
+    target:
+      kind: Deployment
+      name: app
+
+  - path: migration-delete.yaml
+    target:
+      kind: Deployment
+      name: migration
+  
+
+labels:
+  - includeSelectors: true
+    pairs:
+      environment: dev

@@ -1,0 +1,23 @@
+<div class="zone-finder-overlay">
+  <div class="zone-finder-inner">
+    <div class="zone-finder-image-container">
+      <div class="zone-finder-image-wrapper{{#unless layoutFull}} half-width{{/unless}}{{#if actionData.forceFullWidth}} force-full-width{{/if}}">
+        <img draggable="false" src="{{actionData.src}}"/>
+      </div>
+    </div>
+    <div class="zone-finder-menu-bar">
+      <button class="apply btn action-primary">{{ t 'app.coloursave' }}</button>
+      <button class="cancel btn action-secondary">{{ t 'app.themepresetcancel' }}</button>
+      <div class="zone-finder-controls">
+        <div class="position">{{ t 'app.layoutleft' }}: <span class="left"></span></div>
+        <div class="position">{{ t 'app.top' }}: <span class="top"></span></div>
+        <div class="position">{{ t 'app.width' }}: <span class="width"></span></div>
+        <div class="position">{{ t 'app.height' }}: <span class="height"></span></div>
+      </div>
+    </div>
+    <div class="zone-finder-mobile-fallback-message-container">
+      <p>{{ t 'app.pinfinder.mobilefallbackmessage' }}</p>
+      <button class="cancel btn action-secondary">{{ t 'app.themepresetcancel' }}</button>
+    </div>
+  </div>
+</div>

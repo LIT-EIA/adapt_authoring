@@ -1,0 +1,81 @@
+{
+  "testUser": {
+    "email": "user@adaptlearning.org",
+    "plainPassword": "passwordmain123",
+    "newpassword": "mynewpasswordfortesting",
+    "thirdpassword": "mynewpasswordfortesting1",
+    "lastpassword": "mynewpasswordfortesting2",
+    "firstName": "Test",
+    "lastName": "User",
+    "auth": "local",
+    "_isDeleted": false
+  },
+  "secondUser": {
+    "email": "user@adaptlearning2.org",
+    "plainPassword": "passwordmain123",
+    "newpassword": "mynewpasswordfortesting",
+    "thirdpassword": "mynewpasswordfortesting1234",
+    "firstName": "second",
+    "lastName": "User",
+    "auth": "local",
+    "_isDeleted": false
+  },
+  "testTenant": {
+    "_id": "000000000000000000000000",
+    "name": "adapt-tenant-mocha",
+    "displayName": "Test Tenant",
+    "isMaster": true
+  },
+  "assetmanager": {
+    "asset": {
+      "title": "Temporary Asset",
+      "description": "This is just a temp file",
+      "repo": "localfs"
+    }
+  },
+  "auth": {
+    "email": "auth@adaptlearning.org",
+    "plainPassword": "thisismypassword",
+    "newPassword": "mynewpasswordfortesting",
+    "secondNewPassword": "thisnewpasswordfortesting",
+    "token": "testtokentesttokentesttokentest1",
+    "auth": "local"
+  },
+  "database": {
+    "model": "foo",
+    "email": "foo@bar.com",
+    "altEmail": "bar@foo.com"
+  },
+  "filestorage": {
+    "filename": "tempFile",
+    "dirname": "tempDir",
+    "fileContents": "foobar"
+  },
+  "permissions": {
+    "email": "testpermissions@adapt.org"
+  },
+  "pluginmanager": {
+    "name": "fooPlugin",
+    "type": "output",
+    "data": {
+      "displayName": "Foo Plugin",
+      "version": "1.0.0",
+      "requires": "0.0.1"
+    }
+  },
+  "tenantmanager": {
+    "name": "unit-test-tenant",
+    "displayName": "UnitTestTenant",
+    "isMaster": false,
+    "newDisplayName": "UnitTestTenant2"
+  },
+  "usermanager": {
+    "user": {
+      "email": "foo@bar.com",
+      "auth": "local",
+      "_isDeleted": false
+    },
+    "token": "testtokentesttokentesttokentest1",
+    "ipAddress": "127.0.0.1"
+  }
+}

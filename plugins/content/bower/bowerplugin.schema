@@ -1,0 +1,60 @@
+{
+  "type":"object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "$ref": "http://localhost/system/trackedObject.schema",
+  "properties": {
+    "name":{
+      "type": "string",
+      "required": true
+    },
+    "displayName": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": false
+    },
+    "version":{
+      "type": "string",
+      "required": true
+    },
+    "framework":{
+      "type": "string",
+      "required": false
+    },
+    "homepage":{
+      "type": "string",
+      "required": false
+    },
+    "issues":{
+      "type": "string",
+      "required": false
+    },
+    "_isAvailableInEditor": {
+      "type":"boolean",
+      "default": true,
+      "required":true,
+      "editorOnly": true
+    },
+    "_isAddedByDefault": {
+      "type": "boolean",
+      "default": false,
+      "editorOnly": true
+    },
+    "isLocalPackage" : {
+      "type": "boolean",
+      "default": false,
+      "editorOnly": true
+    },
+    "targetAttribute": {
+      "type": "string",
+      "required": true,
+      "default": "undefined"
+    },
+    "properties":{
+      "type": "object"
+    }
+  }
+}

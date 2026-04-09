@@ -1,0 +1,36 @@
+<h3>{{{ helpDialogTitle }}}</h3>
+
+<nav aria-label="Breadcrumb" class="breadcrumbs">
+  <ol class="breadcrumbs-list">
+    <li class="item">
+      <a href="#TypeOfIssueView" class="next-view-link" data-help-dialog-next-view="TypeOfIssueView">{{{ t 'app.typeofissue' }}}</a>
+    </li>
+    <li aria-hidden="true" class="separator unselectable">&gt;</li>
+    <li class="item">
+    {{#ifValueEquals previousView "TechnicalIssueView"}}
+      <a href="#TechnicalIssueView" class="next-view-link" data-help-dialog-next-view="TechnicalIssueView">{{{ t 'app.helpdialog.technicalissue.link' }}}</a>
+    {{/ifValueEquals}}
+    {{#ifValueEquals previousView "TechnicalIssueWithCourseView"}}
+      <a href="#TechnicalIssueWithCourseView" class="next-view-link" data-help-dialog-next-view="TechnicalIssueWithCourseView">{{{ t 'app.helpdialog.technicalissuewithcourse.link' }}}</a>
+    {{/ifValueEquals}}
+    {{#ifValueEquals previousView "AccessibilityIssueView"}}
+      <a href="#AccessibilityIssueView" class="next-view-link" data-help-dialog-next-view="AccessibilityIssueView">{{{ t 'app.helpdialog.accessibilityissue.link' }}}</a>
+    {{/ifValueEquals}}
+    {{#ifValueEquals previousView "AccessibilityIssueWithCourseView"}}
+      <a href="#AccessibilityIssueWithCourseView" class="next-view-link" data-help-dialog-next-view="AccessibilityIssueWithCourseView">{{{ t 'app.helpdialog.accessibilityissuewithcourse.link' }}}</a>
+    {{/ifValueEquals}}
+    </li>
+    <li aria-hidden="true" class="separator unselectable">&gt;</li>
+    <li class="item">
+      <a href="#Support" class="next-view-link" aria-current="page">Support</a>
+    </li>
+  </ol>
+</nav>
+
+<p>
+  {{{ t 'app.helpdialog.platformissue.text' }}}
+</p>
+
+<div>
+  <button class="help-dialog-back-button action-primary">{{ t 'app.back' }}</button>
+</div>

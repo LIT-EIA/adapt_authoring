@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: wait-for-migration
+          image: bitnami/kubectl:latest
+          command:
+            - sh
+            - -c
+            - |
+              echo "⏳ Waiting for migration job to complete..."
+              kubectl wait \
+                --for=condition=complete \
+                job/adapt-migration \
+                --timeout=10m
+
+      containers:
+        - name: app
+          imagePullPolicy: Always
+          command: null
+          workingDir: null
+          volumeMounts:
+            - name: storage
+              mountPath: /app/storage

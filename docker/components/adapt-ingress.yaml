@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: adapt-app-ingress
+  namespace: adapt-authoring
+  labels:
+    app: app
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"  # Redirect HTTP to HTTPS
+    nginx.ingress.kubernetes.io/proxy-body-size: "128M"  # Set max upload size for adapt
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"  # Allow CORS for all origins
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"  # Allowed methods for CORS
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"  # Allowed headers for CORS
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: adapt-cms.dev-dp-internal.dts-stn.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app
+                port:
+                  number: 5000
+                    

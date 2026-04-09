@@ -1,0 +1,40 @@
+<div class="login-navigation-bar-bg">
+  <div class="login-navigation-right">
+    <a href="#" class="langspot login-navigation-item aut" onclick="togglelang()">
+      {{! ESDC - added translation handler for language name}}
+      <span lang="{{t 'app.langswitcherCode'}}">{{t 'app.langswitcher'}}</span>
+    </a>
+  </div>
+</div>
+
+<div class="login-inner">
+    <div class="login-logo"></div>
+
+    <form class="login-form" autocomplete="off">
+        <div class="login-title">{{t 'app.signin'}}</div>
+        {{#if isAuthenticated}}
+            {{t 'app.alreadyloggedin'}}
+            <button class="dash btn small secondary">{{t 'app.gotodashboard'}}</button>
+        {{else}}
+            <div class="login-fields">
+                <div id="loginError" class="display-none" role="alert" aria-live="polite">
+                    <i class="fa fa-times"></i><span id="loginErrorMessage"/>
+                </div>
+                <label for="login-input-username" class="sr-only">{{ 'app.usernameoremail' }}</label>
+                <input type="email" autocomplete="email" class="login-input-username" value="" id="login-input-username" placeholder="{{t 'app.usernameoremail'}}" />
+                <label for="login-input-password" class="sr-only">{{ 'app.password' }}</label>
+                <input type="password" autocomplete="current-password" class="login-input-password" value="" id="login-input-password" placeholder="{{t 'app.password'}}" />
+                <button type="submit" class="btn secondary login-form-submit">{{t 'app.login'}}</button>
+            </div>
+            <div class="login-remember-me">
+                <input id="remember-me" class="remember-me-checkbox" name="remember-me" type="checkbox"/>
+                <label for="remember-me" class="remember-me-label">{{t 'app.rememberme'}}</label>
+            </div>
+            {{#ifMailEnabled}}
+            <div class="login-forgot-password">
+                <a class="" href="#user/forgot">{{t 'app.forgotpassword'}}</a>
+            </div>
+            {{/ifMailEnabled}}
+        {{/if}}
+    </form>
+</div>

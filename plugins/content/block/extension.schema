@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "$ref": "http://localhost/system/content.schema",
+  "properties": {
+    "componentWidthRatio" : {
+        "type" : "number",
+        "default" : 50,
+        "inputType": "Range",
+        "title": "Component Width Ratio",
+        "help": "The width ratio in percentages between the left and right components within the block. This is only applicable when using two components.",
+        "translatable": true
+    }
+  }
+}

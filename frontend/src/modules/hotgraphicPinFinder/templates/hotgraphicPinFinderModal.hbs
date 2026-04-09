@@ -1,0 +1,21 @@
+<div class="pin-finder-overlay">
+  <div class="pin-finder-inner">
+    <div class="pin-finder-image-container">
+      <div class="pin-finder-image-wrapper{{#unless layoutFull}} half-width{{/unless}} {{#if pinData.forceFullWidth}} force-full-width{{/if}}">
+        <img draggable="false" src="{{pinData.src}}"/>
+      </div>
+    </div>
+    <div class="pin-finder-menu-bar">
+      <button class="apply btn action-primary">{{ t 'app.coloursave' }}</button>
+      <button class="cancel btn action-secondary">{{ t 'app.themepresetcancel' }}</button>
+      <div class="pin-finder-controls">
+        <div class="position">{{ t 'app.layoutleft' }}: <span class="left"></span></div>
+        <div class="position">{{ t 'app.top' }}: <span class="top"></span></div>
+      </div>
+    </div>
+    <div class="pin-finder-mobile-fallback-message-container">
+      <p>{{ t 'app.pinfinder.mobilefallbackmessage' }}</p>
+      <button class="cancel btn action-secondary">{{ t 'app.themepresetcancel' }}</button>
+    </div>
+  </div>
+</div>

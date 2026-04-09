@@ -1,0 +1,14 @@
+<div class="maxSize">
+  {{{uploadMaxSize}}}
+  <br>
+  {{#if uploadMaxSizeExceptions}}
+  {{uploadMaxSizeExceptions}}
+  <ul>
+    {{#each uploads}}
+    <li>
+      {{type}} : {{size}}
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+</div>

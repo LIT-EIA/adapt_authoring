@@ -1,0 +1,60 @@
+name: Azure + AKS Login
+description: Import secrets from Vault and log in to Azure, ACR, and AKS
+
+
+inputs:
+  roleId: 
+    description: Vault AppRole Role ID
+    required: true
+  secretId :
+    description: Vault AppRole Secret ID
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Import Secrets from Vault
+      id: import-secrets
+      uses: hashicorp/vault-action@v2
+      with:
+        url: https://vault.dev-dp.admin.dts-stn.com
+        method: approle
+        roleId: "${{ inputs.roleId }}"
+        secretId: "${{ inputs.secretId }}"
+        
+        secrets: |
+          adapt-authoring/data/AZURE SPN_SECRET | AZURESPNSECRET ;
+          adapt-authoring/data/AZURE SPN_APP_ID | AZURESPNAPPID ;
+          adapt-authoring/data/AZURE SPN_NAME | AZURESPNNAME ;
+          adapt-authoring/data/AZURE TENANT_ID | CLOUDTENANTID ;
+          adapt-authoring/data/AZURE ACR_DOMAIN | CLOUDACRDOMAIN ;
+          adapt-authoring/data/AZURE CLOUD_SUBSCRIPTION | CLOUDSUBSCRIPTION ;
+          adapt-authoring/data/AZURE K8S_CLUSTER_NAME | CLOUDK8SCLUSTERNAME ;
+          adapt-authoring/data/AZURE K8S_RG | CLOUDK8SRG
+
+    - name: Azure Login
+      shell: bash
+      run: |
+        echo "☁️ Logging into Azure"
+        az login --service-principal \
+          --tenant "${{ steps.import-secrets.outputs.CLOUDTENANTID }}" \
+          --username "${{ steps.import-secrets.outputs.AZURESPNAPPID }}" \
+          --password "${{ steps.import-secrets.outputs.AZURESPNSECRET }}"
+
+    - name: ACR Login
+      shell: bash
+      run: |
+        echo "📦 Logging into ACR"
+        az acr login \
+          --name "${{ steps.import-secrets.outputs.CLOUDACRDOMAIN }}" \
+          --subscription "${{ steps.import-secrets.outputs.CLOUDSUBSCRIPTION }}"
+
+    - name: AKS Login
+      shell: bash
+      run: |
+        echo "☸️ Getting AKS credentials"
+        az aks get-credentials --overwrite-existing \
+          --name "${{ steps.import-secrets.outputs.CLOUDK8SCLUSTERNAME }}" \
+          --resource-group "${{ steps.import-secrets.outputs.CLOUDK8SRG }}"
+
+

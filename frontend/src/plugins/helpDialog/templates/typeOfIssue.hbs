@@ -1,0 +1,29 @@
+<div class="help-dialog-title">
+  <h3>{{{ helpDialogTitle }}}</h3>
+</div>
+
+<nav aria-label="Breadcrumb" class="breadcrumbs">
+  <ol class="breadcrumbs-list">
+    <li class="item">
+      <a href="#TypeOfIssueView" class="next-view-link" aria-current="page">{{{ t 'app.typeofissue' }}}</a>
+    </li>
+  </ol>
+</nav>
+
+<div class="hel-dialog-title">
+  {{{ helpDialog }}}
+</div>
+
+<ul class="help-dialog-choice-list">
+  <li>
+    <a href="#TechnicalIssueView" class="next-view-link" data-help-dialog-next-view="TechnicalIssueView">
+    {{ t 'app.helpdialog.technicalissue.link' }}
+    </a> 
+  </li>
+
+  <li>
+    <a href="#AccessibilityIssueView" class="next-view-link" data-help-dialog-next-view="AccessibilityIssueView">
+      {{ t 'app.helpdialog.accessibilityissue.link' }}
+    </a> 
+  </li>
+</ul>

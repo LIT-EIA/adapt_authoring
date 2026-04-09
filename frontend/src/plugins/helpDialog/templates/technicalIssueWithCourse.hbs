@@ -1,0 +1,44 @@
+<h3>{{{ helpDialogTitle }}}</h3>
+
+<nav aria-label="Breadcrumb" class="breadcrumbs">
+  <ol class="breadcrumbs-list">
+    <li class="item">
+      <a href="#TypeOfIssueView" class="next-view-link" data-help-dialog-next-view="TypeOfIssueView">{{{ t 'app.typeofissue' }}}</a>
+    </li>
+    <div class="separator unselectable">&gt;</div>
+    <li class="item">
+      <a href="#TechnicalIssueView" class="next-view-link" data-help-dialog-next-view="TechnicalIssueView">{{{ t 'app.helpdialog.technicalissue.link' }}}</a>
+    </li>
+    <li aria-hidden="true" class="separator unselectable">&gt;</li>
+    <li class="item">
+      <a href="#TechnicalToolsAndDocumentationsView" class="next-view-link" data-help-dialog-next-view="TechnicalToolsAndDocumentationsView">{{{ t 'app.helpdialog.technicalissuewithcourse.link' }}}</a>
+    </li>
+    <div class="separator unselectable">&gt;</div>
+    <li class="item">
+      <a href="TechnicalIssueWithCourseView" class="next-view-link" aria-current="page">{{{ t 'app.representative' }}}</a>
+    </li>
+  </ol>
+</nav>
+
+<p>
+  {{{ t 'app.helpdialog.technicalissuewithcourse.text' }}}
+</p>
+
+<div class="rep-selector-wrapper">
+  <label class="sr-only" for="help-dialog-technical-rep-selector">{{{ t 'app.selectrepresentativefromatpt' }}}</label>
+  <select id="help-dialog-technical-rep-selector" class="business-line-select technical-business-line">
+    <option></option>
+    {{#each properties._businessLines}}
+      <option> {{ title }} </option>
+    {{/each}}
+  </select>
+</div>
+<p class="reps-texts display-none"><em>{{{ t 'app.heldialog.businessline.representative.helptext' }}}</em></p>
+<p class="no-reps-texts display-none"><em>{{{ t 'app.heldialog.businessline.norepresentative' }}}</em></p>
+
+<div class="help-dialog-technical-reps"></div>
+
+<p class="support-reps-texts display-none">{{{ td 'app.heldialog.technicalissuewithcourse.support.helptext' '{"classname": "next-view-link", "nextview": "PlatformIssueView"}' }}}</p>
+<div>
+  <button class="help-dialog-back-button action-primary" data-help-dialog-previous-view="TechnicalToolsAndDocumentationsView">{{ t 'app.back' }}</button>
+</div>

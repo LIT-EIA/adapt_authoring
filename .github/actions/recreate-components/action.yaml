@@ -1,0 +1,18 @@
+name: Delete Kubernetes Components
+description: Run kubectl and helm inspection commands in a namespace
+
+inputs:
+  namespace:
+    description: Kubernetes namespace to delete
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Delete Kubernetes Components
+      shell: bash
+      run: |
+        ls -la k8s-generated
+
+
+

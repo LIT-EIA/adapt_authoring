@@ -1,0 +1,361 @@
+.shepherd-button {
+    background: #3288e6;
+    border: 0;
+    border-radius: 3px;
+    color: hsla(0, 0%, 100%, .75);
+    cursor: pointer;
+    margin-right: .5rem;
+    padding: .5rem 1.5rem;
+    transition: all .5s ease
+}
+
+.shepherd-button:not(:disabled):hover {
+    background: #196fcc;
+    color: hsla(0, 0%, 100%, .75)
+}
+
+.shepherd-button.shepherd-button-secondary {
+    background: #f1f2f3;
+    color: rgba(0, 0, 0, .75)
+}
+
+.shepherd-button.shepherd-button-secondary:not(:disabled):hover {
+    background: #d6d9db;
+    color: rgba(0, 0, 0, .75)
+}
+
+.shepherd-button:disabled {
+    cursor: not-allowed
+}
+
+.shepherd-footer {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 .75rem .75rem
+}
+
+.shepherd-footer .shepherd-button:last-child {
+    margin-right: 0
+}
+
+.shepherd-cancel-icon {
+    background: transparent;
+    border: none;
+    color: hsla(0, 0%, 50%, .75);
+    cursor: pointer;
+    font-size: 2em;
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+    transition: color .5s ease
+}
+
+.shepherd-cancel-icon:hover {
+    color: rgba(0, 0, 0, .75)
+}
+
+.shepherd-has-title .shepherd-content .shepherd-cancel-icon {
+    color: hsla(0, 0%, 50%, .75)
+}
+
+.shepherd-has-title .shepherd-content .shepherd-cancel-icon:hover {
+    color: rgba(0, 0, 0, .75)
+}
+
+.shepherd-title {
+    color: rgba(0, 0, 0, .75);
+    display: flex;
+    flex: 1 0 auto;
+    font-size: 1rem;
+    font-weight: 400;
+    margin: 0;
+    padding: 0
+}
+
+.shepherd-header {
+    align-items: center;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    display: flex;
+    justify-content: flex-end;
+    line-height: 2em;
+    padding: .75rem .75rem 0
+}
+
+.shepherd-has-title .shepherd-content .shepherd-header {
+    background: #e6e6e6;
+    padding: 1em
+}
+
+.shepherd-text {
+    color: rgba(0, 0, 0, .75);
+    font-size: 1rem;
+    line-height: 1.3em;
+    padding: .75em
+}
+
+.shepherd-text p {
+    margin-top: 0
+}
+
+.shepherd-text p:last-child {
+    margin-bottom: 0
+}
+
+.shepherd-content {
+    border-radius: 5px;
+    outline: none;
+    padding: 0
+}
+
+.shepherd-element {
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
+    max-width: 400px;
+    opacity: 0;
+    outline: none;
+    transition: none;
+    visibility: hidden;
+    width: 100%;
+    z-index: 700;
+    user-select: none;
+}
+
+.shepherd-enabled.shepherd-element {
+    opacity: 1;
+    visibility: visible
+}
+
+.shepherd-element[data-popper-reference-hidden]:not(.shepherd-centered) {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden
+}
+
+.shepherd-element,
+.shepherd-element *,
+.shepherd-element :after,
+.shepherd-element :before {
+    box-sizing: border-box
+}
+
+.shepherd-arrow,
+.shepherd-arrow:before {
+    height: 16px;
+    position: absolute;
+    width: 16px;
+    z-index: -1
+}
+
+.shepherd-arrow:before {
+    background: #fff;
+    content: "";
+    transform: rotate(45deg)
+}
+
+.shepherd-element[data-popper-placement^=top]>.shepherd-arrow {
+    bottom: -8px
+}
+
+.shepherd-element[data-popper-placement^=bottom]>.shepherd-arrow {
+    top: -8px
+}
+
+.shepherd-element[data-popper-placement^=left]>.shepherd-arrow {
+    right: -8px
+}
+
+.shepherd-element[data-popper-placement^=right]>.shepherd-arrow {
+    left: -8px
+}
+
+.shepherd-element.shepherd-centered>.shepherd-arrow {
+    opacity: 0
+}
+
+.shepherd-element.shepherd-has-title[data-popper-placement^=bottom]>.shepherd-arrow:before {
+    background-color: #e6e6e6
+}
+
+.shepherd-target-click-disabled.shepherd-enabled.shepherd-target,
+.shepherd-target-click-disabled.shepherd-enabled.shepherd-target * {
+    pointer-events: none
+}
+
+.shepherd-modal-overlay-container {
+    height: 0;
+    left: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    transition: all .3s ease-out, height 0ms .3s, opacity .3s 0ms;
+    width: 100vw;
+    z-index: 9997
+}
+
+.shepherd-modal-overlay-container.shepherd-modal-is-visible {
+    height: 100vh;
+    opacity: .5;
+    transform: translateZ(0);
+    transition: all .3s ease-out, height 0s 0s, opacity .3s 0s
+}
+
+.shepherd-modal-overlay-container.shepherd-modal-is-visible path {
+    pointer-events: all
+}
+
+.shepherd-title {
+    color: #eaeaea;
+}
+
+.shepherd-header {
+    background: #105067 !important;
+}
+
+.shepherd-text {
+    color: #000;
+}
+
+.shepherd-content {
+    background: #bfbfbf;
+}
+
+.shepherd-button {
+    border-color: #454545 !important;
+    background: #454545 !important;
+    color: #fff !important;
+}
+
+.shepherd-arrow {
+    filter: contrast(0.5);
+}
+
+.shepherd-element a {
+    color: blue;
+}
+
+.shepherd-enabled:focus {
+    outline: none!important;
+}
+
+.shepherd-element {
+    border-radius: 0 !important;
+}
+
+.shepherd-arrow:before {
+    transform: rotate(45deg) scale(1.25)!important;
+}
+
+.border {
+    border: 4px solid var(--shepherd-border-color);
+
+    .shepherd-arrow:before {
+        outline: 4px solid var(--shepherd-border-color);
+    }
+}
+
+.shepherd-title {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.shepherd-title .pagination {
+    font-size: 13px;
+    line-height: 20px;
+}
+
+.shepherd-title .step-title {
+    width: 100%;
+    font-size: 17px;
+}
+
+.shepherd-text {
+    min-height: 70px;
+}
+.shepherd-header {
+    background: #0f2a4a !important;
+}
+
+.shepherd-cancel-icon {
+    color: #fff!important;
+    cursor: not-allowed!important;
+}
+
+.shepherd-cancel-icon:hover {
+    color: hsla(0,0%,50%,0.75)!important;
+}
+
+.shepherd-button:hover {
+    background-color:#DEDEDE!important;
+    color: #173E6D!important;
+}
+.shepherd-button {
+    background-color: #fff;
+    color: #173E6D;
+    border-radius: 0;
+    padding: 10px;
+    text-decoration: none;
+    display: inline-block;
+    border: none;
+    min-width: 100px;
+    -webkit-transition: background-color .25s ease-in,color .25s ease-in,border-color .25s ease-in;
+    -moz-transition: background-color .25s ease-in,color .25s ease-in,border-color .25s ease-in;
+    -ms-transition: background-color .25s ease-in,color .25s ease-in,border-color .25s ease-in;
+    transition: background-color .25s ease-in,color .25s ease-in,border-color .25s ease-in;
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 140%;
+}
+
+.shepherd-content {
+    background: #E6E6E6;
+    border-radius: 0!important;
+}
+
+.shepherd-header {
+    background: #0f2a4a !important;
+    border-radius: 0;
+}
+
+.shepherd-title {
+    color: #fff!important;
+}
+
+.shepherd-arrow:before {
+    background: #E6E6E6;
+}
+
+.shepherd-arrow {
+    filter: none!important;
+}
+
+.start-tour {
+    color: #fff!important;
+    background-color: #173E6D!important;
+    &:hover {
+        background-color: #173E6D!important;
+    }
+    height: auto;
+}
+
+.component-left .start-tour {
+    width: 50%;
+    left: 25%;
+}
+
+.shepherd-element.shepherd-has-title[data-popper-placement^=bottom]>.shepherd-arrow:before {
+    background-color: #0f2a4a;
+}
+
+button.shepherd-cancel-icon {
+    background: none !important;
+    &:hover {
+        background: none !important;
+    }
+}

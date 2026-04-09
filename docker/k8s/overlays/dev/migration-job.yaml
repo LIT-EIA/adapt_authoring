@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: adapt-migration
+  namespace: adapt-authoring
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 3600   # optional but recommended
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_mig:1
+          imagePullPolicy: Always
+          env:
+            - name: MONGO_HOST
+              value: mongo
+          volumeMounts:
+            - name: storage
+              mountPath: /app/storage
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: storage
