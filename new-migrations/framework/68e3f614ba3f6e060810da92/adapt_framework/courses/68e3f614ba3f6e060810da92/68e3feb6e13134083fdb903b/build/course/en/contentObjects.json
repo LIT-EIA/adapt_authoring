@@ -1,0 +1,214 @@
+[
+  {
+    "title": "Adapt Starter Course - Introduction",
+    "displayTitle": "Adapt Starter Course - Introduction",
+    "body": "<p>Welcome to the Adapt Start Course - a unique starter&nbsp;template designed to help teams create courses faster and more efficiently, without the need to worry about settings or other repetitive tasks that are required when first designing&nbsp;a new course.&nbsp;</p>",
+    "_classes": "",
+    "pageBody": "<p>The purpose of the Adapt Starter Course is to provide an easy way&nbsp;for you to build courses, without all the usual&nbsp;setup.&nbsp;This way you can get your&nbsp;courses&nbsp;designed and delivered faster, and more efficiently than before.</p>",
+    "instruction": "",
+    "_htmlClassName": "",
+    "linkText": "Go to: Adapt Starter Course - Introduction",
+    "duration": "",
+    "_lockedBy": [],
+    "_lockType": "",
+    "_isOptional": false,
+    "_isAvailable": true,
+    "_isHidden": false,
+    "_isVisible": true,
+    "_ariaLevel": 0,
+    "_id": "68e3feb6e13134083fdb903e",
+    "_type": "page",
+    "_parentId": "course",
+    "_graphic": {
+      "alt": "Introduction",
+      "src": "course/en/assets/6b636a89448c48ac76d0c4bd7ca00b961626c83d.png"
+    },
+    "_onScreen": {
+      "_isEnabled": false,
+      "_classes": "",
+      "_percentInviewVertical": 50
+    },
+    "_pageLevelProgress": {
+      "_isEnabled": true,
+      "_showPageCompletion": true,
+      "_isCompletionIndicatorEnabled": false,
+      "_excludeAssessments": false
+    },
+    "_bookmarking": {
+      "_isEnabled": true,
+      "_level": "inherit"
+    },
+    "_pageIncompletePrompt": {
+      "_isEnabled": true
+    },
+    "_search": {
+      "_isEnabled": true,
+      "keywords": ""
+    },
+    "_homeButton": {
+      "_isEnabled": false,
+      "_hideHomeButton": false,
+      "_hideBackButton": false,
+      "_redirectToId": ""
+    }
+  },
+  {
+    "title": "All Components Page",
+    "displayTitle": "All Components Page",
+    "body": "<p>This page has been setup so the Display Titles (headings) are at the <strong>Component Level&nbsp;</strong> (inside the white boxes),&nbsp;as opposed to in the&nbsp;surrounding&nbsp;area,&nbsp;(Block Level&nbsp;- or&nbsp;grey margin areas).</p>",
+    "_classes": "",
+    "pageBody": "",
+    "instruction": "",
+    "_htmlClassName": "",
+    "linkText": "Go to: All Components Page",
+    "duration": "",
+    "_lockedBy": [],
+    "_lockType": "",
+    "_isOptional": false,
+    "_isAvailable": true,
+    "_isHidden": false,
+    "_isVisible": true,
+    "_ariaLevel": 0,
+    "_id": "68e3feb6e13134083fdb9040",
+    "_parentId": "course",
+    "_type": "page",
+    "_graphic": {
+      "alt": "All Components Page",
+      "src": "course/en/assets/75c0a2a6e51bc3a90af73bad7f547aa059c94dae.png"
+    },
+    "_onScreen": {
+      "_isEnabled": false,
+      "_classes": "",
+      "_percentInviewVertical": 50
+    },
+    "_pageLevelProgress": {
+      "_isEnabled": true,
+      "_showPageCompletion": true,
+      "_isCompletionIndicatorEnabled": false,
+      "_excludeAssessments": false
+    },
+    "_bookmarking": {
+      "_isEnabled": true,
+      "_level": "inherit"
+    },
+    "_pageIncompletePrompt": {
+      "_isEnabled": true
+    },
+    "_search": {
+      "_isEnabled": true,
+      "keywords": ""
+    },
+    "_homeButton": {
+      "_isEnabled": false,
+      "_hideHomeButton": false,
+      "_hideBackButton": false,
+      "_redirectToId": ""
+    }
+  },
+  {
+    "title": "All Blocks Page",
+    "displayTitle": "All Blocks Page",
+    "body": "<p>This page has been setup so the Display Titles (headings) are at the <strong>Block Level,&nbsp;</strong>outside the white boxes and&nbsp;in the&nbsp;grey margins.</p>",
+    "_classes": "",
+    "pageBody": "",
+    "instruction": "",
+    "_htmlClassName": "",
+    "linkText": "Go to: All Blocks Page",
+    "duration": "",
+    "_lockedBy": [],
+    "_lockType": "",
+    "_isOptional": false,
+    "_isAvailable": true,
+    "_isHidden": false,
+    "_isVisible": true,
+    "_ariaLevel": 0,
+    "_id": "68e3feb6e13134083fdb9042",
+    "_parentId": "course",
+    "_type": "page",
+    "_graphic": {
+      "alt": "All Blocks Page",
+      "src": "course/en/assets/e59c5c9cf8ef52ab245a15e683e99235420c7583.png"
+    },
+    "_onScreen": {
+      "_isEnabled": false,
+      "_classes": "",
+      "_percentInviewVertical": 50
+    },
+    "_pageLevelProgress": {
+      "_isEnabled": true,
+      "_showPageCompletion": true,
+      "_isCompletionIndicatorEnabled": false,
+      "_excludeAssessments": false
+    },
+    "_bookmarking": {
+      "_isEnabled": true,
+      "_level": "inherit"
+    },
+    "_pageIncompletePrompt": {
+      "_isEnabled": true
+    },
+    "_search": {
+      "_isEnabled": true,
+      "keywords": ""
+    },
+    "_homeButton": {
+      "_isEnabled": false,
+      "_hideHomeButton": false,
+      "_hideBackButton": false,
+      "_redirectToId": ""
+    }
+  },
+  {
+    "title": "Adapt Starter Course - Conclusion",
+    "displayTitle": "Adapt Starter Course - Conclusion",
+    "body": "<p>The conclusion&nbsp;is your final word on the subject and gives the learner&nbsp;a sense of closure. An effective conclusion brings the learner&nbsp;back to the main points, reminding them of the purpose of the course.</p>",
+    "_classes": "",
+    "pageBody": "",
+    "instruction": "",
+    "_htmlClassName": "",
+    "linkText": "Go to: Adapt Starter Course - Conclusion",
+    "duration": "",
+    "_lockedBy": [],
+    "_lockType": "",
+    "_isOptional": false,
+    "_isAvailable": true,
+    "_isHidden": false,
+    "_isVisible": true,
+    "_ariaLevel": 0,
+    "_id": "68e3feb6e13134083fdb9044",
+    "_parentId": "course",
+    "_type": "page",
+    "_graphic": {
+      "alt": "Conclusion",
+      "src": "course/en/assets/f5f346813666f4323a36d1400bb7cdf831ed8c73.png"
+    },
+    "_onScreen": {
+      "_isEnabled": false,
+      "_classes": "",
+      "_percentInviewVertical": 50
+    },
+    "_pageLevelProgress": {
+      "_isEnabled": true,
+      "_showPageCompletion": true,
+      "_isCompletionIndicatorEnabled": false,
+      "_excludeAssessments": false
+    },
+    "_bookmarking": {
+      "_isEnabled": true,
+      "_level": "inherit"
+    },
+    "_pageIncompletePrompt": {
+      "_isEnabled": true
+    },
+    "_search": {
+      "_isEnabled": true,
+      "keywords": ""
+    },
+    "_homeButton": {
+      "_isEnabled": false,
+      "_hideHomeButton": false,
+      "_hideBackButton": false,
+      "_redirectToId": ""
+    }
+  }
+]
