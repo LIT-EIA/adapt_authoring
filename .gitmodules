@@ -1,3 +1,0 @@
-[submodule "docker/migration/adapt-migration-example"]
-	path = docker/migration/adapt-migration-example
-	url = https://github.com/LIT-EIA/adapt-migration-example.git
