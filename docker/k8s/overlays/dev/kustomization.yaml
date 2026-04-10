@@ -23,10 +23,6 @@ patches:
       kind: Deployment
       name: app
 
-  - path: app-wait-for-migration.yaml
-    target:
-      kind: Deployment
-      name: app
 
   - path: migration-delete.yaml
     target:
