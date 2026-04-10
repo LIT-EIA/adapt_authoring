@@ -20,10 +20,8 @@ echo "📁 Seeding framework..."
 mkdir -p /app/storage/framework
 cp -r /migration/framework/${TENANT_ID} /app/storage/framework/${TENANT_ID}
 
-# ✅ REQUIRED FIX — ensure plugins directory exists
-echo "📁 Ensuring plugins directory exists..."
-mkdir -p /app/storage/plugins
+echo "📁 Preparing plugin type directories..."
+mkdir -p /app/storage/plugins/{content,component,extension,theme,output}
 
 touch "$FLAG_FILE"
 echo "✅ Migration complete."
-``
