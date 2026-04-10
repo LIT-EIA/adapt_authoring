@@ -12,11 +12,19 @@ spec:
             - sh
             - -c
             - |
-              echo "⏳ Waiting for migration job to complete..."
-              kubectl wait \
-                --for=condition=complete \
-                job/adapt-migration \
-                --timeout=10m
+              
+              echo "🔍 Checking for migration job..."
+
+              if kubectl get job adapt-migration >/dev/null 2>&1; then
+                echo "✅ Migration job found. Waiting for completion..."
+                kubectl wait \
+                  --for=condition=complete \
+                  job/adapt-migration \
+                  --timeout=10m
+              else
+                echo "ℹ️ Migration job not found. Skipping wait."
+              fi
+
 
       containers:
         - name: app
