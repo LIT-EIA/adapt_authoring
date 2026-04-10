@@ -3,28 +3,17 @@ description: Run kubectl and helm inspection commands in a namespace
 
 inputs:
   namespace:
-    description: Kubernetes namespace to delete
+    description: Kubernetes namespace to recreate
     required: true
 
 runs:
   using: composite
   steps:
-    - name: Delete Kubernetes Components
+    - name: Recreate Kubernetes Components
       shell: bash
       run: |
-        NAMESPACE="${{ inputs.namespace }}"
-
-        echo "====================================="
-        echo "🔄 Delete Components"
-        echo "Namespace: $NAMESPACE"
-        echo "====================================="
-        kubectl delete deployment app -n "$NAMESPACE" || true
-        kubectl delete job adapt-migration -n "$NAMESPACE" || true
-        kubectl delete deployment mongo -n "$NAMESPACE" || true
-        kubectl delete service app -n "$NAMESPACE" || true
-        kubectl delete service mongo -n "$NAMESPACE" || true
-        kubectl delete pvc db -n "$NAMESPACE" || true
-        kubectl delete pvc storage -n "$NAMESPACE" || true
+        kubectl delete ingress --all -n adapt-authoring
+        kubectl apply -f ./docker/components/adapt-ingress.yaml -n adapt-authoring
 
  
 
