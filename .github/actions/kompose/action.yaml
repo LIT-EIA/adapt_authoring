@@ -122,6 +122,6 @@ runs:
         kubectl wait \
           -n "${{ inputs.namespace }}" \
           --for=condition=complete \
-          job/migration \
+          job/adapt-migration \
           --timeout=10m
 
