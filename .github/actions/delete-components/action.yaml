@@ -19,7 +19,7 @@ runs:
         echo "Namespace: $NAMESPACE"
         echo "====================================="
         kubectl delete deployment app -n "$NAMESPACE" || true
-        kubectl delete job migration -n "$NAMESPACE" || true
+        kubectl delete job adapt-migration -n "$NAMESPACE" || true
         kubectl delete deployment mongo -n "$NAMESPACE" || true
         kubectl delete service app -n "$NAMESPACE" || true
         kubectl delete service mongo -n "$NAMESPACE" || true
