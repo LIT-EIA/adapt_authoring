@@ -3,7 +3,7 @@ description: Run kubectl and helm inspection commands in a namespace
 
 inputs:
   namespace:
-    description: Kubernetes namespace to recreate
+    description: Kubernetes namespace to delete Components
     required: true
 
 runs:
