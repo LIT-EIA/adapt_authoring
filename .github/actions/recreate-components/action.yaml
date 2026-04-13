@@ -12,7 +12,8 @@ runs:
     - name: Delete Kubernetes Components
       shell: bash
       run: |
-        ls -la k8s-generated
+        kubectl delete ingress --all -n adapt-authoring
+        kubectl apply -f ./docker/components/adapt-ingress.yaml -n adapt-authoring
 
 
 

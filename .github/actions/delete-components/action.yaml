@@ -9,11 +9,22 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Recreate Kubernetes Components
+    - name:  Delete Kubernetes Components
       shell: bash
       run: |
-        kubectl delete ingress --all -n adapt-authoring
-        kubectl apply -f ./docker/components/adapt-ingress.yaml -n adapt-authoring
+        NAMESPACE="${{ inputs.namespace }}"
+
+        echo "====================================="
+        echo "🔄 Delete Components"
+        echo "Namespace: $NAMESPACE"
+        echo "====================================="
+        kubectl delete deployment app -n "$NAMESPACE" || true
+        kubectl delete deployment mongo -n "$NAMESPACE" || true
+        kubectl delete service app -n "$NAMESPACE" || true
+        kubectl delete service mongo -n "$NAMESPACE" || true
+        kubectl delete pvc db -n "$NAMESPACE" || true
+        kubectl delete pvc storage -n "$NAMESPACE" || true
+        kubectl delete job adapt-migration -n "$NAMESPACE" || true
 
  
 
