@@ -24,4 +24,8 @@ spec:
                 name: app
                 port:
                   number: 5000
+  tls:
+  - hosts:
+    - adapt-cms.dev-dp-internal.dts-stn.com
+    secretName: devdpinternaldtsstncom                
                     
