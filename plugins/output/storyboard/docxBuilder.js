@@ -72,8 +72,9 @@ module.exports = async function buildDocx(data, outputPath, done) {
 
             const ctype = c.type || c._component || `(${locPolyglot.t('app.unknown')})`;
             const layout = c.layout || c._layout || c._layoutName || "";
+            const layoutKey = layout ? `app.layout${layout}` : "";
             const headingLine =
-              `${locPolyglot.t('app.scaffold._level.component.variable')} ` + ctype + (layout ? " — " + layout : "");
+              `${locPolyglot.t('app.scaffold._level.component.variable')} ` + ctype + (layout ? " — " + locPolyglot.t(layoutKey) : "");
             children.push(
               new Paragraph({
                 spacing: { after: 100 },
@@ -95,7 +96,7 @@ module.exports = async function buildDocx(data, outputPath, done) {
             const bodyRaw = c.body || "";
             addLabelValue(
               children,
-              "Body text",
+              locPolyglot.t('app.bodytext'),
               bodyRaw ? bodyRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
             );
 
@@ -170,7 +171,6 @@ module.exports = async function buildDocx(data, outputPath, done) {
             name: "Intense Quote",
             run: { font: "Arial", size: 24, italic: true, bold: true, underline: true, color: "4472C4" },
             paragraph: {
-              indent: { left: 400, right: 400 },
               spacing: { before: 100, after: 100 }
             }
           }
