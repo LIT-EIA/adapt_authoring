@@ -688,5 +688,6 @@
   "app.numberofmessages": "Number of messages",
   "app.unknownspeaker": "Unknown speaker",
   "app.dialogue": "Dialogue",
-  "app.audiofile": "Audio file (mp3)"
+  "app.audiofile": "Audio file (mp3)",
+  "app.exportdocument": "Export document"
 }
