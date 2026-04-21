@@ -16,24 +16,38 @@
     </div>
   </div>
 
-  <button class="editor-common-sidebar-download action-secondary">
-    <span class="editor-common-sidebar-download-inner">{{ t 'app.download'}}</span>
-    <span class="editor-common-sidebar-downloading display-none">
-      <i class="fa fa-circle-o-notch fa-spin"></i>{{ t 'app.downloading'}}
-    </span>
-  </button>
-  <button class="editor-common-sidebar-export action-secondary">
-    <span class="editor-common-sidebar-export-inner">{{ t 'app.export'}}</span>
-    <span class="editor-common-sidebar-exporting display-none">
-      <i class="fa fa-circle-o-notch fa-spin"></i>{{ t 'app.exporting'}}
-    </span>
-  </button>
-  <button class="editor-common-sidebar-storyboard action-secondary">
-    <span class="editor-common-sidebar-storyboard-inner">{{ t 'app.exportdocument'}}</span>
-    <span class="editor-common-sidebar-generating display-none">
-      <i class="fa fa-circle-o-notch fa-spin"></i>{{ t 'app.generating'}}
-    </span>
-  </button>
+  <div class="editor-common-sidebar-exports-wrapper">
+    <button class="editor-common-sidebar-download action-secondary">
+      <span class="editor-common-sidebar-download-inner">{{ t 'app.download'}}</span>
+      <span class="editor-common-sidebar-exporting editor-common-sidebar-generating display-none">
+        <i class="fa fa-circle-o-notch fa-spin"></i>{{ t 'app.exporting'}}
+      </span>
+      <span class="editor-common-sidebar-downloading display-none">
+        <i class="fa fa-circle-o-notch fa-spin"></i>{{ t 'app.downloading'}}
+      </span>
+    </button>
+    <div class="exports-dropdown">
+      <button class=""><i class="fa fa-caret-down"></i></button>
+      <ul>
+        <li>
+          <button class="editor-common-sidebar-export">
+            <span class="editor-common-sidebar-export-inner">{{ t 'app.export'}}</span>
+            <span class="editor-common-sidebar-exporting display-none">
+              <i class="fa fa-circle-o-notch fa-spin"></i>{{ t 'app.exporting'}}
+            </span>
+          </button>
+        </li>
+        <li>
+          <button class="editor-common-sidebar-storyboard">
+            <span class="editor-common-sidebar-storyboard-inner">{{ t 'app.exportdocument'}}</span>
+            <span class="editor-common-sidebar-generating display-none">
+              <i class="fa fa-circle-o-notch fa-spin"></i>{{ t 'app.exporting'}}
+            </span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
 
   <div class="separator" />
 
