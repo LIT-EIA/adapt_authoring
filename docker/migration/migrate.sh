@@ -21,7 +21,7 @@ echo "📁 Seeding framework..."
 cp -r /migration/framework/${TENANT_ID} /app/temp/
 
 echo "📁 Preparing plugin type directories..."
-mkdir -p /app/storage/plugins/{content,component,extension,theme,output,auth}
+#mkdir -p /app/storage/plugins/{content,component,extension,theme,output,auth}
 
 touch "$FLAG_FILE"
 echo "✅ Migration complete."
