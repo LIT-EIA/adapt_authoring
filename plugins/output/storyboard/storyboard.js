@@ -153,7 +153,7 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
     function storyboardGenerateDocx(cb) {
       const courseTitle = sanitized.course.title || 'course';
       const safeTitle = courseTitle.replace(/[\/\\?%*:|"<>]/g, '-');
-      const filename = `${safeTitle} - Storyboard.docx`;
+      const filename = `${safeTitle}.docx`;
       const filepath = path.join(outputFolder, filename);
 
       // Call the refactored Builder

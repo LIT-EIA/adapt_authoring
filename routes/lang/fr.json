@@ -2075,5 +2075,6 @@
   "app.numberofmessages": "Nombre de messages",
   "app.unknownspeaker": "Intervenant inconnu",
   "app.dialogue": "Dialogue",
-  "app.audiofile": "Fichier audio (mp3)"
+  "app.audiofile": "Fichier audio (mp3)",
+  "app.exportdocument": "Exporter le document"
 }

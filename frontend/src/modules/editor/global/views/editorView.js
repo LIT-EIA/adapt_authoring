@@ -150,6 +150,7 @@ define(function(require) {
 
       // Show spinner
       $('.editor-common-sidebar-storyboard-inner').addClass('display-none');
+      $('.editor-common-sidebar-download-inner').addClass('display-none');
       $('.editor-common-sidebar-generating').removeClass('display-none');
 
       var url = 'api/output/storyboard/storyboard/' + courseId;
@@ -173,6 +174,7 @@ define(function(require) {
 
           // Reset spinner
           $('.editor-common-sidebar-storyboard-inner').removeClass('display-none');
+          $('.editor-common-sidebar-download-inner').removeClass('display-none');
           $('.editor-common-sidebar-generating').addClass('display-none');
           return;
         }
@@ -190,6 +192,7 @@ define(function(require) {
 
         // Reset spinner
         $('.editor-common-sidebar-storyboard-inner').removeClass('display-none');
+        $('.editor-common-sidebar-download-inner').removeClass('display-none');
         $('.editor-common-sidebar-generating').addClass('display-none');
 
       }.bind(this)).fail(function (jqXHR, textStatus, errorThrown) {
@@ -205,9 +208,15 @@ define(function(require) {
     showExportAnimation: function(show, $btn) {
       if(show !== false) {
         $('.editor-common-sidebar-export-inner', $btn).addClass('display-none');
+        $('.editor-common-sidebar-download-inner').addClass('display-none');
+        $('.editor-common-sidebar-downloading').addClass('display-none');
+        $('.editor-common-sidebar-exporting',  $('button.editor-common-sidebar-download')).removeClass('display-none');
         $('.editor-common-sidebar-exporting', $btn).removeClass('display-none');
       } else {
         $('.editor-common-sidebar-export-inner', $btn).removeClass('display-none');
+        $('.editor-common-sidebar-download-inner').removeClass('display-none');
+        $('.editor-common-sidebar-exporting', $('button.editor-common-sidebar-download')).addClass('display-none');
+        $('.editor-common-sidebar-downloading').addClass('display-none');
         $('.editor-common-sidebar-exporting', $btn).addClass('display-none');
       }
     },
@@ -217,6 +226,7 @@ define(function(require) {
         return;
       }
       $('.editor-common-sidebar-download-inner').addClass('display-none');
+      $('.editor-common-sidebar-exporting').addClass('display-none');
       $('.editor-common-sidebar-downloading').removeClass('display-none');
 
       var url = 'api/output/' + Origin.constants.outputPlugin + '/publish/' + this.currentCourseId;
