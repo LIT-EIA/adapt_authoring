@@ -26,6 +26,7 @@ runs:
         kubectl delete pvc db -n "$NAMESPACE" || true
         kubectl delete pvc storage -n "$NAMESPACE" || true
         kubectl delete pvc temp -n "$NAMESPACE" || true
+        kubectl delete pvc data -n "$NAMESPACE" || true
         
 
  

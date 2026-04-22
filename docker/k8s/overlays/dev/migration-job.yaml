@@ -28,3 +28,6 @@ spec:
         - name: temp                      
           persistentVolumeClaim:
             claimName: temp
+        - name: data                      
+          persistentVolumeClaim:
+            claimName: data

@@ -36,4 +36,6 @@ spec:
               mountPath: /app/storage
             - name: temp
               mountPath: /app/temp
+            - name: data
+              mountPath: /app/data
               
