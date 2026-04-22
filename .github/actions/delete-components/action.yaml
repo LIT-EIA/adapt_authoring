@@ -22,10 +22,11 @@ runs:
         kubectl delete deployment mongo -n "$NAMESPACE" || true
         kubectl delete service app -n "$NAMESPACE" || true
         kubectl delete service mongo -n "$NAMESPACE" || true
+        kubectl delete job adapt-migration -n "$NAMESPACE" || true
         kubectl delete pvc db -n "$NAMESPACE" || true
         kubectl delete pvc storage -n "$NAMESPACE" || true
         kubectl delete pvc temp -n "$NAMESPACE" || true
-        kubectl delete job adapt-migration -n "$NAMESPACE" || true
+        
 
  
 
