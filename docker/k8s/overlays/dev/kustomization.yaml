@@ -6,6 +6,7 @@ resources:
   - mongo-service.yaml
   - migration-job.yaml
   - app-rbac.yaml
+  - temp-pvc.yaml
 
 images:
   - name: ghcr.io/lit-eia/adapt-authoring
@@ -27,6 +28,11 @@ patches:
     target:
       kind: Deployment
       name: migration
+
+  - path: app-temp-volume-patch.yaml
+    target:
+      kind: Deployment
+      name: app
   
 
 labels:

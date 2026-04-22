@@ -19,7 +19,12 @@ spec:
           volumeMounts:
             - name: storage
               mountPath: /app/storage
+            - name: temp                    
+              mountPath: /app/temp          
       volumes:
         - name: storage
           persistentVolumeClaim:
             claimName: storage
+        - name: temp                      
+          persistentVolumeClaim:
+            claimName: temp
