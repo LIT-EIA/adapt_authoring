@@ -1,0 +1,16 @@
+{
+  "name": "adapt-contrib-media",
+  "version": "4.1.13",
+  "framework": ">=3.3",
+  "homepage": "https://github.com/adaptlearning/adapt-contrib-media",
+  "issues": "https://github.com/adaptlearning/adapt_framework/issues/new",
+  "displayName": "Media",
+  "component": "media",
+  "description": "Playback of video and audio.",
+  "main": "/js/adapt-contrib-media.js",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-component"
+  ],
+  "license": "GPLv3"
+}

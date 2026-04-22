@@ -1,0 +1,14 @@
+html {
+	&.hide-home-button .navigation-home-button,
+	&.hide-back-button .navigation-back-button {
+	    display: none;
+	}
+}
+
+// replicate navigation back button float
+.navigation-home-button {
+    float:left;
+    .dir-rtl & {
+        float:right;
+    }
+}

@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "http://jsonschema.net",
+  "properties": {
+    "pluginLocations": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "properties": {
+            "_Adapt-i18n": {
+              "type": "object",
+              "legend": "i18n",
+              "properties": {
+                "_enabled": {
+                  "type": "boolean",
+                  "required": false,
+                  "default": true,
+                  "title": "Enable i18n in plugins",
+                  "inputType": "Checkbox",
+                  "validators": [],
+                  "help": "This must be enabled for plugins to work"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "adapt-contrib-text",
+  "version": "3.0.0",
+  "framework": ">=3.3",
+  "homepage": "https://github.com/adaptlearning/adapt-contrib-text",
+  "issues": "https://github.com/adaptlearning/adapt_framework/issues/new",
+  "displayName": "Text",
+  "component": "text",
+  "description": "A simple core contributed text component",
+  "main": "/js/adapt-contrib-text.js",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-component"
+  ],
+  "license": "GPLv3",
+  "_release": "3.0.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "3.0.0",
+    "commit": "b8dc2fde1a568228818dba0acdbd39c0c1d57ac5"
+  },
+  "_source": "https://github.com/adaptlearning/adapt-contrib-text.git",
+  "_target": "3.0.0",
+  "_originalSource": "adapt-contrib-text",
+  "_direct": true
+}

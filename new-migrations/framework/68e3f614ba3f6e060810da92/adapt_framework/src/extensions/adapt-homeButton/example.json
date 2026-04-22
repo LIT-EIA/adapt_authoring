@@ -1,0 +1,20 @@
+    // config.json
+    "_homeButton": {
+        "_isEnabled": true
+    }
+
+    // course.json
+    "_homeButton": {
+        "_isEnabled": false,
+        "_hideHomeButton": false,
+        "_redirectToId": "",
+        "alt": "Home"
+    }
+
+    // contentObjects.json
+    "_homeButton": {
+        "_isEnabled": false,
+        "_hideHomeButton": false,
+        "_hideBackButton": false,
+        "_redirectToId": ""
+    }

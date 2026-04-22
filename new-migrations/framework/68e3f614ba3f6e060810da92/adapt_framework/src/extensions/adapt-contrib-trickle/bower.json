@@ -1,0 +1,17 @@
+{
+  "name": "adapt-contrib-trickle",
+  "version": "3.0.102",
+  "framework": ">=4",
+  "homepage": "https://github.com/adaptlearning/adapt-contrib-trickle",
+  "issues": "https://github.com/adaptlearning/adapt_framework/issues/new",
+  "displayName" : "Trickle",
+  "extension" : "trickle",
+  "description": "A vertical locking extension",
+  "main": "/js/adapt-contrib-trickle.js",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-extension"
+  ],
+  "license": "GPLv3",
+  "targetAttribute": "_trickle"
+}

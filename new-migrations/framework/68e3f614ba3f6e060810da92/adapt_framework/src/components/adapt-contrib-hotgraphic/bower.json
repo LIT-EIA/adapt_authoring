@@ -1,0 +1,19 @@
+{
+  "name": "adapt-contrib-hotgraphic",
+  "version": "4.3.11",
+  "framework": ">=3.3",
+  "homepage": "https://github.com/adaptlearning/adapt-contrib-hotgraphic",
+  "issues": "https://github.com/adaptlearning/adapt_framework/issues/new",
+  "description": "A component that enables a user to click on pins over an image to display more detail in a popup",
+  "main": "/js/adapt-contrib-hotgraphic.js",
+  "displayName" : "Hot Graphic",
+  "component" : "hotgraphic",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-component"
+  ],
+  "pluginDependencies": {
+    "adapt-contrib-narrative": "*"
+  },
+  "license": "GPL-3.0"
+}

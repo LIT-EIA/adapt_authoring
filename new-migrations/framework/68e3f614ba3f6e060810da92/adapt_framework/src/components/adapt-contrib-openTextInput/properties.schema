@@ -1,0 +1,245 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "$ref": "http://localhost/plugins/content/component/model.schema",
+  "properties": {
+    "_supportedLayout": {
+      "type": "string",
+      "required": true,
+      "enum": ["full-width", "half-width", "both"],
+      "default": "both",
+      "editorOnly": true
+    },
+    "instruction": {
+      "type": "string",
+      "required": false,
+      "default": "",
+      "inputType": "Text",
+      "validators": [],
+      "help": "This is the instruction text",
+      "translatable": true
+    },
+    "_isResetOnRevisit": {
+      "type" : "boolean",
+      "required" : true,
+      "default" : false,
+      "title" : "Reset answer on revisit?",
+      "inputType" : "Checkbox",
+      "validators" : [],
+      "help" : "This will clear the textbox should a user be reattempting the assessment"
+    },
+    "_canShowModelAnswer" : {
+      "type" : "boolean",
+      "required" : true,
+      "default" : true,
+      "title" : "Display Model Answer",
+      "inputType": "Checkbox",
+      "validators" : [],
+      "help" : "Enable to allow the user to view the 'model answer' should they answer the question incorrectly"
+    },
+    "_canShowMarking": {
+      "type": "boolean",
+      "default": true,
+      "title": "Display Marking",
+      "inputType": "Checkbox",
+      "validators": []
+    },
+    "placeholder": {
+      "type": "string",
+      "required": false,
+      "default": "Enter your answer here",
+      "title": "Placeholder",
+      "inputType": "Text",
+      "validators": [],
+      "help": "This is the placeholder text which will be displayed inside the textarea",
+      "translatable": true
+    },
+    "_allowedCharacters": {
+      "type": "number",
+      "required": true,
+      "default": 500,
+      "title": "Allowed characters",
+      "inputType": "Number",
+      "validators": ["required", "number"],
+      "help": "The maximum number of characters that the user may enter"
+    },
+    "remainingCharactersText": {
+      "type": "string",
+      "required": true,
+      "default": "Remaining characters",
+      "title": "character(s) remaining",
+      "inputType": "Text",
+      "validators": ["required"],
+      "help": "Label for the count of remaining characters",
+      "translatable": true
+    },
+    "_recordInteraction": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "title": "Record interaction",
+      "inputType": "Checkbox",
+      "validators": [],
+      "help": "If enabled, the user's answer(s) will be recorded to cmi.interactions on the LMS (where supported)."
+    },
+    "modelAnswer": {
+      "type": "string",
+      "required": true,
+      "default": "",
+      "title": "Model answer",
+      "inputType": "TextArea",
+      "validators": ["required"],
+      "help": "This is the model answer which will be displayed when the model answer button is clicked",
+      "translatable": true
+    },
+    "savedMessage": {
+      "type": "string",
+      "required": true,
+      "default": "Changes saved",
+      "title": "Saved message",
+      "inputType": "Text",
+      "validators": [],
+      "help": "This is the message displayed to the user when the text is saved",
+      "translatable": true
+    },
+    "_buttons": {
+      "type": "object",
+      "title": "Buttons",
+      "required": false,
+      "properties":{
+        "_submit":{
+          "type":"object",
+          "title": "Submit",
+          "properties":{
+            "buttonText": {
+              "type":"string",
+              "required": false,
+              "default": "Submit",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Button label text for the submit button",
+              "translatable": true
+            },
+            "ariaLabel": {
+              "type":"string",
+              "required": false,
+              "default": "Submit",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Aria label for the submit button",
+              "translatable": true
+            }
+          }
+        },
+        "_showCorrectAnswer": {
+          "type": "object",
+          "title": "Show Correct Answer",
+          "properties":{
+            "buttonText": {
+              "type":"string",
+              "required": false,
+              "default": "Show model answer",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Button label text to show the model answer",
+              "translatable": true
+            },
+            "ariaLabel": {
+              "type": "string",
+              "required": false,
+              "default": "Show model answer",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Aria label for the show model answer button",
+              "translatable": true
+            }
+          }
+        },
+        "_hideCorrectAnswer": {
+          "type": "object",
+          "title": "Hide Correct Answer",
+          "properties":{
+            "buttonText": {
+              "type":"string",
+              "required": false,
+              "default": "Hide model answer",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Button label text to hide the model answer",
+              "translatable": true
+            },
+            "ariaLabel": {
+              "type":"string",
+              "required": false,
+              "default": "Hide model answer",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Aria label for the hide model answer button",
+              "translatable": true
+            }
+          }
+        },
+        "_showFeedback": {
+          "type": "object",
+          "title": "Show Feedback",
+          "properties": {
+            "buttonText": {
+              "type": "string",
+              "required": false,
+              "default": "",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Button label text to show feedback",
+              "translatable": true
+            },
+            "ariaLabel": {
+              "type": "string",
+              "required": false,
+              "default": "",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Aria label for the show feedback button",
+              "translatable": true
+            }
+          }
+        },
+        "_reset": {
+          "type": "object",
+          "title": "Reset",
+          "properties":{
+            "buttonText": {
+              "type":"string",
+              "required": false,
+              "default": "Reset",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Button label text for the reset button",
+              "translatable": true
+            },
+            "ariaLabel": {
+              "type":"string",
+              "required": false,
+              "default": "Reset",
+              "title": "",
+              "inputType": "QuestionButton",
+              "validators": [],
+              "help": "Aria label for the reset button",
+              "translatable": true
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

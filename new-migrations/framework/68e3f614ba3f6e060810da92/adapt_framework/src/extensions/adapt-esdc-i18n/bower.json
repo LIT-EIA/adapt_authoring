@@ -1,0 +1,19 @@
+{
+    "name": "adapt-esdc-i18n",
+    "version": "0.0.2",
+    "framework": ">=1.1.2",
+    "displayName": "Adapt Plugins i18n",
+    "extension": "adapt-esdc-i18n",
+    "targetAttribute": "_Adapt-i18n",
+    "description": "Adds jQuery i18n to courses",
+    "main": "/js/adapt-esdc-i18n.js",
+    "keywords": [
+        "adapt-plugin",
+        "adapt-extension"
+    ],
+    "authors": [
+        "Francis Tourangeau"
+    ],
+    "license": "GPL-3.0",
+    "homepage": "https://github.com/LIT-EIA/adapt-esdc-i18n"
+}

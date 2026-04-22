@@ -1,0 +1,396 @@
+.guidedtour-component {
+
+    .guidedtour-graphic {
+        position: relative;
+        max-width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        &.full-width {
+            width: 100%;
+
+            img {
+                width: 100%;
+            }
+        }
+    }
+
+    .guidedtour-graphic-pin {
+        display: block;
+        position: absolute;
+        top: 0%;
+        left: 0%;
+        background-color: transparent !important;
+        border-radius: 50%;
+        text-decoration: none;
+        height: 10px;
+        width: 10px;
+
+        &.has-pin-image {
+            background-color: transparent !important;
+            border-radius: 0;
+            line-height: 0;
+        }
+
+        &.visited {
+            .guidedtour-graphic-pin-icon {
+                color: @item-color-visited;
+            }
+        }
+
+        .no-touch &:hover {
+            .guidedtour-graphic-pin-icon {
+                color: @item-color-hover;
+            }
+        }
+    }
+
+    .guidedtour-graphic-pin-icon {
+        color: @item-color;
+        font-size: (@icon-size*2);
+        height: (@icon-size*2);
+        width: (@icon-size*2);
+    }
+
+}
+
+.guidedtour-item:not(.active) {
+    display: none;
+}
+
+.notify.guidedtour {
+
+    .notify-popup {
+        max-width: @device-width-large;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: transparent;
+        color: @font-color;
+
+        .notify-popup-inner {
+            padding: 0;
+        }
+
+        .notify-popup-content {
+            width: auto;
+        }
+    }
+
+    .notify-popup-content-inner {
+        .guidedtour-popup {
+            width: auto;
+            height: auto;
+            background-color: @background-color;
+            border: @item-border;
+            z-index: 5;
+            position: relative;
+            padding-top: (@item-padding-top + @item-padding-bottom) + @icon-size;
+        }
+
+        .guidedtour-popup-toolbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: @item-color;
+            height: (@item-padding-top + @item-padding-bottom) + @icon-size;
+        }
+
+        .guidedtour-popup-nav {
+            background-color: @item-color;
+        }
+
+        .guidedtour-popup-done {
+            position: absolute;
+            top: 0;
+            right: 0;
+            text-decoration: none;
+
+            .dir-rtl & {
+                right: inherit;
+                left: 0;
+            }
+
+            .no-touch &:hover {
+                .guidedtour-popup-close {
+                    color: @button-text-color-hover;
+                }
+            }
+        }
+
+        .guidedtour-popup-arrow-l,
+        .guidedtour-popup-arrow-r,
+        .guidedtour-popup-close {
+            padding: @item-padding;
+            color: @button-text-color;
+        }
+
+        .guidedtour-popup-count {
+            padding: @item-padding;
+            vertical-align: baseline;
+            color: @item-text-color;
+            float: left;
+
+            .dir-rtl & {
+                float: right;
+            }
+
+            span {
+                display: inline-block;
+            }
+        }
+
+        .guidedtour-popup-controls {
+            float: left;
+            text-decoration: none;
+
+            .dir-rtl & {
+                float: right;
+            }
+
+            .no-touch &:hover {
+
+                .guidedtour-popup-arrow-l,
+                .guidedtour-popup-arrow-r {
+                    color: @button-text-color-hover;
+                }
+            }
+
+            &.disabled {
+                visibility: hidden;
+            }
+        }
+
+        .guidedtour-popup-inner {
+            padding: @item-padding;
+        }
+
+        .guidedtour-item-graphic {
+            padding-left: @item-padding-left;
+            width: 50%;
+            box-sizing: border-box;
+            float: right;
+
+            .dir-rtl & {
+                float: left;
+            }
+
+            text-align: center;
+        }
+
+        .guidedtour-item-graphic-inner {
+            img {
+                display: block;
+            }
+
+            .dir-rtl & {
+                padding-left: inherit;
+                padding-right: @item-padding-left;
+            }
+        }
+
+        .guidedtour-item-content {
+            width: 50%;
+            float: left;
+
+            .dir-rtl & {
+                float: right;
+            }
+        }
+
+        .graphic-attribution {
+            font-size: 0.75em;
+            line-height: 1em;
+            padding-top: 0.5em;
+        }
+    }
+}
+
+// Hotgraphic Narrative
+
+.guidedtour-narrative {
+    position: relative;
+    max-height: 500px;
+    height: 500px;
+
+    .guidedtour-graphic-pin {
+        border-radius: 0px;
+        position: absolute;
+        display: block;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        border: 4px solid @background-color;
+        background-size: cover;
+        transition: background-size .4s;
+        overflow: hidden;
+
+        .guidedtour-graphic-pin-image {
+            display: block;
+            width: auto;
+            height: 100%;
+            -webkit-transition: transform .4s;
+            transition: transform .4s;
+            background-size: cover;
+
+            &:before {
+                content: '';
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                width: 100%;
+                height: 100%;
+                background: fadeout(@foreground-color, 50%);
+                transition: background .5s;
+            }
+        }
+
+        &:hover {
+            .guidedtour-graphic-pin-image {
+                -webkit-transform: scale(1.1);
+                transform: scale(1.1);
+
+                &:before {
+                    background: fadeout(@foreground-color, 100%);
+                }
+            }
+        }
+    }
+}
+
+// Narrative Pin Size & Position
+
+.cols-1 {
+    width: 25%;
+}
+
+.cols-2 {
+    width: 50%;
+}
+
+.cols-3 {
+    width: 75%;
+}
+
+.cols-4 {
+    width: 100%;
+}
+
+.rows-1 {
+    height: 50%;
+}
+
+.rows-2 {
+    height: 100%;
+}
+
+.tour-disabled {
+    opacity: 0.3;
+    filter: blur(4px);
+}
+
+.guidedtour-inner {
+    .start-tour {
+        width: 100%;
+        display: none;
+
+    }
+    .guidedtour-graphic .start-tour {
+        position: absolute;
+        width: auto;
+        min-width: 25%;
+        z-index: 1;
+    }
+    .active-button {
+        display: inline-block;
+    }
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.shepherd-element {
+    border-radius: 0 !important;
+}
+
+.shepherd-arrow:before {
+    transform: rotate(45deg) scale(1.25) !important;
+}
+
+.border {
+    border: 4px solid var(--shepherd-border-color);
+
+    .shepherd-arrow:before {
+        outline: 4px solid var(--shepherd-border-color);
+    }
+}
+
+.shepherd-title {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.shepherd-title .pagination {
+    font-size: 13px;
+    line-height: 20px;
+}
+
+.shepherd-title .step-title {
+    width: 100%;
+    font-size: 17px;
+}
+
+.shepherd-text {
+    min-height: 70px;
+}
+
+.shepherd-header button:hover {
+    background-color: transparent!important;
+}
+
+.shepherd-arrow {
+    filter: none!important;
+}
+
+.shepherd-arrow:before {
+    background: #bfbfbf;
+}
+
+.shepherd-element.shepherd-has-title[data-popper-placement^=bottom]>.shepherd-arrow:before {
+    background-color: @primary-color;
+}
+
+.shepherd-content {
+    border-radius: 0!important;
+}
+
+.shepherd-header {
+    background-color: @primary-color;
+    border-radius: 0!important
+}
+
+.shepherd-cancel-icon {
+    color: @white;
+}
+
+.shepherd-button {
+    background: @primary-color;
+}
+
+.shepherd-button:not(:disabled):hover {
+    background: @quaternary-color;
+}
+
+.shepherd-cancel-icon:hover {
+    background: none;
+}

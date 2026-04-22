@@ -1,0 +1,42 @@
+.media-component {
+    .audio-poster {
+        display: block;
+        margin: 0 auto;
+    }
+
+    .media-transcript {
+        padding: @button-padding;
+        display: block;
+        color: @button-text-color;
+        background-color: @button-color;
+        text-decoration: none;
+        &:hover {
+            color: @button-text-color-hover;
+            background-color: @button-color-hover;
+        }
+    }
+
+    .media-inline-transcript-body-container {
+        margin-top: 10px;
+        display: none;
+    }
+
+    .media-inline-transcript-body {
+        padding: @component-padding;
+    }
+
+    .media-transcript-button-container {
+        padding:1px;
+    }
+
+    .media-external-transcript-button, .media-inline-transcript-button {
+        width:100%;
+        display:block;
+    }
+}
+
+
+//for use when no title or body or instruction is available
+.media-top-padding {
+    padding-top: 4em;
+}

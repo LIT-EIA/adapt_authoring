@@ -1,0 +1,19 @@
+{
+  "name": "adapt-esdc-tour",
+  "version": "1.0.4",
+  "framework": ">=3.3",
+  "homepage": "https://github.com/lit-eia/adapt-esdc-tour",
+  "issues": "https://github.com/lit-eia/adapt-esdc-tour/issues/new",
+  "description": "A component that enables a guided tour on images",
+  "main": "/js/adapt-esdc-tour.js",
+  "displayName" : "Guided Tour",
+  "component" : "guidedtour",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-component"
+  ],
+  "pluginDependencies": {
+    "adapt-contrib-narrative": "*"
+  },
+  "license": "GPL-3.0"
+}

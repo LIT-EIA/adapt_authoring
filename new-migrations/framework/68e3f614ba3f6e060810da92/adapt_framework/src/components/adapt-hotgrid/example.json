@@ -1,0 +1,103 @@
+    {
+        "_id": "c-05",
+        "_parentId": "b-05",
+        "_type": "component",
+        "_component": "hotgrid",
+        "_classes": "",
+        "_layout": "full",
+        "title": "Adapt Hotgrid",
+        "displayTitle": "Adapt Hotgrid",
+        "body": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis.",
+        "_canCycleThroughPagination": false,
+        "_hidePagination": false,
+        "instruction": "",
+        "_setCompletionOn": "allItems",
+        "_columns": 3,
+        "_items": [
+            {
+                "title": "Grid Item 1",
+                "body": "This is display text 1. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.",
+                "_graphic": {
+                    "src": "course/en/images/c-05-1.png",
+                    "srcHover": "",
+                    "srcVisited": "",
+                    "alt": "alt text here test",
+                    "title": "Item Title 1"
+                },
+                "_itemGraphic": {
+                    "src": "course/en/images/c-05-1.png",
+                    "alt": "alt text"
+                }
+            },
+            {
+                "title": "Grid Item 2",
+                "body": "This is display text 1. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.",
+                "_graphic": {
+                    "src": "course/en/images/c-05-2.png",
+                    "srcHover": "",
+                    "srcVisited": "",
+                    "alt": "",
+                    "title": "Item Title 2"
+                },
+                "_itemGraphic": {
+                    "src": "course/en/images/c-05-2.png",
+                    "alt": "alt text"
+                }
+            },
+            {
+                "title": "Grid Item 3",
+                "body": "This is display text 1. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.",
+                "_graphic": {
+                    "src": "course/en/images/c-05-3.png",
+                    "srcHover": "",
+                    "srcVisited": "",
+                    "alt": "",
+                    "title": "Item Title 3"
+                },
+                "_itemGraphic": {
+                    "src": "course/en/images/c-05-3.png",
+                    "alt": "alt text"
+                }
+            },
+            {
+                "title": "Grid Item 4",
+                "body": "This is display text 1. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.",
+                "_graphic": {
+                    "src": "course/en/images/c-05-4.png",
+                    "srcHover": "",
+                    "srcVisited": "",
+                    "alt": "",
+                    "title": "Item Title 4"
+                },
+                "_itemGraphic": {
+                    "src": "course/en/images/c-05-4.png",
+                    "alt": "alt text"
+                }
+            },
+            {
+                "title": "Grid Item 5",
+                "body": "This is display text 1. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.",
+                "_graphic": {
+                    "src": "course/en/images/c-05-5.png",
+                    "srcHover": "",
+                    "srcVisited": "",
+                    "alt": "",
+                    "title": "Item Title 5"
+                },
+                "_itemGraphic": {
+                    "src": "course/en/images/c-05-5.png",
+                    "alt": "alt text"
+                }
+            }
+        ],
+        "_pageLevelProgress": {
+            "_isEnabled": true
+        }
+    }
+
+    // Accessibility supported courses require ARIA instruction - apply to _globals in course.json
+
+    "_hotgrid": {
+        "ariaRegion": "Selectable image component. Select each item to show more information.",
+        "popupPagination": "{{itemNumber}} / {{totalItems}}"
+    }

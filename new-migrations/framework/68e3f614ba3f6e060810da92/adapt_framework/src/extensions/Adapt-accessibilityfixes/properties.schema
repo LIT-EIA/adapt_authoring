@@ -1,0 +1,75 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "http://jsonschema.net",
+  "properties": {
+    "pluginLocations": {
+      "type": "object",
+      "properties": {
+        "course": {
+          "type": "object",
+          "properties": {
+            "_Adapt-accessibilityfixes": {
+              "type": "object",
+              "legend": "Accessibility Fixes",
+              "properties": {
+                "_learnersPick": {
+                  "type": "object",
+                  "required": false,
+                  "title": "Learner's Pick",
+                  "properties": {
+                    "_answerFeedback": {
+                      "type": "boolean",
+                      "required": false,
+                      "default": false,
+                      "title": "Enable learner's pick in question feedback",
+                      "inputType": "Checkbox",
+                      "validators": [],
+                      "help": "If enabled, the learner's answer will be automatically displayed in the feedback popup. You can add the class disable-auto-feedback to a component to disable it."
+                    },
+                    "_titleMode": {
+                      "type": "string",
+                      "required": false,
+                      "default": "state",
+                      "title": "Popup Title",
+                      "inputType": {
+                        "type": "Select",
+                        "options": ["state", "stateWithColor", "feedbackWord", "originalComponent"]
+                      },
+                      "validators": [],
+                      "help": "Select how the title will be generated. Show answer state as title will replace the popup title with You are correct/You are incorrect, Show answer with color will add the answer state color the the word. Use the word Feedback as title will replace the title with the word Feedback/Rétroaction, Use title set in component will use the tile set in field Feedback Title of the component."
+                    },
+                    "_selectionPosition": {
+                      "type": "string",
+                      "required": false,
+                      "default": "afterFeedback",
+                      "title": "Selection Position",
+                      "inputType": {
+                        "type": "Select",
+                        "options": ["afterTitle", "afterFeedback"]
+                      },
+                      "validators": [],
+                      "help": "Select the position where the learner's selection will be displayed. After title will display the selection after the popup title. After feedback will display the selection at the bottom of the popup."
+                    },
+                    "_selectionStyle": {
+                      "type": "string",
+                      "required": false,
+                      "default": "iconWithText",
+                      "title": "Selection Style",
+                      "inputType": {
+                        "type": "Select",
+                        "options": ["iconWithText", "plainText", "bubble", "bubbleWithColor"]
+                      },
+                      "validators": [],
+                      "help": "Select the style of the learner's selectiom. Icon with text will display an icon with the learner's selection in plain text. Bubble will display the selection in a rounded section, Bubble with color will add the answer state color as background."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

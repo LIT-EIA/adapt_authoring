@@ -1,0 +1,64 @@
+{
+  "type":"object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://jsonschema.net",
+  "$ref": "http://localhost/plugins/content/theme/model.schema",
+  "properties":{
+    "_screenSize": {
+      "type":"object",
+      "required":true,
+      "properties":{
+        "large": {
+          "type":"string",
+          "required":true
+        },
+        "medium": {
+          "type":"string",
+          "required":true
+        },
+        "small": {
+          "type":"string",
+          "required":true
+        }
+      }
+    },
+    "variables": {
+      "_settings": {
+        "type": "object",
+        "title": "Options",
+        "properties" : {
+          "improved-block-padding": {
+            "type": "string",
+            "required": true,
+            "default" : "legacy",
+            "title" : "Block Padding",
+            "validators": [],
+            "inputType": {
+              "type": "Select",
+              "options": [
+                "legacy",
+                "improved"
+              ]
+            },
+            "help": "The option Improved adjusts the spacing on top of block titles to make it even with the other sides. The option Legacy keeps Adapt's default spacing"
+          },
+          "margin-control": {
+            "type": "string",
+            "required": true,
+            "default" : "defaultSize",
+            "title" : "Margin Size",
+            "validators": [],
+            "inputType": {
+              "type": "Select",
+              "options": [
+                "defaultSize",
+                "noMargin"
+              ]
+            },
+            "help": "The option No Margin removes the left and right margin on the course. WARNING: If you activate this option on an existing course, images that are smaller will need to be replaced by larger ones. The pins in your hotgrid components may need repositioning."
+          }
+        }
+      }
+    }
+  }
+}

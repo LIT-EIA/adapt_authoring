@@ -1,0 +1,16 @@
+{
+  "name": "adapt-contrib-textInput",
+  "version": "3.0.1",
+  "framework": ">=2.0.16",
+  "homepage": "https://github.com/adaptlearning/adapt-contrib-textInput",
+  "issues": "https://github.com/adaptlearning/adapt_framework/issues/new",
+  "description": "A question component that allows the learner to input text based upon a question stem.",
+  "main": "/js/adapt-contrib-textInput.js",
+  "displayName" : "Text Input",
+  "component" : "textinput",
+  "keywords": [
+    "adapt-plugin",
+    "adapt-component"
+  ],
+  "license": "GPLv3"
+}
