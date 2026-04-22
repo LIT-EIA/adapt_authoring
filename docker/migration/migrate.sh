@@ -16,9 +16,9 @@ echo "📁 Seeding assets..."
 mkdir -p /app/data
 cp -r /migration/data/* /app/data/
 
-echo "📁 Seeding framework..."
-#mkdir -p /app/temp/framework
-cp -r /migration/framework/${TENANT_ID} /app/temp/
+echo "📁 Seeding framework for tenant ${TENANT_ID} ..."
+mkdir -p /app/temp/${TENANT_ID}
+cp -r /migration/framework/${TENANT_ID}/adapt_framework  /app/temp/${TENANT_ID}/
 
 echo "📁 Preparing plugin type directories..."
 #mkdir -p /app/storage/plugins/{content,component,extension,theme,output,auth}
