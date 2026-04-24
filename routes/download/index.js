@@ -135,10 +135,11 @@ server.get('/storyboard/:tenant/:course/:filename', function(req, res) {
         return res.status(404).json({ success: false, message: 'File not found' });
       }
 
+      const encoded = encodeURIComponent(filename);
       res.writeHead(200, {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Length': stat.size,
-        'Content-disposition': 'attachment; filename="' + filename + '"'
+        'Content-Disposition': `attachment; filename*=UTF-8''${encoded}`
       });
 
       fs.createReadStream(filepath).pipe(res);
