@@ -227,7 +227,7 @@
   "app.scaffold.config._tracking._shouldStoreResponses.label": "Conserver l’état des questions",
   "app.scaffold.config._tracking._shouldStoreResponses.help": "Si cette option est activée, les réponses de l’utilisateur seront enregistrées et restaurées chaque session. Remarque : Ce paramètre devrait être activé dans la majorité des cas.",
   "app.scaffold.config._tracking._RelaxedTracking.label": "Suivi allégé",
-  "app.scaffold.config._tracking._RelaxedTracking.help": "S’il est activé, le suivi strict est allégé et le statut d’achèvement est envoyé au SGA lorsqu’il atteint 80 %, ce qui permet de tenir compte de différents facteurs.",
+  "app.scaffold.config._tracking._RelaxedTracking.help": "S'il est activé, le suivi strict est allégé et le statut d'achèvement est envoyé au SGA lorsque l'apprenant atteint le pourcentage défini dans le champ «Pourcentage de Suivi allégé», ce qui permet de tenir compte de différents facteurs.",
   "app.scaffold.config._tracking._shouldRecordInteractions.label": "Enregistrer les interactions",
   "app.scaffold.config._tracking._shouldRecordInteractions.help": "Si cette option est activée, le cours enregistrera les réponses de l’utilisateur vers les champs de données SCORM « cmi.interactions ».",
   "app.scaffold.config._spoor._reporting.label": "Production de rapports",
@@ -2076,5 +2076,8 @@
   "app.unknownspeaker": "Intervenant inconnu",
   "app.dialogue": "Dialogue",
   "app.audiofile": "Fichier audio (mp3)",
-  "app.exportdocument": "Exporter le document"
+  "app.exportdocument": "Exporter le document",
+  "app.scaffold.config._tracking._RelaxedTrackingPercentage.label": "Pourcentage de Suivi allégé",
+  "app.scaffold.config._tracking._RelaxedTrackingPercentage.help": "Pourcentage du cours que l'apprenant doit atteindre pour que le statut d'achèvement soit envoyé au SGA lorsque le Suivi allégé est activé."
+
 }
