@@ -20,7 +20,9 @@ spec:
             - name: storage
               mountPath: /app/storage
             - name: temp                    
-              mountPath: /app/temp          
+              mountPath: /app/temp  
+            - name: data
+              mountPath: /app/data        
       volumes:
         - name: storage
           persistentVolumeClaim:
