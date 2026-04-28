@@ -40,6 +40,11 @@ patches:
       kind: Deployment
       name: app
   
+  - path: migration-job-data.patch.yaml
+    target:
+      kind: Job
+      name: adapt-migration
+  
 
 labels:
   - includeSelectors: true

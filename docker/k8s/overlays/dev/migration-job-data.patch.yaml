@@ -1,0 +1,12 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: adapt-migration
+spec:
+  template:
+    spec:
+      containers:
+        - name: migrate
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
