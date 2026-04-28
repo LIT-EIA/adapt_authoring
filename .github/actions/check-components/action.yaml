@@ -1,5 +1,5 @@
 name: Check Kubernetes Components
-description: Run kubectl and helm inspection commands in a namespace
+description: Run kubectl, helm, and ACR inspection commands in a namespace
 
 inputs:
   namespace:
@@ -12,26 +12,69 @@ runs:
     - name: Check Kubernetes Components
       shell: bash
       run: |
+        set -euo pipefail
+
         NAMESPACE="${{ inputs.namespace }}"
+        ACR_NAME="dtsrhpdevscedacr"
+        APP_IMAGE="cms_adapt_authoring_app"
+        MIG_IMAGE="cms_adapt_authoring_mig"
 
         echo "====================================="
         echo "🔍 Checking Kubernetes components"
         echo "Namespace: $NAMESPACE"
         echo "====================================="
-        echo "⏳ All k8s Components in Namespace listed."
+
+        echo "⏳ All K8s resources"
         kubectl get all -n "$NAMESPACE"
-        echo "⏳ Ingress."
-        kubectl get ingress -n "$NAMESPACE"
-        echo "⏳ ConfigMaps."
-        kubectl get configmaps -n "$NAMESPACE"
-        echo "⏳ Helm List."
-        helm list -n "$NAMESPACE"
-        echo "⏳ Pods."
+
+        echo "⏳ Ingress"
+        kubectl get ingress -n "$NAMESPACE" || true
+
+        echo "⏳ ConfigMaps"
+        kubectl get configmaps -n "$NAMESPACE" || true
+
+        echo "⏳ Helm releases"
+        helm list -n "$NAMESPACE" || true
+
+        echo "⏳ Pods"
         kubectl get pods -n "$NAMESPACE"
-        echo "⏳ All, Secret, Secret Store."
-        kubectl get -n "$NAMESPACE" all,secret,secretstore
-        echo "⏳ PVC."
+
+        echo "⏳ Secrets"
+        kubectl get secret -n "$NAMESPACE" || true
+
+        echo "⏳ PVCs"
         kubectl get pvc -n "$NAMESPACE"
 
-        echo "✅ All k8s Components listed."
+        echo "====================================="
+        echo "📦 Azure Container Registry inspection"
+        echo "ACR: $ACR_NAME"
+        echo "====================================="
 
+        if command -v az >/dev/null 2>&1; then
+          echo "✅ Azure CLI detected"
+
+          echo "📂 ACR repositories"
+          az acr repository list \
+            --name "$ACR_NAME" \
+            --output table || true
+
+          echo "🏷️ APP image tags ($APP_IMAGE)"
+          az acr repository show-tags \
+            --name "$ACR_NAME" \
+            --repository "$APP_IMAGE" \
+            --detail \
+            --orderby time_desc \
+            --output table || true
+
+          echo "🏷️ MIGRATION image tags ($MIG_IMAGE)"
+          az acr repository show-tags \
+            --name "$ACR_NAME" \
+            --repository "$MIG_IMAGE" \
+            --detail \
+            --orderby time_desc \
+            --output table || true
+        else
+          echo "⚠️ Azure CLI not available — skipping ACR inspection"
+        fi
+
+        echo "✅ Kubernetes and ACR checks completed."
