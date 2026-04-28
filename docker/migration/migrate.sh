@@ -14,14 +14,8 @@ mongorestore --host "${MONGO_HOST:-mongo}" --port 27017 /migration/dump
 
 
 echo Seeding assets in data..."
-
 mkdir -p /app/data/master
-
-echo "Contents of /migration/data:"
-ls -lah /migration/data || true
-
-cp -rv /migration/data/* /app/data/master
-
+cp -r /migration/data/master /app/data/master
 
 
 echo "📁 Seeding framework for tenant ${TENANT_ID} ..."
