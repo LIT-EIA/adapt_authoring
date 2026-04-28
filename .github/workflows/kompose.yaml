@@ -38,7 +38,7 @@ jobs:
           app-dockerfile: docker/app/Dockerfile
           mig-dockerfile: docker/migration/Dockerfile
           app-image-tag: 1
-          mig-image-tag: 1
+          mig-image-tag: 2
           build-context: .
 
 

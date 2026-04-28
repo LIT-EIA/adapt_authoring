@@ -5,13 +5,13 @@ metadata:
   namespace: adapt-authoring
 spec:
   backoffLimit: 1
-  ttlSecondsAfterFinished: 3600   # optional but recommended
+  ttlSecondsAfterFinished: 3600   # ??? Will get back to this
   template:
     spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_mig:1
+          image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_mig:2
           imagePullPolicy: Always
           env:
             - name: MONGO_HOST
