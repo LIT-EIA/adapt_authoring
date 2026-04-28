@@ -14,13 +14,9 @@ mongorestore --host "${MONGO_HOST:-mongo}" --port 27017 /migration/dump
 
 
 echo "📁 Seeding assets..."
-mkdir -p /app/data/master
+#mkdir -p /app/data/master
 
-if [ -d /migration/data ] && [ "$(ls -A /migration/data 2>/dev/null)" ]; then
-  cp -rv /migration/data/* /app/data/master/
-else
-  echo "⚠️  /migration/data is empty — no assets seeded"
-fi
+cp -r ./new-migrations/data/* /app/data/
 
 
 echo "📁 Seeding framework for tenant ${TENANT_ID} ..."
