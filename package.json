@@ -22,7 +22,8 @@
     "build:prod": "grunt build:prod",
     "build": "grunt build",
     "build:dev": "grunt build:dev",
-    "build:translate": "grunt build:translate"
+    "build:translate": "grunt build:translate", 
+    "start": "grunt build:translate && node server.js"
   },
   "dependencies": {
     "@moebius/http-graceful-shutdown": "^1.1.0",

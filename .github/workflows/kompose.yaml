@@ -28,6 +28,9 @@ jobs:
           roleId: ${{ env.roleId}}
           secretId: ${{ env.secretId }}
 
+      - name: Docker cleanup
+        run: docker system prune -af
+
       # Step 3: Build and push app image to ACR
       - name: Build and push app image to ACR
         uses: ./.github/actions/docker-build
@@ -38,7 +41,7 @@ jobs:
           app-dockerfile: docker/app/Dockerfile
           mig-dockerfile: docker/migration/Dockerfile
           app-image-tag: 1
-          mig-image-tag: 2
+          mig-image-tag: 1
           build-context: .
 
 
