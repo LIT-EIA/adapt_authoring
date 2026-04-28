@@ -13,10 +13,15 @@ echo "📦 Restoring MongoDB dump..."
 mongorestore --host "${MONGO_HOST:-mongo}" --port 27017 /migration/dump
 
 
-echo "📁 Seeding assets..."
-#mkdir -p /app/data/master
+echo Seeding assets in data..."
 
-cp -r ./new-migrations/data/* /app/data/
+mkdir -p /app/data/master
+
+echo "Contents of /migration/data:"
+ls -lah /migration/data || true
+
+cp -rv /migration/data/* /app/data/master
+
 
 
 echo "📁 Seeding framework for tenant ${TENANT_ID} ..."
