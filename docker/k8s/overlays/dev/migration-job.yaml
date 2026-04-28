@@ -11,7 +11,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_mig:1
+          image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_mig:dev
           imagePullPolicy: Always
           env:
             - name: MONGO_HOST

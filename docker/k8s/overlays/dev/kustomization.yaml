@@ -12,7 +12,7 @@ resources:
 images:
   - name: ghcr.io/lit-eia/adapt-authoring
     newName: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_app
-    newTag: "1"
+    newTag: "dev"
 
 patches:
   - path: mongo-init.yaml

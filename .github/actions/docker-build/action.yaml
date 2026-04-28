@@ -1,52 +1,5 @@
-name: Build and Push Image to ACR
-description: Build Docker images and push them to Azure Container Registry
-
-inputs:
-  acr-url:
-    description: ACR login server (e.g. myacr.azurecr.io)
-    required: true
-
-  # =============================
-  # APP IMAGE
-  # =============================
-  app-image-name:
-    description: App image name (e.g. cms_adapt_authoring_app)
-    required: true
-
-  app-image-tag:
-    description: App image tag (e.g. commit SHA)
-    required: true
-
-  app-dockerfile:
-    description: Path to app Dockerfile
-    required: false
-    default: docker/app/dockerfile
-
-  app-build-context:
-    description: App Docker build context
-    required: false
-    default: .
-
-  # =============================
-  # MIGRATION IMAGE (OPTIONAL)
-  # =============================
-  mig-image-name:
-    description: Migration image name (e.g. cms_adapt_authoring_mig)
-    required: false
-
-  mig-image-tag:
-    description: Migration image tag
-    required: false
-
-  migration-dockerfile:
-    description: Path to migration Dockerfile
-    required: false
-    default: docker/migration/Dockerfile
-
-  migration-build-context:
-    description: Migration Docker build context
-    required: false
-    default: .
+name: Build and Push Images to ACR
+description: Hard-coded build and push for Adapt app and migration images
 
 runs:
   using: composite
@@ -54,27 +7,25 @@ runs:
     # -----------------------------------
     # Build & push APP image
     # -----------------------------------
-    - name: Build and push APP image to ACR
+    - name: Build and push APP image
       shell: bash
       run: |
         set -euo pipefail
 
-        ACR_URL="${{ inputs.acr-url }}"
-        IMAGE_NAME="${{ inputs.app-image-name }}"
-        IMAGE_TAG="${{ inputs.app-image-tag }}"
-        DOCKERFILE="${{ inputs.app-dockerfile }}"
-        CONTEXT="${{ inputs.app-build-context }}"
+        ACR_URL="dtsrhpdevscedacr.azurecr.io"
+        IMAGE_NAME="cms_adapt_authoring_app"
+        IMAGE_TAG="dev"
+        DOCKERFILE="docker/app/Dockerfile"
+        CONTEXT="."
 
         IMAGE="${ACR_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
 
         echo "====================================="
-        echo "🐳 Building APP Docker image"
-        echo "Registry   : $ACR_URL"
-        echo "Image      : $IMAGE_NAME"
-        echo "Tag        : $IMAGE_TAG"
-        echo "Dockerfile : $DOCKERFILE"
-        echo "Context    : $CONTEXT"
+        echo "🐳 Building APP image"
+        echo "Image: $IMAGE"
         echo "====================================="
+
+        docker rmi "$IMAGE" || true
 
         docker build \
           --pull \
@@ -83,36 +34,32 @@ runs:
           -t "$IMAGE" \
           "$CONTEXT"
 
-        echo "📤 Pushing app image to ACR: $IMAGE"
         docker push "$IMAGE"
 
-        echo "✅ App image pushed successfully"
+        echo "✅ APP image pushed: $IMAGE"
 
     # -----------------------------------
-    # Build & push MIGRATION image (optional)
+    # Build & push MIGRATION image
     # -----------------------------------
-    - name: Build and push MIGRATION image to ACR
-      if: ${{ inputs.mig-image-name != '' }}
+    - name: Build and push MIGRATION image
       shell: bash
       run: |
         set -euo pipefail
 
-        ACR_URL="${{ inputs.acr-url }}"
-        IMAGE_NAME="${{ inputs.mig-image-name }}"
-        IMAGE_TAG="${{ inputs.mig-image-tag }}"
-        DOCKERFILE="${{ inputs.migration-dockerfile }}"
-        CONTEXT="${{ inputs.migration-build-context }}"
+        ACR_URL="dtsrhpdevscedacr.azurecr.io"
+        IMAGE_NAME="cms_adapt_authoring_mig"
+        IMAGE_TAG="dev"
+        DOCKERFILE="docker/migration/Dockerfile"
+        CONTEXT="."
 
         IMAGE="${ACR_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
 
         echo "====================================="
-        echo "🐳 Building MIGRATION Docker image"
-        echo "Registry   : $ACR_URL"
-        echo "Image      : $IMAGE_NAME"
-        echo "Tag        : $IMAGE_TAG"
-        echo "Dockerfile : $DOCKERFILE"
-        echo "Context    : $CONTEXT"
+        echo "🐳 Building MIGRATION image"
+        echo "Image: $IMAGE"
         echo "====================================="
+
+        docker rmi "$IMAGE" || true
 
         docker build \
           --pull \
@@ -121,7 +68,6 @@ runs:
           -t "$IMAGE" \
           "$CONTEXT"
 
-        echo "📤 Pushing migration image to ACR: $IMAGE"
         docker push "$IMAGE"
 
-        echo "✅ Migration image pushed successfully"
+        echo "✅ MIGRATION image pushed: $IMAGE"
