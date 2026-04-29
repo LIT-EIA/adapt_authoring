@@ -53,11 +53,6 @@ runs:
         if command -v az >/dev/null 2>&1; then
           echo "✅ Azure CLI detected"
 
-          echo "📂 ACR repositories"
-          az acr repository list \
-            --name "$ACR_NAME" \
-            --output table || true
-
           echo "🏷️ APP image tags ($APP_IMAGE)"
           az acr repository show-tags \
             --name "$ACR_NAME" \
