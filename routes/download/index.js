@@ -139,7 +139,7 @@ server.get('/storyboard/:tenant/:course/:filename', function(req, res) {
       res.writeHead(200, {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Length': stat.size,
-        'Content-Disposition': `attachment; filename*=UTF-8''${encoded}`
+        'Content-disposition': 'attachment; filename="' + encoded + '"'
       });
 
       fs.createReadStream(filepath).pipe(res);
