@@ -1,17 +1,21 @@
+# syntax=docker/dockerfile:1.7
+
 FROM mongo:6.0.11
 
-# Set the working directory
 WORKDIR /migration
 
-# Copy migration inputs from new-migrations
+# ✅ Copy files first
 COPY new-migrations/dump ./dump
 COPY new-migrations/data ./data
 COPY new-migrations/framework ./framework
-
-# Copy migration script
 COPY docker/migration/migrate.sh ./migrate.sh
 
-RUN chmod +x ./migrate.sh
+# ✅ Fix permissions + make script executable
+RUN chmod +x ./migrate.sh \
+    && chown -R mongodb:mongodb /migration
 
-# Command to execute the migration script
+# ✅ Drop privileges (Mongo image uses mongodb user)
+USER mongodb
+
+# ✅ Run migration
 CMD ["./migrate.sh"]

@@ -5,31 +5,58 @@ metadata:
   namespace: adapt-authoring
 spec:
   backoffLimit: 1
-  ttlSecondsAfterFinished: 3600   # ??? Will get back to this
+  ttlSecondsAfterFinished: 3600
+  activeDeadlineSeconds: 600
+
   template:
     spec:
       restartPolicy: OnFailure
+      automountServiceAccountToken: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+
       containers:
         - name: migrate
           image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_mig:dev
           imagePullPolicy: Always
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
           env:
             - name: MONGO_HOST
               value: mongo
+
           volumeMounts:
             - name: storage
               mountPath: /app/storage
-            - name: temp                    
-              mountPath: /app/temp  
+            - name: temp
+              mountPath: /app/temp
             - name: data
-              mountPath: /app/data        
+              mountPath: /app/data
+
       volumes:
         - name: storage
           persistentVolumeClaim:
             claimName: storage
-        - name: temp                      
+        - name: temp
           persistentVolumeClaim:
             claimName: temp
-        - name: data                      
+        - name: data
           persistentVolumeClaim:
             claimName: data
