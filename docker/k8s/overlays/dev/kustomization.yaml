@@ -39,6 +39,17 @@ patches:
     target:
       kind: Deployment
       name: app
+
+  - path: app-security-patch.yaml
+    target:
+      kind: Deployment
+      name: app
+
+  - path: app-deployment-probe.yaml
+    target:
+      kind: Deployment
+      name: app
+      
   
   
 
