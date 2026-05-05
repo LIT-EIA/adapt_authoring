@@ -6,13 +6,14 @@ spec:
   template:
     spec:
       initContainers:
+
+        # ✅ 1. Wait for migration job
         - name: wait-for-migration
           image: bitnami/kubectl:latest
           command:
             - sh
             - -c
             - |
-              
               echo "🔍 Checking for migration job..."
 
               if kubectl get job adapt-migration >/dev/null 2>&1; then
@@ -25,12 +26,16 @@ spec:
                 echo "ℹ️ Migration job not found. Skipping wait."
               fi
 
+        # ✅ 2. Fix permissions (THIS is what you need)
+        - name: fix-permissions
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              echo "Fixing permissions..."
+              chown -R 1000:1000 /app/temp /app/storage /app/data
 
-      containers:
-        - name: app
-          imagePullPolicy: Always
-          command: null
-          workingDir: null
           volumeMounts:
             - name: storage
               mountPath: /app/storage
@@ -38,4 +43,15 @@ spec:
               mountPath: /app/temp
             - name: data
               mountPath: /app/data
-              
+
+      containers:
+        - name: app
+          imagePullPolicy: Always
+
+          volumeMounts:
+            - name: storage
+              mountPath: /app/storage
+            - name: temp
+              mountPath: /app/temp
+            - name: data
+              mountPath: /app/data
