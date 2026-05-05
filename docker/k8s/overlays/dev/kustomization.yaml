@@ -49,6 +49,11 @@ patches:
     target:
       kind: Deployment
       name: app
+
+  - path: app-remove-command-patch.yaml
+    target:
+      kind: Deployment
+      name: app
       
   
   
