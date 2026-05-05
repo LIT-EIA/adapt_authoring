@@ -6,9 +6,10 @@ WORKDIR /app
 
 ENV PATH=/app/node_modules/.bin:$PATH
 
-COPY package.json package-lock.json* ./
+# ✅ Install git (required by app)
+RUN apk add --no-cache git
 
-# Use install for now (since lock file issue)
+COPY package.json package-lock.json* ./
 RUN npm install
 
 COPY . .
@@ -17,7 +18,9 @@ RUN mkdir -p conf \
     && [ -f conf/config.json ] || echo '{}' > conf/config.json
 
 RUN npm install grunt-cli
-RUN npx grunt build:prod
+
+RUN npx grunt build:translate
+
 
 
 ### 🔹 Runtime stage
@@ -27,8 +30,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PATH=/app/node_modules/.bin:$PATH
 
+# ✅ Install git here too
+RUN apk add --no-cache git
+
 COPY --from=build /app /app
 
+# ✅ Fix permissions
 RUN chown -R node:node /app
 
 USER node
