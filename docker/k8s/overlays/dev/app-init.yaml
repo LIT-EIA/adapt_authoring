@@ -94,12 +94,17 @@ spec:
             - name: tmp
               mountPath: /tmp         
             - name: app-config
-              mountPath: /app/conf
+              mountPath: /app/conf           
+            - name: home
+              mountPath: /home/node
 
       volumes:
         - name: tmp
           emptyDir: {}          
         - name: app-config
+          emptyDir: {}     
+        - name: home
           emptyDir: {}
+
 
 
