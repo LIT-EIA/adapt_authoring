@@ -73,7 +73,12 @@ spec:
               mountPath: /app/data
             - name: tmp
               mountPath: /tmp
+            - name: app-config
+              mountPath: /app/con
+
 
       volumes:
         - name: tmp
+          emptyDir: {}
+        - name: app-config
           emptyDir: {}
