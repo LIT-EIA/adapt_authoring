@@ -34,7 +34,7 @@ spec:
             - -c
             - |
               echo "Fixing permissions..."
-              chown -R 1000:1000 /app/temp /app/storage /app/data
+              chown -R 1000:1000 /app/temp /app/storage /app/data /app/db
 
 
           securityContext:
@@ -45,6 +45,8 @@ spec:
 
 
           volumeMounts:
+            - name: db
+              mountPath: /app/db          
             - name: storage
               mountPath: /app/storage
             - name: temp
@@ -57,6 +59,8 @@ spec:
           imagePullPolicy: Always
 
           volumeMounts:
+            - name: db
+              mountPath: /app/db          
             - name: storage
               mountPath: /app/storage
             - name: temp

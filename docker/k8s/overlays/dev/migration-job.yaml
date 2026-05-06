@@ -44,6 +44,8 @@ spec:
               value: mongo
 
           volumeMounts:
+            - name: db
+              mountPath: /app/db
             - name: storage
               mountPath: /app/storage
             - name: temp
@@ -52,6 +54,9 @@ spec:
               mountPath: /app/data
 
       volumes:
+        - name: db
+          persistentVolumeClaim:
+            claimName: db       
         - name: storage
           persistentVolumeClaim:
             claimName: storage
