@@ -37,7 +37,7 @@ jobs:
           role: adapt-authoring
           secrets: |
             adapt-authoring/data/AZURE K8S_CLUSTER_NAME | K8S_CLUSTER_NAME ;
-            secrets-github-k8s-auth-test/data/helloworld test | TEST_secret
+
 
           
 
