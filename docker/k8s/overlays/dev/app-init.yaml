@@ -69,7 +69,26 @@ spec:
 
           volumeMounts:
             - name: app-config
-              mountPath: /app/conf           
+              mountPath: /app/conf    
+
+        - name: build-translate
+          image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_app:dev
+          command:
+            - sh
+            - -c
+            - |
+              echo "Running translation build..."
+              npx grunt build:translate
+
+          volumeMounts:
+            - name: temp
+              mountPath: /app/temp  
+            - name: app-config
+              mountPath: /app/conf
+            - name: data
+              mountPath: /app/data
+            - name: storage
+              mountPath: /app/storage                                                
 
       containers:
         - name: app
