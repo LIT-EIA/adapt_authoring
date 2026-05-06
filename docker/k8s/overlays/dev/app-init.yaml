@@ -42,7 +42,7 @@ spec:
           securityContext:
             runAsUser: 0
             runAsNonRoot: false
-            allowPrivilegeEscalation: false
+            allowPrivilegeEscalation: false         
 
           volumeMounts:
             - name: storage
@@ -51,6 +51,25 @@ spec:
               mountPath: /app/temp
             - name: data
               mountPath: /app/data
+            
+        - name: init-config
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /app/conf
+              echo '{}' > /app/conf/config.json
+              chown -R 1000:1000 /app/con
+
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+
+          volumeMounts:
+            - name: app-config
+              mountPath: /app/conf           
 
       containers:
         - name: app
@@ -73,11 +92,14 @@ spec:
             - name: data
               mountPath: /app/data
             - name: tmp
-              mountPath: /tmp
-
-
+              mountPath: /tmp         
+            - name: app-config
+              mountPath: /app/conf
 
       volumes:
         - name: tmp
+          emptyDir: {}          
+        - name: app-config
           emptyDir: {}
+
 
