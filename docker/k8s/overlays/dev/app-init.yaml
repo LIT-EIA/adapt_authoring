@@ -22,11 +22,12 @@ spec:
             - |
               echo "🔍 Checking for migration job..."
 
-              if kubectl get job adapt-migration >/dev/null 2>&1; then
-                echo "✅ Migration job found. Waiting..."
-                kubectl wait --for=condition=complete job/adapt-migration --timeout=10m
+              if kubectl wait --for=condition=complete job/adapt-migration --timeout=10m; then
+                echo "✅ Migration completed"
               else
-                echo "ℹ️ Migration job not found."
+                echo "❌ Migration failed or timed out"
+                kubectl get job adapt-migration -o wide
+                exit 1
               fi
 
         - name: fix-permissions
@@ -73,12 +74,10 @@ spec:
               mountPath: /app/data
             - name: tmp
               mountPath: /tmp
-            - name: app-config
-              mountPath: /app/conf
+
 
 
       volumes:
         - name: tmp
           emptyDir: {}
-        - name: app-config
-          emptyDir: {}
+
