@@ -1,43 +1,31 @@
-/conf/config.json
-/conf/blocklist.json
-/conf/migrate.json
+# ✅ KEEP BUILD INPUTS, REMOVE ONLY RUNTIME / DEV STUFF
+
+# Runtime data (good to ignore)
 /data
-
-/frontend/build
-
-/frontend/src/modules/modules.js
-/frontend/src/plugins/plugins.js
-/frontend/src/templates/templates.js
-/frontend/src/plugins/debug
-
-/node_modules/
-/nbproject/
-/master/
-
-/plugins/content/component/versions/
-/plugins/content/component/componentcache/
-/plugins/content/extension/versions/
-/plugins/content/extension/extensioncache/
-/plugins/content/theme/versions/
-/plugins/content/theme/extensioncache/
-/plugins/content/menu/versions/
-/plugins/content/bower/bowercache/
-
 /temp
-/test/.testcache
-/testDataRoot
-/test/output/assets
-/test/output/frontend
-/test/output/unit
-/test/temp
 /tmp
 
-/.settings
+# Node
+/node_modules/
 
-#package-lock.json
+# Dev / test
+/test/
+/testDataRoot
+/test/output/
+/test/temp
 
+# IDE
 .idea
+.vscode
+.nbproject
+.settings
 .project
-.vscod
+
+# Git artifacts
 .env
 nohup.out
+
+# Plugin caches
+/plugins/**/versions/
+/plugins/**/cache/
+/plugins/**/bowercache/
