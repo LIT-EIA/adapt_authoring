@@ -11,7 +11,6 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
-      automountServiceAccountToken: false
 
       securityContext:
         runAsNonRoot: true
@@ -19,17 +18,37 @@ spec:
         runAsGroup: 999
         fsGroup: 999
 
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              chown -R 999:999 /app/data /app/storage /app/temp
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: storage
+              mountPath: /app/storage
+            - name: temp
+              mountPath: /app/temp
+
       containers:
         - name: migrate
           image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_mig:dev
           imagePullPolicy: Always
 
           securityContext:
-            runAsUser: 0
+            runAsUser: 999
             allowPrivilegeEscalation: false
             capabilities:
-              drop:
-                - ALL
+              drop: [ALL]
+            seccompProfile:
+              type: RuntimeDefault
 
           resources:
             requests:
@@ -44,8 +63,6 @@ spec:
               value: mongo
 
           volumeMounts:
-            - name: db
-              mountPath: /app/db
             - name: storage
               mountPath: /app/storage
             - name: temp
@@ -54,9 +71,6 @@ spec:
               mountPath: /app/data
 
       volumes:
-        - name: db
-          persistentVolumeClaim:
-            claimName: db       
         - name: storage
           persistentVolumeClaim:
             claimName: storage
