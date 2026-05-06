@@ -11,22 +11,6 @@ runs:
   steps:
 
     
-    - name: Get Vault Secrets
-      uses: hashicorp/vault-action@v3.4.0
-      id: secrets
-      with:
-        url: https://vault.dev-dp.admin.dts-stn.com
-        method: kubernetes
-        role: adapt-authoring
-        secrets: |
-          adapt-authoring/data/AZURE K8S_CLUSTER_NAME | K8S_CLUSTER_NAME ;
-
-
-    - name: echo secret
-      shell: bash
-      run: |
-        echo "${{ env.K8S_CLUSTER_NAME }}"
-
 
     - name: Check Kubernetes Components
       shell: bash
