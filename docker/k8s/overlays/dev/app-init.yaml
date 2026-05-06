@@ -60,7 +60,7 @@ spec:
             - |
               mkdir -p /app/conf
               echo '{}' > /app/conf/config.json
-              chown -R 1000:1000 /app/con
+              chown -R 1000:1000 /app/conf
 
           securityContext:
             runAsUser: 0
