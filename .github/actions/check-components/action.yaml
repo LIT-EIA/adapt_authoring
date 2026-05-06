@@ -10,7 +10,10 @@ runs:
   using: composite
   steps:
 
-    
+    - name: echo secret
+      shell: bash
+      run: |
+        echo "${{ env.K8S_CLUSTER_NAME }}"
 
     - name: Check Kubernetes Components
       shell: bash

@@ -27,7 +27,20 @@ jobs:
         with:
           roleId: ${{ env.roleId}}
           secretId: ${{ env.secretId }}
-        
+      
+      - name: Get Vault Secrets
+        uses: hashicorp/vault-action@v3.4.0
+        id: secrets
+        with:
+          url: https://vault.dev-dp.admin.dts-stn.com
+          method: kubernetes
+          role: adapt-authoring
+          secrets: |
+            adapt-authoring/data/AZURE K8S_CLUSTER_NAME | K8S_CLUSTER_NAME ;
+            secrets-github-k8s-auth-test/data/helloworld test | TEST_secret
+
+          
+
       # Step 3: Check Kubernetes Components
       - name: Check Kubernetes Components
         uses: ./.github/actions/check-components
