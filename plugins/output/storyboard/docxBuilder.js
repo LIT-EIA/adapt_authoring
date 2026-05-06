@@ -27,7 +27,7 @@ module.exports = async function buildDocx(data, outputPath, done) {
       new Paragraph({
         spacing: { after: 100 },
         text: data.course && data.course.title ? data.course.title : `${locPolyglot.t('app.course')}`,
-        heading: HeadingLevel.HEADING_1
+        heading: HeadingLevel.TITLE
       })
     );
 
