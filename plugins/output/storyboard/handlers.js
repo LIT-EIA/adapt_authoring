@@ -1,4 +1,5 @@
 const { Paragraph, TextRun } = require("docx");
+const path = require("path");
 const {
   safeText,
   addLabelValue,
@@ -7,6 +8,27 @@ const {
   renderStandardQuestionFeedback
 } = require("./utils");
 const { addImageBlock } = require("./images");
+
+function normalizeSrc(src) {
+  if (!src) return "";
+
+  // Remove query params
+  src = src.split("?")[0];
+
+  // Normalize slashes
+  src = src.replace(/\\/g, "/");
+
+  // Remove leading ./ or ../
+  src = src.replace(/^(\.\/|\.\.\/)+/, "");
+
+  // Ensure we anchor at course/assets/
+  const idx = src.indexOf("course/assets/");
+  if (idx !== -1) {
+    src = src.substring(idx);
+  }
+
+  return src.trim();
+}
 
 const HANDLERS = {
   text: function () { },
@@ -31,13 +53,24 @@ const HANDLERS = {
 
   media: function (children, c, assetMap, locPolyglot) {
     const m = c._media || {};
-    const lines = [];
-
     function addMediaLine(label, src) {
       if (!src || typeof src !== "string") return;
       const s = src.trim();
       if (!s) return;
-      lines.push(label + ": " + s);
+
+      children.push(new Paragraph({ text: "" }));
+      addLabelValue(children, label, s);
+
+      const normalized = normalizeSrc(src);
+      const filename = path.basename(normalized);
+      const asset = Object.values(assetMap).find(a => a.filename === filename);
+      const title = safeText(asset.title || "");
+      const desc = safeText(asset.description || "");
+      let originalLine = title || asset.filename;
+
+      addLabelValue(children, `${locPolyglot.t('app.name')} (Original)`, originalLine);
+      if (desc) addLabelValue(children, `Description`, desc);
+      children.push(new Paragraph({ text: "" }));
     }
 
     ["mp4", "webm", "ogv", "mp3", "poster", "source"].forEach(k => {
@@ -52,10 +85,6 @@ const HANDLERS = {
       if (!src) return;
       addMediaLine(lang ? "cc (" + lang + ")" : "cc", src);
     });
-
-    addLabelValue(children, locPolyglot.t("app.mediafiles"), lines.length ? lines.join("\n") : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`);
-    children.push(new Paragraph({ text: "" }));
-
     const tr = c._transcript;
     if (tr && typeof tr === "object") {
       const inline = !!tr._inlineTranscript;
