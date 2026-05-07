@@ -526,6 +526,22 @@ const HANDLERS = {
       }
 
       children.push(new Paragraph({ text: "" }));
+      let _pin = it._pin || {};
+      if (_pin && typeof _pin === "object") {
+        let relPin =
+          (_pin.src && _pin.src.trim()) ||
+          (_pin.large && _pin.large.trim()) ||
+          (_pin.small && _pin.small.trim()) ||
+          "";
+
+        let altPin = _pin.alt || "";
+
+        if (relPin) {
+          addLabelValue(children, locPolyglot.t("app.pin"), locPolyglot.t("app.item") + " " + (i+1));
+          await addImageBlock(children, relPin, altPin, assetMap, locPolyglot);
+          children.push(new Paragraph({ text: "" }));
+        }
+      }
     }
   },
 
@@ -560,13 +576,40 @@ const HANDLERS = {
           "";
 
         const alt = g.alt || "";
+        const hoverImg = g.srcHover && g.srcHover.trim() ? g.srcHover.trim() : null;
+        const visitedImg = g.srcVisited && g.srcVisited.trim() ? g.srcVisited.trim() : null;
 
         if (rel) {
+          children.push(new Paragraph({ text: "" }));
+          addLabelValue(children, "Image", "Popup");
           await addImageBlock(children, rel, alt, assetMap, locPolyglot);
+        }
+        if (hoverImg) {
+          addLabelValue(children, "Image", locPolyglot.t("app.hover"));
+          await addImageBlock(children, hoverImg, "", assetMap, locPolyglot);
+        }
+        if (visitedImg) {
+          addLabelValue(children, "Image", locPolyglot.t("app.visited"));
+          await addImageBlock(children, visitedImg, "", assetMap, locPolyglot);
         }
       }
 
       children.push(new Paragraph({ text: "" }));
+
+      const itemGraphic = it._itemGraphic || {};
+      if (itemGraphic && typeof itemGraphic === 'object') {
+        const relItemGraphic =
+          (itemGraphic.src && itemGraphic.src.trim()) ||
+          (itemGraphic.large && itemGraphic.large.trim()) ||
+          (itemGraphic.small && itemGraphic.small.trim()) ||
+          "";
+
+        const alt = itemGraphic.alt || "";
+
+        if (relItemGraphic) {
+          await addImageBlock(children, relItemGraphic, alt, assetMap, locPolyglot);
+        }
+      }
     }
   },
 
