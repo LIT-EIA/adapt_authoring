@@ -2078,6 +2078,7 @@
   "app.audiofile": "Fichier audio (mp3)",
   "app.exportdocument": "Exporter le document",
   "app.scaffold.config._tracking._RelaxedTrackingPercentage.label": "Pourcentage de Suivi allégé",
-  "app.scaffold.config._tracking._RelaxedTrackingPercentage.help": "Pourcentage du cours que l'apprenant doit atteindre pour que le statut d'achèvement soit envoyé au SGA lorsque le Suivi allégé est activé."
-
+  "app.scaffold.config._tracking._RelaxedTrackingPercentage.help": "Pourcentage du cours que l'apprenant doit atteindre pour que le statut d'achèvement soit envoyé au SGA lorsque le Suivi allégé est activé.",
+  "app.visited": "Visité",
+  "app.hover": "Survol"
 }

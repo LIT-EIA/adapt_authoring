@@ -1,4 +1,5 @@
 const { Paragraph, TextRun } = require("docx");
+const path = require("path");
 const {
   safeText,
   addLabelValue,
@@ -7,6 +8,27 @@ const {
   renderStandardQuestionFeedback
 } = require("./utils");
 const { addImageBlock } = require("./images");
+
+function normalizeSrc(src) {
+  if (!src) return "";
+
+  // Remove query params
+  src = src.split("?")[0];
+
+  // Normalize slashes
+  src = src.replace(/\\/g, "/");
+
+  // Remove leading ./ or ../
+  src = src.replace(/^(\.\/|\.\.\/)+/, "");
+
+  // Ensure we anchor at course/assets/
+  const idx = src.indexOf("course/assets/");
+  if (idx !== -1) {
+    src = src.substring(idx);
+  }
+
+  return src.trim();
+}
 
 const HANDLERS = {
   text: function () { },
@@ -31,13 +53,24 @@ const HANDLERS = {
 
   media: function (children, c, assetMap, locPolyglot) {
     const m = c._media || {};
-    const lines = [];
-
     function addMediaLine(label, src) {
       if (!src || typeof src !== "string") return;
       const s = src.trim();
       if (!s) return;
-      lines.push(label + ": " + s);
+
+      children.push(new Paragraph({ text: "" }));
+      addLabelValue(children, label, s);
+
+      const normalized = normalizeSrc(src);
+      const filename = path.basename(normalized);
+      const asset = Object.values(assetMap).find(a => a.filename === filename);
+      const title = safeText(asset.title || "");
+      const desc = safeText(asset.description || "");
+      let originalLine = title || asset.filename;
+
+      addLabelValue(children, `${locPolyglot.t('app.name')} (Original)`, originalLine);
+      if (desc) addLabelValue(children, `Description`, desc);
+      children.push(new Paragraph({ text: "" }));
     }
 
     ["mp4", "webm", "ogv", "mp3", "poster", "source"].forEach(k => {
@@ -52,10 +85,6 @@ const HANDLERS = {
       if (!src) return;
       addMediaLine(lang ? "cc (" + lang + ")" : "cc", src);
     });
-
-    addLabelValue(children, locPolyglot.t("app.mediafiles"), lines.length ? lines.join("\n") : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`);
-    children.push(new Paragraph({ text: "" }));
-
     const tr = c._transcript;
     if (tr && typeof tr === "object") {
       const inline = !!tr._inlineTranscript;
@@ -497,6 +526,22 @@ const HANDLERS = {
       }
 
       children.push(new Paragraph({ text: "" }));
+      let _pin = it._pin || {};
+      if (_pin && typeof _pin === "object") {
+        let relPin =
+          (_pin.src && _pin.src.trim()) ||
+          (_pin.large && _pin.large.trim()) ||
+          (_pin.small && _pin.small.trim()) ||
+          "";
+
+        let altPin = _pin.alt || "";
+
+        if (relPin) {
+          addLabelValue(children, locPolyglot.t("app.pin"), locPolyglot.t("app.item") + " " + (i+1));
+          await addImageBlock(children, relPin, altPin, assetMap, locPolyglot);
+          children.push(new Paragraph({ text: "" }));
+        }
+      }
     }
   },
 
@@ -531,13 +576,40 @@ const HANDLERS = {
           "";
 
         const alt = g.alt || "";
+        const hoverImg = g.srcHover && g.srcHover.trim() ? g.srcHover.trim() : null;
+        const visitedImg = g.srcVisited && g.srcVisited.trim() ? g.srcVisited.trim() : null;
 
         if (rel) {
+          children.push(new Paragraph({ text: "" }));
+          addLabelValue(children, "Image", "Popup");
           await addImageBlock(children, rel, alt, assetMap, locPolyglot);
+        }
+        if (hoverImg) {
+          addLabelValue(children, "Image", locPolyglot.t("app.hover"));
+          await addImageBlock(children, hoverImg, "", assetMap, locPolyglot);
+        }
+        if (visitedImg) {
+          addLabelValue(children, "Image", locPolyglot.t("app.visited"));
+          await addImageBlock(children, visitedImg, "", assetMap, locPolyglot);
         }
       }
 
       children.push(new Paragraph({ text: "" }));
+
+      const itemGraphic = it._itemGraphic || {};
+      if (itemGraphic && typeof itemGraphic === 'object') {
+        const relItemGraphic =
+          (itemGraphic.src && itemGraphic.src.trim()) ||
+          (itemGraphic.large && itemGraphic.large.trim()) ||
+          (itemGraphic.small && itemGraphic.small.trim()) ||
+          "";
+
+        const alt = itemGraphic.alt || "";
+
+        if (relItemGraphic) {
+          await addImageBlock(children, relItemGraphic, alt, assetMap, locPolyglot);
+        }
+      }
     }
   },
 
