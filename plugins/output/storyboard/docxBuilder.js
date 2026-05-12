@@ -3,7 +3,8 @@ const {
   Document,
   Packer,
   Paragraph,
-  HeadingLevel
+  HeadingLevel,
+  TextRun
 } = require("docx");
 
 const { safeText, addLabelValue } = require("./utils");
@@ -27,7 +28,7 @@ module.exports = async function buildDocx(data, outputPath, done) {
       new Paragraph({
         spacing: { after: 100 },
         text: data.course && data.course.title ? data.course.title : `${locPolyglot.t('app.course')}`,
-        heading: HeadingLevel.HEADING_1
+        heading: HeadingLevel.TITLE
       })
     );
 
@@ -87,9 +88,19 @@ module.exports = async function buildDocx(data, outputPath, done) {
             const compTitle = safeText(c.title || c.displayTitle || "");
             children.push(
               new Paragraph({
-                spacing: { after: 100 },
-                text: compTitle || `(${locPolyglot.t('app.notitle')})`,
-                style: "IntenseQuote"
+                spacing: { before: 100, after: 100 },
+                heading: HeadingLevel.HEADING_5,
+                children: [
+                  new TextRun({
+                    text: compTitle || `(${locPolyglot.t('app.notitle')})`,
+                    font: "Arial",
+                    size: 24,
+                    italic: true,
+                    bold: true,
+                    underline: true,
+                    color: "4472C4"
+                  })
+                ]
               })
             );
 

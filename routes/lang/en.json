@@ -690,5 +690,7 @@
   "app.unknownspeaker": "Unknown speaker",
   "app.dialogue": "Dialogue",
   "app.audiofile": "Audio file (mp3)",
-  "app.exportdocument": "Export document"
+  "app.exportdocument": "Export document",
+  "app.visited": "Visited",
+  "app.hover": "Hover"
 }
