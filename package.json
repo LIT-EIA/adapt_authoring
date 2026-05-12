@@ -13,7 +13,7 @@
   },
   "main": "index",
   "engines": {
-    "node": "12 || 14"
+    "node": "20 || 22"
   },
   "scripts": {
     "test": "grunt test && node test/output/reportserver || node test/output/reportserver",
@@ -38,6 +38,7 @@
     "connect-mongodb-session": "^2.3.3",
     "consolidate": "^0.15.1",
     "cookie-parser": "^1.4.4",
+    "docx": "^9.6.1",
     "email-templates": "^6.0.2",
     "errorhandler": "^1.5.1",
     "express": "^4.17.1",
@@ -59,6 +60,8 @@
     "handlebars": "^4.7.7",
     "handlebars-form-helpers": "^0.1.4",
     "hbs": "^4.0.5",
+    "html-to-text": "^8.2.1",
+    "image-size": "^1.0.0",
     "inquirer": "^7.3.0",
     "jshint-stylish": "^2.2.1",
     "json-schema-mapper": "0.0.2",
