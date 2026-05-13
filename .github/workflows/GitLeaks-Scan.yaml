@@ -1,4 +1,4 @@
-name: Delete Kubernetes Components 
+name: GitLeaks Scan 
 
 on:
   workflow_dispatch: # Allows manual triggering
