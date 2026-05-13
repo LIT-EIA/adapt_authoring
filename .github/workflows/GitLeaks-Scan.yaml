@@ -11,7 +11,7 @@ env:
   roleId: ${{ secrets.APPROLE_ROLE_ID }}
   secretId: ${{ secrets.APPROLE_SECRET_ID }}
   GITHUB_TOKEN: ${{ secrets.CMS_GITHUB_TOKEN }}
-  GITLEAKS_LICENSE: ${{ secrets.CMS_GITLEAKS_LICENSE}}
+  GITLEAKS_LICENSE: ${{ secrets.CMS_GITLEAKS_LICENSE }}
 
 
 jobs:
