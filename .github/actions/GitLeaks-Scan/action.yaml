@@ -1,0 +1,35 @@
+name: GitLeaks Scan
+description: Gitleaks scans code for secrets
+
+inputs:
+  namespace:
+    description: Kubernetes namespace to delete Components
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name:  Delete Kubernetes Components
+      shell: bash
+      run: |
+        NAMESPACE="${{ inputs.namespace }}"
+
+        echo "====================================="
+        echo "🔄 Delete Components"
+        echo "Namespace: $NAMESPACE"
+        echo "====================================="
+        kubectl delete deployment app -n "$NAMESPACE" || true
+        kubectl delete deployment mongo -n "$NAMESPACE" || true
+        kubectl delete service app -n "$NAMESPACE" || true
+        kubectl delete service mongo -n "$NAMESPACE" || true
+        kubectl delete job adapt-migration -n "$NAMESPACE" || true
+        kubectl delete pvc db -n "$NAMESPACE" || true
+        kubectl delete pvc storage -n "$NAMESPACE" || true
+        kubectl delete pvc temp -n "$NAMESPACE" || true
+        kubectl delete pvc data -n "$NAMESPACE" || true
+        
+
+ 
+
+
+
