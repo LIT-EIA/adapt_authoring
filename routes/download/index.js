@@ -127,7 +127,8 @@ server.get('/storyboard/:tenant/:course/:filename', function(req, res) {
       return handleError(err || new DownloadPermissionError(), res);
     }
     var tempDir = configuration.tempDir;
-    var filepath = path.join(tempDir, tenantId, courseId, 'storyboard', filename);
+    var folderPath = path.join(tempDir, tenantId, Constants.Folders.Exports, 'storyboard', currentUser._id);
+    var filepath = path.join(tempDir, tenantId, Constants.Folders.Exports, 'storyboard', currentUser._id, filename);
 
     fs.stat(filepath, function(err, stat) {
       if (err || !stat) {
@@ -143,6 +144,16 @@ server.get('/storyboard/:tenant/:course/:filename', function(req, res) {
       });
 
       fs.createReadStream(filepath).pipe(res);
+      res.on('finish', () => {
+        fs.rm(folderPath, { recursive: true, force: true }, (err) => {
+          if (err) {
+            logger.log('error', 'Failed to remove storyboard folder: ' + folderPath);
+            logger.log('error', err);
+          } else {
+            logger.log('info', 'Removed storyboard folder: ' + folderPath);
+          }
+        });
+      });
     });
   });
 
