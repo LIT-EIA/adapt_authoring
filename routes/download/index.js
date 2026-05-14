@@ -116,6 +116,9 @@ server.get('/storyboard/:tenant/:course/:filename', function(req, res) {
   var tenantId = req.params.tenant;
   var courseId = req.params.course;
   var filename = req.params.filename;
+  if (filename) {
+    filename = decodeURIComponent(filename)
+  };
 
   var currentUser = usermanager.getCurrentUser();
   if (!currentUser || currentUser.tenant._id !== tenantId) {

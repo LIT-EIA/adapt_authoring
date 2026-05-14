@@ -181,6 +181,7 @@ define(function(require) {
 
         // SUCCESS → trigger file download
         var filename = data.payload.filename;
+        filename = encodeURIComponent(filename);
 
         // Use hidden form to download
         var $downloadForm = $('#downloadForm');
