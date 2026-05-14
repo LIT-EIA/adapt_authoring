@@ -31,11 +31,10 @@ jobs:
           distribution: 'temurin'
       
       - name: Build project
-        run: ./mvnw clean compile  # Use ./gradlew build if using Gradle
+        run: mvn clean compile  # Use ./gradlew build if using Gradle
       
       - uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
-
 
