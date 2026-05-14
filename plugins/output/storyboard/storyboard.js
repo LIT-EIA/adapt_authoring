@@ -27,7 +27,7 @@ module.exports = function storyboard(courseId, mode, req, res, next) {
   let sanitized = null;
 
   const tempDir = config.tempDir;
-  const outputFolder = path.join(tempDir, tenantId.toString(), courseId.toString(), 'storyboard');
+  const outputFolder = path.join(tempDir, tenantId.toString(), Constants.Folders.Exports, 'storyboard', user._id);
 
   async.waterfall([
     // 1. Prepare Environment
