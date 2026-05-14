@@ -24,19 +24,16 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          java-version: '11'  # Adjust to your project's Java version
-          distribution: 'temurin'
+          node-version: '18'  # Adjust to your project's Node version
       
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@v4
-        with:
-          maven-version: 3.8.1
+      - name: Install dependencies
+        run: npm install
       
       - name: Build project
-        run: mvn clean compile  # Use ./gradlew build if using Gradle
+        run: npm run build
       
       - uses: SonarSource/sonarqube-scan-action@v6
         env:
