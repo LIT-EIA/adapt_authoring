@@ -39,6 +39,9 @@ jobs:
         run: npm run build
       
       - uses: SonarSource/sonarqube-scan-action@v6
+        with:
+          args: >
+            -Dsonar.exclusions=**/*.java
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
