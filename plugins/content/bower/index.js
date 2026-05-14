@@ -1087,118 +1087,124 @@ function handleUploadedPlugin (req, res, next) {
       return next(new PluginPackageError(app.polyglot.t('app.fileuploaderror')));
     }
 
-    // try unzipping
     var outputPath = file.path + '_unzipped';
     var rs = fs.createReadStream(file.path);
-    var ws = unzip.Extract({ path: outputPath });
-    rs.on('error', function (error) {
-      return next(error);
-    });
-    ws.on('error', function (error) {
-      return next(error);
-    });
-    ws.on('close', function () {
-      // enumerate output directory and search for bower.json
-      fs.readdir(outputPath, function (err, files) {
-        if (err) {
-          return next(err);
+
+    rs
+      .pipe(unzip.Parse())
+      .on('entry', function (entry) {
+        var fileName = entry.path;
+        var fullPath = path.join(outputPath, fileName);
+
+        if (entry.type === 'Directory') {
+          fs.ensureDirSync(fullPath);
+          entry.autodrain();
+        } else {
+          fs.ensureDirSync(path.dirname(fullPath));
+          entry.pipe(fs.createWriteStream(fullPath));
         }
+      })
+      .on('close', function () {
+          // enumerate output directory and search for bower.json
+          fs.readdir(outputPath, function (err, files) {
+            if (err) {
+              return next(err);
+            }
 
-        var packageJson;
-        var canonicalDir;
+            var packageJson;
+            var canonicalDir;
 
-        // Read over each directory checking for the correct one that contains a bower.json file
-        fs.readdir(outputPath, function (err, directoryList) {
+            // Read over each directory checking for the correct one that contains a bower.json file
+            fs.readdir(outputPath, function (err, directoryList) {
 
-          async.some(directoryList, function(directory, asyncCallback) {
-            var bowerPath = path.join(outputPath, directory, 'bower.json');
+              async.some(directoryList, function(directory, asyncCallback) {
+                var bowerPath = path.join(outputPath, directory, 'bower.json');
 
-            fs.exists(bowerPath, function(exists) {
-              if (exists) {
-                canonicalDir = path.join(outputPath, directory);
-                try {
-                  packageJson = require(bowerPath);
-                } catch (error) {
-                  logger.log('error', 'failed to find bower file at ' + bowerPath, error);
-                  return asyncCallback();
+                fs.exists(bowerPath, function(exists) {
+                  if (exists) {
+                    canonicalDir = path.join(outputPath, directory);
+                    try {
+                      packageJson = require(bowerPath);
+                    } catch (error) {
+                      logger.log('error', 'failed to find bower file at ' + bowerPath, error);
+                      return asyncCallback();
+                    }
+                    asyncCallback(true);
+                  } else {
+                    asyncCallback();
+                  }
+                });
+
+              }, function(hasResults) {
+                if (!hasResults) {
+                  return next(app.polyglot.t('app.cannotfindbower'));
                 }
-                asyncCallback(true);
-              } else {
-                asyncCallback();
-              }
-            });
 
-          }, function(hasResults) {
-            if (!hasResults) {
-              return next(app.polyglot.t('app.cannotfindbower'));
-            }
-
-            if (!packageJson) {
-              return next(app.polyglot.t('app.unrecognisedplugin'));
-            }
-
-            // extract the plugin type from the package
-            var pluginType = extractPluginType(packageJson);
-            if (!pluginType) {
-              return next(new PluginPackageError(app.polyglot.t('app.unrecognisedpluginforpackage', {
-                package: packageJson.name
-              })));
-            }
-
-            // mark as a locally installed package
-            packageJson.isLocalPackage = true;
-
-            // construct packageInfo
-            var packageInfo = {
-              canonicalDir: canonicalDir,
-              pkgMeta: packageJson
-            };
-
-            installHelpers.getInstalledFrameworkVersion(function(error, frameworkVersion) {
-              if(error) {
-                return next(error);
-              }
-              // Check if the framework has been defined on the plugin and that it's not compatible
-              if (packageInfo.pkgMeta.framework && !semver.satisfies(semver.clean(frameworkVersion), packageInfo.pkgMeta.framework, { includePrerelease: true })) {
-                return next(new PluginPackageError(app.polyglot.t('app.incompatibleframework', {
-                  framework: frameworkVersion
-                })));
-              }
-              app.contentmanager.getContentPlugin(pluginType, function (error, contentPlugin) {
-                if (error) {
-                  return next(error);
+                if (!packageJson) {
+                  return next(app.polyglot.t('app.unrecognisedplugin'));
                 }
-                addPackage(contentPlugin.bowerConfig, packageInfo, { strict: true }, function (error, results) {
-                  if (error) {
+
+                // extract the plugin type from the package
+                var pluginType = extractPluginType(packageJson);
+                if (!pluginType) {
+                  return next(new PluginPackageError(app.polyglot.t('app.unrecognisedpluginforpackage', {
+                    package: packageJson.name
+                  })));
+                }
+
+                // mark as a locally installed package
+                packageJson.isLocalPackage = true;
+
+                // construct packageInfo
+                var packageInfo = {
+                  canonicalDir: canonicalDir,
+                  pkgMeta: packageJson
+                };
+
+                installHelpers.getInstalledFrameworkVersion(function(error, frameworkVersion) {
+                  if(error) {
                     return next(error);
                   }
-
-                  function sendResponse() {
-                    res.statusCode = 200;
-                    return res.json({
-                      success: true,
-                      pluginType: pluginType
-                    });
+                  if (packageInfo.pkgMeta.framework && !semver.satisfies(semver.clean(frameworkVersion), packageInfo.pkgMeta.framework, { includePrerelease: true })) {
+                    return next(new PluginPackageError(app.polyglot.t('app.incompatibleframework', {
+                      framework: frameworkVersion
+                    })));
                   }
+                  app.contentmanager.getContentPlugin(pluginType, function (error, contentPlugin) {
+                    if (error) {
+                      return next(error);
+                    }
+                    addPackage(contentPlugin.bowerConfig, packageInfo, { strict: true }, function (error, results) {
+                      if (error) {
+                        return next(error);
+                      }
 
-                  Promise.all([
-                    fs.remove(file.path),
-                    fs.remove(outputPath)
-                  ]).then(sendResponse).catch(sendResponse);
+                      function sendResponse() {
+                        res.statusCode = 200;
+                        return res.json({
+                          success: true,
+                          pluginType: pluginType
+                        });
+                      }
 
+                      Promise.all([
+                        fs.remove(file.path),
+                        fs.remove(outputPath)
+                      ]).then(sendResponse).catch(sendResponse);
+
+                    });
+                  });
                 });
+
               });
+
             });
 
           });
-
-        });
-
+      })
+      .on('error', function (error) {
+        return next(error);
       });
-    });
-    rs.pipe(ws);
-
-    // response should be sent by one of the above handlers
   });
 }
 
