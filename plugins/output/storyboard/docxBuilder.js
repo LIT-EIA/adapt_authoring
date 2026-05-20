@@ -11,6 +11,7 @@ const { safeText, addLabelValue } = require("./utils");
 const HANDLERS = require("./handlers");
 const polyglot = require('node-polyglot');
 var origin = require('../../../lib/application');
+const { addImageBlock } = require("./images");
 var app = origin();
 
 /* --- MAIN BUILDER --- */
@@ -43,6 +44,41 @@ module.exports = async function buildDocx(data, outputPath, done) {
           heading: HeadingLevel.HEADING_1
         })
       );
+      const pageInfo = p.page;
+      if (pageInfo) {
+        const bodyRaw = pageInfo.body || "";
+        addLabelValue(
+          children,
+          locPolyglot.t('app.bodytext'),
+          bodyRaw ? bodyRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
+        );
+
+        const pageBodyRaw = pageInfo.pageBody || "";
+        addLabelValue(
+          children,
+          `${locPolyglot.t('app.bodytext')} (page)`,
+          pageBodyRaw ? pageBodyRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
+        );
+
+        const instrRaw = pageInfo.instruction || "";
+        addLabelValue(
+          children,
+          "Instructions",
+          instrRaw ? instrRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
+        );
+
+        const g = pageInfo._graphic || {};
+        const rel =
+          (g.large && g.large.trim()) ||
+          (g.small && g.small.trim()) ||
+          (g.src && g.src.trim()) ||
+          "";
+        const alt = g.alt || "";
+
+        if (rel) {
+          await addImageBlock(children, rel, alt, assetMap, locPolyglot);
+        }
+      }
 
       for (let j = 0; j < p.articles.length; j++) {
         const a = p.articles[j];
@@ -55,6 +91,22 @@ module.exports = async function buildDocx(data, outputPath, done) {
             heading: HeadingLevel.HEADING_2
           })
         );
+        const articleInfo = a.article;
+        if (articleInfo) {
+          const bodyRaw = articleInfo.body || "";
+          addLabelValue(
+            children,
+            locPolyglot.t('app.bodytext'),
+            bodyRaw ? bodyRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
+          );
+
+          const instrRaw = articleInfo.instruction || "";
+          addLabelValue(
+            children,
+            "Instructions",
+            instrRaw ? instrRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
+          );
+        }
 
         for (let k = 0; k < a.blocks.length; k++) {
           const b = a.blocks[k];
@@ -67,6 +119,22 @@ module.exports = async function buildDocx(data, outputPath, done) {
               heading: HeadingLevel.HEADING_3
             })
           );
+          const blockInfo = b.block;
+          if (blockInfo) {
+            const bodyRaw = blockInfo.body || "";
+            addLabelValue(
+              children,
+              locPolyglot.t('app.bodytext'),
+              bodyRaw ? bodyRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
+            );
+
+            const instrRaw = blockInfo.instruction || "";
+            addLabelValue(
+              children,
+              "Instructions",
+              instrRaw ? instrRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
+            );
+          }
 
           for (let l = 0; l < b.components.length; l++) {
             const c = b.components[l];
