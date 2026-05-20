@@ -139,7 +139,8 @@ module.exports = async function buildDocx(data, outputPath, done) {
           for (let l = 0; l < b.components.length; l++) {
             const c = b.components[l];
 
-            const ctype = c.type || c._component || `(${locPolyglot.t('app.unknown')})`;
+            const ctypeKey = c.type || c._component ? `app.${c.type || c._component}` : null;
+            const ctype =  `${locPolyglot.t(ctypeKey)}` || `(${locPolyglot.t('app.unknown')})`;
             const layout = c.layout || c._layout || c._layoutName || "";
             const layoutKey = layout ? `app.layout${layout}` : "";
             const headingLine =
