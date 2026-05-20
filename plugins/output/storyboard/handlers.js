@@ -354,7 +354,7 @@ const HANDLERS = {
       addLabelValue(children, locPolyglot.t("app.correctanswer"), String(c._correctAnswer));
     }
     if (c._correctRange !== undefined && c._correctRange !== null) {
-      addLabelValue(children, locPolyglot.t("app.correctrange"), String(c._correctRange));
+      addLabelValue(children, locPolyglot.t("app.correctrange"), JSON.stringify(c._correctRange));
     }
 
     if (c._attempts !== undefined && c._attempts !== null) {
