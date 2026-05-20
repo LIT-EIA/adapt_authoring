@@ -692,5 +692,21 @@
   "app.audiofile": "Audio file (mp3)",
   "app.exportdocument": "Export document",
   "app.visited": "Visited",
-  "app.hover": "Hover"
+  "app.hover": "Hover",
+  "app.dnd-multiple": "Drag and Drop Multiple",
+  "app.gmcq": "Graphical Multiple Choice Question",
+  "app.graphic": "Graphic",
+  "app.guidedtour": "Guided Tour",
+  "app.hotgraphic": "Hot Graphic",
+  "app.hotgrid": "Hotgrid",
+  "app.imageSlider": "Image Slider",
+  "app.matching": "Matching Question",
+  "app.media": "Media",
+  "app.mcq": "Multiple Choice Question",
+  "app.narrative": "Narrative",
+  "app.openTextInput": "Open Text Input",
+  "app.quicknav": "Quick navigation",
+  "app.slider": "Slider",
+  "app.talk": "Talk",
+  "app.text": "Text"
 }

@@ -2081,5 +2081,21 @@
   "app.scaffold.config._tracking._RelaxedTrackingPercentage.label": "Pourcentage de Suivi allégé",
   "app.scaffold.config._tracking._RelaxedTrackingPercentage.help": "Pourcentage du cours que l'apprenant doit atteindre pour que le statut d'achèvement soit envoyé au SGA lorsque le Suivi allégé est activé.",
   "app.visited": "Visité",
-  "app.hover": "Survol"
+  "app.hover": "Survol",
+  "app.dnd-multiple": "Glisser-déposer de multiples",
+  "app.gmcq": "Question à choix multiple avec image",
+  "app.graphic": "Image",
+  "app.guidedtour": "Visite guidée",
+  "app.hotgraphic": "Composant d'image avec zones cliquables",
+  "app.hotgrid": "Grille d'images cliquables",
+  "app.imageSlider": "Curseur d'image",
+  "app.matching": "Question d'association",
+  "app.media": "Média",
+  "app.mcq": "Question à choix multiple",
+  "app.narrative": "Narration",
+  "app.openTextInput": "Réponse ouverte",
+  "app.quicknav": "Navigation rapide",
+  "app.slider": "Échelle",
+  "app.talk": "Dialogue",
+  "app.text": "Texte"
 }
