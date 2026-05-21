@@ -67,6 +67,20 @@ module.exports = async function buildDocx(data, outputPath, done) {
           instrRaw ? instrRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
         );
 
+        const linkTextRaw = pageInfo.linkText || "";
+        addLabelValue(
+          children,
+          locPolyglot.t('app.scaffold.page.general.linkText.label'),
+          linkTextRaw ? linkTextRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
+        );
+
+        const durationRaw = pageInfo.duration || "";
+        addLabelValue(
+          children,
+          locPolyglot.t('app.scaffold.page.general.duration.label'),
+          durationRaw ? durationRaw : `(${locPolyglot.t('app.scaffold._bubbledirection.none.variable')})`
+        );
+
         const g = pageInfo._graphic || {};
         const rel =
           (g.large && g.large.trim()) ||

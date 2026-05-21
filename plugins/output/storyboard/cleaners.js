@@ -21,6 +21,8 @@ function cleanPage(p) {
     instruction: cleanHTML(p.instruction || ""),
     body: cleanHTML(p.body || ""),
     pageBody: cleanHTML(p.pageBody || ""),
+    linkText: cleanHTML(p.linkText || ""),
+    duration: cleanHTML(p.duration || 0),
     _graphic: p._graphic
   };
 }

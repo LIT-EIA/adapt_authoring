@@ -708,5 +708,7 @@
   "app.quicknav": "Quick navigation",
   "app.slider": "Slider",
   "app.talk": "Talk",
-  "app.text": "Text"
+  "app.text": "Text",
+  "app.scaffold.page.general.linkText.label": "Link Text",
+  "app.scaffold.page.general.duration.label": "Duration"
 }
