@@ -62,7 +62,7 @@
     "hbs": "^4.0.5",
     "html-to-text": "^8.2.1",
     "image-size": "^1.0.0",
-    "inquirer": "^7.3.0",
+    "inquirer": "^14.0.0",
     "jshint-stylish": "^2.2.1",
     "json-schema-mapper": "0.0.2",
     "junk": "^3.1.0",
