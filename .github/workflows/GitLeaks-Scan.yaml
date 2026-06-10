@@ -1,10 +1,12 @@
-name: GitLeaks Scan 
+name: Adapt Authoring Repository GitLeaks Scan
 
 on:
   workflow_dispatch: # Allows manual triggering
   push:
     branches:
-      - main
+      - container
+  schedule:
+    - cron: '0 12 * * 1-5'  # Mon–Fri at 12:00 UTC
 
 env:
   NAMESPACE: adapt-authoring
@@ -12,7 +14,6 @@ env:
   secretId: ${{ secrets.APPROLE_SECRET_ID }}
   GITHUB_TOKEN: ${{ secrets.CMS_GITHUB_TOKEN }}
   GITLEAKS_LICENSE: ${{ secrets.CMS_GITLEAKS_LICENSE }}
-
 
 jobs:
   scan:
@@ -22,6 +23,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}

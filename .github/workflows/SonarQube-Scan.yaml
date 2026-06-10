@@ -1,10 +1,12 @@
-name: SonarQube  Scan 
+name: Adapt Authoring Repository GitLeaks Scan
 
 on:
   workflow_dispatch: # Allows manual triggering
   push:
     branches:
-      - main
+      - container
+  schedule:
+    - cron: '0 13 * * 1-5'  # Mon–Fri at 13:00 UTC
 
 env:
   NAMESPACE: adapt-authoring
