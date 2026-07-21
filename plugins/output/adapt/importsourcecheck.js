@@ -5,6 +5,7 @@ const bytes = require('bytes');
 const configuration = require('../../../lib/configuration');
 const Constants = require('../../../lib/outputmanager').Constants;
 const database = require("../../../lib/database");
+const formidableHelpers = require('../../../lib/formidableHelpers');
 const fs = require("fs-extra");
 const helpers = require('./outputHelpers');
 const IncomingForm = require('formidable').IncomingForm;
@@ -91,6 +92,9 @@ function ImportSourceCheck(req, done) {
             }
             return cb2(error);
           }
+          var normalized = formidableHelpers.normalizeFormResult(fields, files);
+          fields = normalized.fields;
+          files = normalized.files;
           var formAssetDirs = (fields.formAssetFolders && fields.formAssetFolders.length) ? fields.formAssetFolders.split(',') : [];
           importInfo['formTags'] = (fields.tags && fields.tags.length) ? fields.tags.split(',') : [];
           cleanFormAssetDirs = formAssetDirs.map(item => item.trim());

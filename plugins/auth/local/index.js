@@ -30,6 +30,7 @@ var ERROR_CODES = {
   ACCOUNT_INACTIVE: 5
 };
 
+
 var blocklist;
 try {
   blocklist = require('../../../conf/blocklist.json');
@@ -51,6 +52,7 @@ LocalAuth.prototype.init = function (app, next) {
 };
 
 LocalAuth.prototype.verifyUser = function (email, password, done) {
+
   // Retrieve the user and compare details with those provided
   usermanager.retrieveUser({ email: new RegExp(email, 'i'), auth: 'local' }, function (error, user) {
     if (error) {
@@ -349,8 +351,12 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
 };
 
 LocalAuth.prototype.disavow = function (req, res, next) {
-  req.logout();
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
   res.status(200).end();
+  });
 };
 
 LocalAuth.prototype.internalRegisterUser = function (retypePasswordRequired, user, cb) {

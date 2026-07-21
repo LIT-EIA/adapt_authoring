@@ -76,7 +76,11 @@ ContentObject.prototype.updateSiblingSortOrder = function (data, next) {
     }
 
     doc._sortOrder = index;
-    doc.save(cb);
+    doc.save().then(function () {
+      cb(null);
+    }).catch(function (err) {
+      cb(err);
+    });
     ++index;
   },
     function (err) {

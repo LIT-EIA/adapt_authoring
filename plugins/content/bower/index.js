@@ -31,6 +31,7 @@ var origin = require('../../../'),
     exec = require('child_process').exec,
     IncomingForm = require('formidable').IncomingForm,
     installHelpers = require('../../../lib/installHelpers'),
+    formidableHelpers = require('../../../lib/formidableHelpers'),
     bytes = require('bytes');
 
 // errors
@@ -1081,6 +1082,10 @@ function handleUploadedPlugin (req, res, next) {
       }
       return next(error);
     }
+
+    var normalized = formidableHelpers.normalizeFormResult(fields, files);
+    fields = normalized.fields;
+    files = normalized.files;
 
     var file = files.file;
     if (!file || !file.path) {
