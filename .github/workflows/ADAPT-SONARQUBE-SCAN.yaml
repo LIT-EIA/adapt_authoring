@@ -29,7 +29,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies
         run: npm install
@@ -41,13 +41,6 @@ jobs:
 
       - name: Build project
         run: npm run build
-
-      - name: Record commit analyzed
-        run: |
-          echo "Commit SHA: ${{ github.sha }}" > sonar-analysis-info.txt
-          echo "Branch: ${{ github.ref_name }}" >> sonar-analysis-info.txt
-          echo "Run ID: ${{ github.run_id }}" >> sonar-analysis-info.txt
-          echo "Run Date: $(date -u)" >> sonar-analysis-info.txt
 
       - name: Generate scanned file manifest
         run: |
@@ -62,9 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sonar-scan-manifest
-          path: |
-            scanned-files.txt
-            sonar-analysis-info.txt
+          path: scanned-files.txt
           retention-days: 3
 
       - name: Run SonarQube Scan
@@ -75,6 +66,28 @@ jobs:
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+
+      - name: Capture SonarQube analysis details
+        if: always()
+        run: |
+          if [ -f .scannerwork/report-task.txt ]; then
+            cp .scannerwork/report-task.txt sonar-analysis-info.txt
+          else
+            echo "SonarQube report-task.txt not found" > sonar-analysis-info.txt
+          fi
+
+      - name: Display SonarQube analysis details
+        if: always()
+        run: |
+          cat sonar-analysis-info.txt
+
+      - name: Upload SonarQube analysis details
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-analysis-info
+          path: sonar-analysis-info.txt
+          retention-days: 3
 
       - name: Upload SonarScanner metadata
         if: always()
