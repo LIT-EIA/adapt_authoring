@@ -1,10 +1,10 @@
-name: Adapt Authoring Repository GitLeaks Scan
+name: Adapt Authoring Repository SonarQube Scan
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - container
+      - container  
   schedule:
     - cron: '0 13 * * 1-5' # Mon–Fri at 13:00 UTC
 
