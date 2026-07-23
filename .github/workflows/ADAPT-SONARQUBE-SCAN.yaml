@@ -1,4 +1,4 @@
-name: Adapt Authoring Repository SonarQube Scan
+name: Adapt Authoring Repository GitLeaks Scan
 
 on:
   workflow_dispatch:
@@ -6,11 +6,10 @@ on:
     branches:
       - container
   schedule:
-    - cron: '0 13 * * 1-5' # Mon-Fri at 13:00 UTC
+    - cron: '0 13 * * 1-5' # Mon–Fri at 13:00 UTC
 
 env:
   NAMESPACE: adapt-authoring
-  PROJECT_KEY: adapt-authoring
   roleId: ${{ secrets.APPROLE_ROLE_ID }}
   secretId: ${{ secrets.APPROLE_SECRET_ID }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -18,55 +17,29 @@ env:
 
 jobs:
   build:
-    name: Build and Analyze
+    name: Build and analyze
     runs-on: arc-runners-dshp-dev
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
 
       - name: Create config file
-        run: |
-          mkdir -p conf
-          echo '{}' > conf/config.json
+        run: mkdir -p conf && echo '{}' > conf/config.json
 
       - name: Build project
         run: npm run build
 
-      #
-      # Artifact #1 - Files scanned
-      #
-      - name: Generate scanned file manifest
-        run: |
-          find . \
-            -type f \
-            ! -path "./.git/*" \
-            ! -path "./node_modules/*" \
-            ! -path "./.scannerwork/*" \
-            > scanned-files.txt
-
-      - name: Upload scanned file manifest
-        uses: actions/upload-artifact@v4
-        with:
-          name: scanned-files
-          path: scanned-files.txt
-          retention-days: 30
-
-      #
-      # Run SonarQube
-      #
-      - name: Run SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
+      - uses: SonarSource/sonarqube-scan-action@v6
         with:
           args: >
             -Dsonar.exclusions=**/*.java
@@ -74,58 +47,16 @@ jobs:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
-      #
-      # Wait briefly for Compute Engine processing
-      #
-      - name: Wait for SonarQube processing
-        run: sleep 30
-
-      #
-      # Artifact #2 - Quality Gate Result
-      #
-      - name: Export Quality Gate
+      - name: Create artifact
         run: |
-          curl -s \
-            -u "${SONAR_TOKEN}:" \
-            "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}" \
-            > quality-gate.json
+          echo "Build completed successfully" > build-report.txt
+          echo "Repository: ${{ github.repository }}" >> build-report.txt
+          echo "Branch: ${{ github.ref_name }}" >> build-report.txt
+          echo "Commit: ${{ github.sha }}" >> build-report.txt
 
-          cat quality-gate.json
-
-      - name: Upload Quality Gate
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: quality-gate
-          path: quality-gate.json
-          retention-days: 30
-
-      #
-      # Artifact #3 - Sonar Findings
-      #
-      - name: Export SonarQube Issues
-        run: |
-          curl -s \
-            -u "${SONAR_TOKEN}:" \
-            "${SONAR_HOST_URL}/api/issues/search?componentKeys=${PROJECT_KEY}&ps=500" \
-            > sonar-issues.json
-
-          wc -c sonar-issues.json
-
-      - name: Upload Sonar Issues
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonar-issues
-          path: sonar-issues.json
-          retention-days: 30
-
-      #
-      # Optional troubleshooting artifact
-      #
-      - name: Upload Scanner Metadata
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonar-scannerwork
-          path: .scannerwork/
-          if-no-files-found: warn
-          retention-days: 30
+          name: adapt-authoring-report
+          path: build-report.txt
+          retention-days: 2
