@@ -12,6 +12,9 @@ spec:
     spec:
       restartPolicy: OnFailure
 
+      #imagePullSecrets:
+      #  - name: regcred
+
       securityContext:
         runAsNonRoot: true
         runAsUser: 999

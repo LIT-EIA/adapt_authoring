@@ -1,0 +1,73 @@
+name: Build and Push Images to ACR
+description: Hard-coded build and push for Adapt app and migration images
+
+runs:
+  using: composite
+  steps:
+    # -----------------------------------
+    # Build & push APP image
+    # -----------------------------------
+    #- name: Build and push APP image
+    #  shell: bash
+    #  run: |
+    #    set -euo pipefail
+    #
+    #        ACR_URL="dtsrhpdevscedacr.azurecr.io"
+    #    IMAGE_NAME="cms_adapt_authoring_app"
+    #    IMAGE_TAG="dev"
+    #    DOCKERFILE="docker/app/Dockerfile"
+    #    CONTEXT="."
+
+    #    IMAGE="${ACR_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
+    #
+    #    echo "====================================="
+    #    echo "🐳 Building APP image"
+    #    echo "Image: $IMAGE"
+    #    echo "====================================="
+
+    #    docker rmi "$IMAGE" || true
+
+    #    docker build \
+    #      --pull \
+    #      --no-cache \
+    #      -f "$DOCKERFILE" \
+    #      -t "$IMAGE" \
+    #      "$CONTEXT"
+
+    #   docker push "$IMAGE"
+    #
+    #      echo "✅ APP image pushed: $IMAGE"
+
+    # ----------------------------------------
+    # Build & push MIGRATION Chainguard Image
+    # ----------------------------------------
+    - name: Build and push MIGRATION image
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        ACR_URL="dtsrhpdevscedacr.azurecr.io"
+        IMAGE_NAME="cg_adapt_authoring_mig"
+        IMAGE_TAG="dev"
+        DOCKERFILE="docker/migration/Dockerfile.chainguard"
+        CONTEXT="."
+
+        IMAGE="${ACR_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
+
+        echo "====================================="
+        echo "🐳 Building MIGRATION image"
+        echo "Image: $IMAGE"
+        echo "====================================="
+
+        docker rmi "$IMAGE" || true
+
+        docker build \
+          --pull \
+          --no-cache \
+          -f "$DOCKERFILE" \
+          -t "$IMAGE" \
+          "$CONTEXT"
+
+        docker push "$IMAGE"
+
+        echo "✅ MIGRATION image pushed: $IMAGE"
