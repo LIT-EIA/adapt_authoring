@@ -10,6 +10,7 @@ on:
 
 env:
   NAMESPACE: adapt-authoring
+  PROJECT_KEY: adapt-authoring
   roleId: ${{ secrets.APPROLE_ROLE_ID }}
   secretId: ${{ secrets.APPROLE_SECRET_ID }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -42,6 +43,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      #
+      # Artifact #1 - Files scanned
+      #
       - name: Generate scanned file manifest
         run: |
           find . \
@@ -51,13 +55,16 @@ jobs:
             ! -path "./.scannerwork/*" \
             > scanned-files.txt
 
-      - name: Upload scan manifest
+      - name: Upload scanned file manifest
         uses: actions/upload-artifact@v4
         with:
-          name: sonar-scan-manifest
+          name: scanned-files
           path: scanned-files.txt
-          retention-days: 3
+          retention-days: 30
 
+      #
+      # Run SonarQube
+      #
       - name: Run SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         with:
@@ -67,33 +74,58 @@ jobs:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
-      - name: Capture SonarQube analysis details
-        if: always()
-        run: |
-          if [ -f .scannerwork/report-task.txt ]; then
-            cp .scannerwork/report-task.txt sonar-analysis-info.txt
-          else
-            echo "SonarQube report-task.txt not found" > sonar-analysis-info.txt
-          fi
+      #
+      # Wait briefly for Compute Engine processing
+      #
+      - name: Wait for SonarQube processing
+        run: sleep 30
 
-      - name: Display SonarQube analysis details
-        if: always()
+      #
+      # Artifact #2 - Quality Gate Result
+      #
+      - name: Export Quality Gate
         run: |
-          cat sonar-analysis-info.txt
+          curl -s \
+            -u "${SONAR_TOKEN}:" \
+            "${SONAR_HOST_URL}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}" \
+            > quality-gate.json
 
-      - name: Upload SonarQube analysis details
-        if: always()
+          cat quality-gate.json
+
+      - name: Upload Quality Gate
         uses: actions/upload-artifact@v4
         with:
-          name: sonar-analysis-info
-          path: sonar-analysis-info.txt
-          retention-days: 3
+          name: quality-gate
+          path: quality-gate.json
+          retention-days: 30
 
-      - name: Upload SonarScanner metadata
+      #
+      # Artifact #3 - Sonar Findings
+      #
+      - name: Export SonarQube Issues
+        run: |
+          curl -s \
+            -u "${SONAR_TOKEN}:" \
+            "${SONAR_HOST_URL}/api/issues/search?componentKeys=${PROJECT_KEY}&ps=500" \
+            > sonar-issues.json
+
+          wc -c sonar-issues.json
+
+      - name: Upload Sonar Issues
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-issues
+          path: sonar-issues.json
+          retention-days: 30
+
+      #
+      # Optional troubleshooting artifact
+      #
+      - name: Upload Scanner Metadata
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sonar-scannerwork
           path: .scannerwork/
           if-no-files-found: warn
-          retention-days: 3
+          retention-days: 30
