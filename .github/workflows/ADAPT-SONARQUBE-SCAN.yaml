@@ -59,6 +59,15 @@ jobs:
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
 
+      - name: Test Sonar Issues API
+        continue-on-error: true
+        run: |
+          curl -L -v \
+            -H "Authorization: Bearer ${SONAR_TOKEN}" \
+            -H "Accept: application/json" \
+            "${SONAR_HOST_URL}/api/issues/search?projects=adapt-authoring&ps=10" \
+            > sonar-issues-response.txt 2>&1
+
       - name: Create Sonar Report
         run: |
           echo "SonarQube Analysis Report" > sonar-report.txt
@@ -91,9 +100,11 @@ jobs:
           echo "## Dashboard" >> $GITHUB_STEP_SUMMARY
           echo "https://sq.itsec.esdc-edsc.canada.ca/dashboard?id=adapt-authoring" >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload Sonar Report
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: adapt-authoring-sonarqube-report
-          path: sonar-report.txt
+          path: |
+            sonar-report.txt
+            sonar-issues-response.txt
           retention-days: 7
