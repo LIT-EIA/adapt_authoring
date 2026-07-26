@@ -5,8 +5,13 @@ on:
   push:
     branches:
       - container
+  schedule:
+    - cron: '0 13 * * 1-5'
 
 env:
+  NAMESPACE: adapt-authoring
+  roleId: ${{ secrets.APPROLE_ROLE_ID }}
+  secretId: ${{ secrets.APPROLE_SECRET_ID }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
@@ -46,35 +51,44 @@ jobs:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
-      - name: Show Sonar Metadata
+      - name: SonarQube Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@master
+        timeout-minutes: 10
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+
+      - name: Sonar Metadata
         run: |
-          find . -name report-task.txt
-          cat .scannerwork/report-task.txt || true
+          echo "===== Sonar Report Task ====="
 
-      - name: Test Sonar API with Bearer Token
+          if [ -f .scannerwork/report-task.txt ]; then
+            cat .scannerwork/report-task.txt > sonar-report.txt
+
+            echo "" >> sonar-report.txt
+            echo "Repository=${{ github.repository }}" >> sonar-report.txt
+            echo "Branch=${{ github.ref_name }}" >> sonar-report.txt
+            echo "Commit=${{ github.sha }}" >> sonar-report.txt
+          else
+            echo "Sonar report-task.txt not found" > sonar-report.txt
+          fi
+
+      - name: Publish Summary
         run: |
-          curl -i \
-            -H "Authorization: Bearer ${SONAR_TOKEN}" \
-            "${SONAR_HOST_URL}/api/server/version" \
-            > sonar-api-test.txt
+          echo "# SonarQube Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
 
-          cat sonar-api-test.txt
+          if [ -f .scannerwork/report-task.txt ]; then
+            echo "## Sonar Metadata" >> $GITHUB_STEP_SUMMARY
+            cat .scannerwork/report-task.txt >> $GITHUB_STEP_SUMMARY
+          fi
 
-      - name: Test Issues API
-        continue-on-error: true
-        run: |
-          curl -i \
-            -H "Authorization: Bearer ${SONAR_TOKEN}" \
-            "${SONAR_HOST_URL}/api/issues/search?projects=adapt-authoring" \
-            > sonar-issues-test.txt
-
-          head -50 sonar-issues-test.txt
-
-      - name: Upload Debug Artifacts
+      - name: Upload Sonar Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sonar-debug
-          path: |
-            sonar-api-test.txt
-            sonar-issues-test.txt
+          name: adapt-authoring-sonarqube-report
+          path: sonar-report.txt
           retention-days: 7
