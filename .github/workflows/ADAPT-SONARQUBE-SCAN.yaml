@@ -5,16 +5,10 @@ on:
   push:
     branches:
       - container
-  schedule:
-    - cron: '0 13 * * 1-5'
 
 env:
-  NAMESPACE: adapt-authoring
-  roleId: ${{ secrets.APPROLE_ROLE_ID }}
-  secretId: ${{ secrets.APPROLE_SECRET_ID }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-  SONAR_PROJECT_KEY: adapt-authoring
 
 jobs:
   build:
@@ -52,34 +46,35 @@ jobs:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
-      - name: Wait for SonarQube Processing
-        run: sleep 60
-
-      - name: Test SonarQube API
+      - name: Show Sonar Metadata
         run: |
-          curl -s -u "${SONAR_TOKEN}:" \
+          find . -name report-task.txt
+          cat .scannerwork/report-task.txt || true
+
+      - name: Test Sonar API with Bearer Token
+        run: |
+          curl -i \
+            -H "Authorization: Bearer ${SONAR_TOKEN}" \
             "${SONAR_HOST_URL}/api/server/version" \
-            > sonar-version.txt
+            > sonar-api-test.txt
 
-          echo "SonarQube Version:"
-          cat sonar-version.txt
+          cat sonar-api-test.txt
 
-      - name: Get SonarQube Metrics
+      - name: Test Issues API
+        continue-on-error: true
         run: |
-          curl -s -u "${SONAR_TOKEN}:" \
-            "${SONAR_HOST_URL}/api/measures/component?component=${SONAR_PROJECT_KEY}&metricKeys=bugs,vulnerabilities,code_smells,coverage,duplicated_lines_density" \
-            > sonar-metrics.json
+          curl -i \
+            -H "Authorization: Bearer ${SONAR_TOKEN}" \
+            "${SONAR_HOST_URL}/api/issues/search?projects=adapt-authoring" \
+            > sonar-issues-test.txt
 
-          echo "Metrics Response:"
-          cat sonar-metrics.json
+          head -50 sonar-issues-test.txt
 
-      - name: Get SonarQube Issues
-        run: |
-          curl -s -u "${SONAR_TOKEN}:" \
-            "${SONAR_HOST_URL}/api/issues/search?componentKeys=${SONAR_PROJECT_KEY}&ps=100" \
-            > sonar-issues.json
-
-          echo "Issues Response:"
-          head -20 sonar-issues.json
-
-   
+      - name: Upload Debug Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-debug
+          path: |
+            sonar-api-test.txt
+            sonar-issues-test.txt
+          retention-days: 7
