@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - container  
+      - container
   schedule:
-    - cron: '0 13 * * 1-5' # Mon–Fri at 13:00 UTC
+    - cron: '0 13 * * 1-5'
 
 env:
   NAMESPACE: adapt-authoring
@@ -14,32 +14,37 @@ env:
   secretId: ${{ secrets.APPROLE_SECRET_ID }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+  SONAR_PROJECT_KEY: adapt-authoring
 
 jobs:
   build:
-    name: Build and analyze
+    name: Build and Analyze
     runs-on: arc-runners-dshp-dev
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      - name: Create config file
-        run: mkdir -p conf && echo '{}' > conf/config.json
+      - name: Create Config File
+        run: |
+          mkdir -p conf
+          echo '{}' > conf/config.json
 
-      - name: Build project
+      - name: Build Project
         run: npm run build
 
-      - uses: SonarSource/sonarqube-scan-action@v6
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
         with:
           args: >
             -Dsonar.exclusions=**/*.java
@@ -47,16 +52,90 @@ jobs:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
-      - name: Create artifact
+      - name: Wait for SonarQube Processing
+        run: sleep 30
+
+      - name: Retrieve SonarQube Metrics
+        run: |
+          curl -s -u "${SONAR_TOKEN}:" \
+          "${SONAR_HOST_URL}/api/measures/component?component=${SONAR_PROJECT_KEY}&metricKeys=bugs,vulnerabilities,code_smells,coverage,duplicated_lines_density" \
+          > sonar-metrics.json
+
+      - name: Retrieve SonarQube Issues
+        run: |
+          curl -s -u "${SONAR_TOKEN}:" \
+          "${SONAR_HOST_URL}/api/issues/search?componentKeys=${SONAR_PROJECT_KEY}&ps=500" \
+          > sonar-issues.json
+
+      - name: Install jq
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y jq
+          fi
+
+      - name: Generate CSV Report
+        run: |
+          jq -r '
+            .issues[] |
+            [
+              .severity,
+              .type,
+              .message,
+              .component,
+              .line
+            ] | @csv
+          ' sonar-issues.json > sonar-report.csv
+
+      - name: Create Build Report
         run: |
           echo "Build completed successfully" > build-report.txt
           echo "Repository: ${{ github.repository }}" >> build-report.txt
           echo "Branch: ${{ github.ref_name }}" >> build-report.txt
           echo "Commit: ${{ github.sha }}" >> build-report.txt
+          echo "" >> build-report.txt
 
-      - name: Upload artifact
+          TOTAL_ISSUES=$(jq '.total' sonar-issues.json)
+
+          echo "SonarQube Issues Found: $TOTAL_ISSUES" >> build-report.txt
+          echo "" >> build-report.txt
+
+          echo "Metrics:" >> build-report.txt
+
+          jq -r '
+            .component.measures[] |
+            "\(.metric): \(.value)"
+          ' sonar-metrics.json >> build-report.txt
+
+      - name: Publish GitHub Summary
+        run: |
+          echo "# SonarQube Analysis Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Project" >> $GITHUB_STEP_SUMMARY
+          echo "- Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          TOTAL_ISSUES=$(jq '.total' sonar-issues.json)
+
+          echo "## SonarQube Metrics" >> $GITHUB_STEP_SUMMARY
+
+          jq -r '
+            .component.measures[] |
+            "- \(.metric): \(.value)"
+          ' sonar-metrics.json >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Issues" >> $GITHUB_STEP_SUMMARY
+          echo "- Total Issues: ${TOTAL_ISSUES}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: adapt-authoring-report
-          path: build-report.txt
-          retention-days: 2
+          name: adapt-authoring-sonarqube-report
+          path: |
+            build-report.txt
+            sonar-metrics.json
+            sonar-issues.json
+            sonar-report.csv
+          retention-days: 7
