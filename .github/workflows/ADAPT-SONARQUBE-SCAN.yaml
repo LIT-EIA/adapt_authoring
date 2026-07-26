@@ -59,14 +59,37 @@ jobs:
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
 
-      - name: Test Sonar Issues API
+      - name: Test Sonar Components API
         continue-on-error: true
         run: |
+          URL="${SONAR_HOST_URL}/api/components/show?component=adapt-authoring"
+
+          echo "Testing URL:"
+          echo "$URL"
+
           curl -L -v \
             -H "Authorization: Bearer ${SONAR_TOKEN}" \
             -H "Accept: application/json" \
-            "${SONAR_HOST_URL}/api/issues/search?projects=adapt-authoring&ps=10" \
+            "$URL" \
+            > sonar-components-response.txt 2>&1
+
+          tail -100 sonar-components-response.txt
+
+      - name: Test Sonar Issues API
+        continue-on-error: true
+        run: |
+          URL="${SONAR_HOST_URL}/api/issues/search?projects=adapt-authoring&ps=10"
+
+          echo "Testing URL:"
+          echo "$URL"
+
+          curl -L -v \
+            -H "Authorization: Bearer ${SONAR_TOKEN}" \
+            -H "Accept: application/json" \
+            "$URL" \
             > sonar-issues-response.txt 2>&1
+
+          tail -100 sonar-issues-response.txt
 
       - name: Create Sonar Report
         run: |
@@ -84,9 +107,6 @@ jobs:
           fi
 
           echo "Quality Gate Result: ${{ steps.qualitygate.outcome }}" >> sonar-report.txt
-          echo "" >> sonar-report.txt
-          echo "Dashboard URL:" >> sonar-report.txt
-          echo "https://sq.itsec.esdc-edsc.canada.ca/dashboard?id=adapt-authoring" >> sonar-report.txt
 
       - name: Publish Workflow Summary
         run: |
@@ -96,9 +116,6 @@ jobs:
           echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- Quality Gate: ${{ steps.qualitygate.outcome }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Dashboard" >> $GITHUB_STEP_SUMMARY
-          echo "https://sq.itsec.esdc-edsc.canada.ca/dashboard?id=adapt-authoring" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -106,5 +123,6 @@ jobs:
           name: adapt-authoring-sonarqube-report
           path: |
             sonar-report.txt
+            sonar-components-response.txt
             sonar-issues-response.txt
           retention-days: 7
