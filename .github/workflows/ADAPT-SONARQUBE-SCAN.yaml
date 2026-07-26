@@ -52,41 +52,46 @@ jobs:
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
       - name: SonarQube Quality Gate
+        id: qualitygate
+        continue-on-error: true
         uses: SonarSource/sonarqube-quality-gate-action@master
         timeout-minutes: 10
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
 
-      - name: Sonar Metadata
+      - name: Create Sonar Report
         run: |
-          echo "===== Sonar Report Task ====="
+          echo "SonarQube Analysis Report" > sonar-report.txt
+          echo "=========================" >> sonar-report.txt
+          echo "" >> sonar-report.txt
+          echo "Repository: ${{ github.repository }}" >> sonar-report.txt
+          echo "Branch: ${{ github.ref_name }}" >> sonar-report.txt
+          echo "Commit: ${{ github.sha }}" >> sonar-report.txt
+          echo "" >> sonar-report.txt
 
           if [ -f .scannerwork/report-task.txt ]; then
-            cat .scannerwork/report-task.txt > sonar-report.txt
-
+            cat .scannerwork/report-task.txt >> sonar-report.txt
             echo "" >> sonar-report.txt
-            echo "Repository=${{ github.repository }}" >> sonar-report.txt
-            echo "Branch=${{ github.ref_name }}" >> sonar-report.txt
-            echo "Commit=${{ github.sha }}" >> sonar-report.txt
-          else
-            echo "Sonar report-task.txt not found" > sonar-report.txt
           fi
 
-      - name: Publish Summary
+          echo "Quality Gate Result: ${{ steps.qualitygate.outcome }}" >> sonar-report.txt
+          echo "" >> sonar-report.txt
+          echo "Dashboard URL:" >> sonar-report.txt
+          echo "https://sq.itsec.esdc-edsc.canada.ca/dashboard?id=adapt-authoring" >> sonar-report.txt
+
+      - name: Publish Workflow Summary
         run: |
-          echo "# SonarQube Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "# SonarQube Analysis Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Quality Gate: ${{ steps.qualitygate.outcome }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Dashboard" >> $GITHUB_STEP_SUMMARY
+          echo "https://sq.itsec.esdc-edsc.canada.ca/dashboard?id=adapt-authoring" >> $GITHUB_STEP_SUMMARY
 
-          if [ -f .scannerwork/report-task.txt ]; then
-            echo "## Sonar Metadata" >> $GITHUB_STEP_SUMMARY
-            cat .scannerwork/report-task.txt >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Upload Sonar Artifact
+      - name: Upload Sonar Report
         uses: actions/upload-artifact@v4
         with:
           name: adapt-authoring-sonarqube-report
