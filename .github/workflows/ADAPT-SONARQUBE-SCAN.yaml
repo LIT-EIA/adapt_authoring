@@ -10,8 +10,6 @@ on:
 
 env:
   NAMESPACE: adapt-authoring
-  roleId: ${{ secrets.APPROLE_ROLE_ID }}
-  secretId: ${{ secrets.APPROLE_SECRET_ID }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
@@ -59,70 +57,68 @@ jobs:
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
 
-      - name: Test Sonar Components API
-        continue-on-error: true
+      - name: Download Sonar Issues
         run: |
-          URL="${SONAR_HOST_URL}/api/components/show?component=adapt-authoring"
-
-          echo "Testing URL:"
-          echo "$URL"
-
-          curl -L -v \
+          curl -s \
             -H "Authorization: Bearer ${SONAR_TOKEN}" \
-            -H "Accept: application/json" \
-            "$URL" \
-            > sonar-components-response.txt 2>&1
+            "${SONAR_HOST_URL}/api/issues/search?projects=adapt-authoring&ps=500" \
+            > sonar-issues.json
 
-          tail -100 sonar-components-response.txt
-
-      - name: Test Sonar Issues API
-        continue-on-error: true
+      - name: Install jq
         run: |
-          URL="${SONAR_HOST_URL}/api/issues/search?projects=adapt-authoring&ps=10"
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y jq
+          fi
 
-          echo "Testing URL:"
-          echo "$URL"
-
-          curl -L -v \
-            -H "Authorization: Bearer ${SONAR_TOKEN}" \
-            -H "Accept: application/json" \
-            "$URL" \
-            > sonar-issues-response.txt 2>&1
-
-          tail -100 sonar-issues-response.txt
-
-      - name: Create Sonar Report
+      - name: Generate CSV Report
         run: |
+          echo "Severity,Type,File,Line,Message" > sonar-issues.csv
+
+          jq -r '
+            .issues[] |
+            [
+              .severity,
+              .type,
+              .component,
+              (.line // ""),
+              .message
+            ] | @csv
+          ' sonar-issues.json >> sonar-issues.csv
+
+      - name: Create Summary Report
+        run: |
+          TOTAL=$(jq -r '.total' sonar-issues.json)
+
           echo "SonarQube Analysis Report" > sonar-report.txt
           echo "=========================" >> sonar-report.txt
           echo "" >> sonar-report.txt
+
           echo "Repository: ${{ github.repository }}" >> sonar-report.txt
           echo "Branch: ${{ github.ref_name }}" >> sonar-report.txt
           echo "Commit: ${{ github.sha }}" >> sonar-report.txt
           echo "" >> sonar-report.txt
 
-          if [ -f .scannerwork/report-task.txt ]; then
-            cat .scannerwork/report-task.txt >> sonar-report.txt
-            echo "" >> sonar-report.txt
-          fi
+          echo "Total Issues: $TOTAL" >> sonar-report.txt
+          echo "Quality Gate: ${{ steps.qualitygate.outcome }}" >> sonar-report.txt
 
-          echo "Quality Gate Result: ${{ steps.qualitygate.outcome }}" >> sonar-report.txt
-
-      - name: Publish Workflow Summary
+      - name: Publish GitHub Summary
         run: |
-          echo "# SonarQube Analysis Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Quality Gate: ${{ steps.qualitygate.outcome }}" >> $GITHUB_STEP_SUMMARY
+          TOTAL=$(jq -r '.total' sonar-issues.json)
 
-      - name: Upload Artifacts
+          echo "# SonarQube Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Project: adapt-authoring" >> $GITHUB_STEP_SUMMARY
+          echo "- Total Issues: $TOTAL" >> $GITHUB_STEP_SUMMARY
+          echo "- Quality Gate: ${{ steps.qualitygate.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Sonar Reports
         uses: actions/upload-artifact@v4
         with:
           name: adapt-authoring-sonarqube-report
           path: |
             sonar-report.txt
-            sonar-components-response.txt
-            sonar-issues-response.txt
+            sonar-issues.json
+            sonar-issues.csv
           retention-days: 7
