@@ -53,89 +53,33 @@ jobs:
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
       - name: Wait for SonarQube Processing
-        run: sleep 30
+        run: sleep 60
 
-      - name: Retrieve SonarQube Metrics
+      - name: Test SonarQube API
+        run: |
+          echo "Testing SonarQube API..."
+          curl -s -u "${SONAR_TOKEN}:" \
+            "${SONAR_HOST_URL}/api/server/version" \
+            > sonar-version.txt
+
+          echo "SonarQube Version:"
+          cat sonar-version.txt
+
+      - name: Retrieve Sonar Metrics
+        continue-on-error: true
         run: |
           curl -s -u "${SONAR_TOKEN}:" \
-          "${SONAR_HOST_URL}/api/measures/component?component=${SONAR_PROJECT_KEY}&metricKeys=bugs,vulnerabilities,code_smells,coverage,duplicated_lines_density" \
-          > sonar-metrics.json
+            "${SONAR_HOST_URL}/api/measures/component?component=${SONAR_PROJECT_KEY}&metricKeys=bugs,vulnerabilities,code_smells,coverage,duplicated_lines_density" \
+            > sonar-metrics.json
 
-      - name: Retrieve SonarQube Issues
+          echo "Metrics response:"
+          cat sonar-metrics.json
+
+      - name: Retrieve Sonar Issues
+        continue-on-error: true
         run: |
           curl -s -u "${SONAR_TOKEN}:" \
-          "${SONAR_HOST_URL}/api/issues/search?componentKeys=${SONAR_PROJECT_KEY}&ps=500" \
-          > sonar-issues.json
+            "${SONAR_HOST_URL}/api/issues/search?componentKeys=${SONAR_PROJECT_KEY}&ps=100" \
+            > sonar-issues.json
 
-      - name: Install jq
-        run: |
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y jq
-          fi
-
-      - name: Generate CSV Report
-        run: |
-          jq -r '
-            .issues[] |
-            [
-              .severity,
-              .type,
-              .message,
-              .component,
-              .line
-            ] | @csv
-          ' sonar-issues.json > sonar-report.csv
-
-      - name: Create Build Report
-        run: |
-          echo "Build completed successfully" > build-report.txt
-          echo "Repository: ${{ github.repository }}" >> build-report.txt
-          echo "Branch: ${{ github.ref_name }}" >> build-report.txt
-          echo "Commit: ${{ github.sha }}" >> build-report.txt
-          echo "" >> build-report.txt
-
-          TOTAL_ISSUES=$(jq '.total' sonar-issues.json)
-
-          echo "SonarQube Issues Found: $TOTAL_ISSUES" >> build-report.txt
-          echo "" >> build-report.txt
-
-          echo "Metrics:" >> build-report.txt
-
-          jq -r '
-            .component.measures[] |
-            "\(.metric): \(.value)"
-          ' sonar-metrics.json >> build-report.txt
-
-      - name: Publish GitHub Summary
-        run: |
-          echo "# SonarQube Analysis Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Project" >> $GITHUB_STEP_SUMMARY
-          echo "- Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          TOTAL_ISSUES=$(jq '.total' sonar-issues.json)
-
-          echo "## SonarQube Metrics" >> $GITHUB_STEP_SUMMARY
-
-          jq -r '
-            .component.measures[] |
-            "- \(.metric): \(.value)"
-          ' sonar-metrics.json >> $GITHUB_STEP_SUMMARY
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Issues" >> $GITHUB_STEP_SUMMARY
-          echo "- Total Issues: ${TOTAL_ISSUES}" >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: adapt-authoring-sonarqube-report
-          path: |
-            build-report.txt
-            sonar-metrics.json
-            sonar-issues.json
-            sonar-report.csv
-          retention-days: 7
+          echo
