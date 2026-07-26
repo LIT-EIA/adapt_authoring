@@ -57,7 +57,6 @@ jobs:
 
       - name: Test SonarQube API
         run: |
-          echo "Testing SonarQube API..."
           curl -s -u "${SONAR_TOKEN}:" \
             "${SONAR_HOST_URL}/api/server/version" \
             > sonar-version.txt
@@ -65,21 +64,22 @@ jobs:
           echo "SonarQube Version:"
           cat sonar-version.txt
 
-      - name: Retrieve Sonar Metrics
-        continue-on-error: true
+      - name: Get SonarQube Metrics
         run: |
           curl -s -u "${SONAR_TOKEN}:" \
             "${SONAR_HOST_URL}/api/measures/component?component=${SONAR_PROJECT_KEY}&metricKeys=bugs,vulnerabilities,code_smells,coverage,duplicated_lines_density" \
             > sonar-metrics.json
 
-          echo "Metrics response:"
+          echo "Metrics Response:"
           cat sonar-metrics.json
 
-      - name: Retrieve Sonar Issues
-        continue-on-error: true
+      - name: Get SonarQube Issues
         run: |
           curl -s -u "${SONAR_TOKEN}:" \
             "${SONAR_HOST_URL}/api/issues/search?componentKeys=${SONAR_PROJECT_KEY}&ps=100" \
             > sonar-issues.json
 
-          echo
+          echo "Issues Response:"
+          head -20 sonar-issues.json
+
+   
