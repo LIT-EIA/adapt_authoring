@@ -62,11 +62,11 @@ runs:
         docker rmi "$IMAGE" || true
 
         docker build \
-          --pull \
-          --no-cache \
-          -f "$DOCKERFILE" \
-          -t "$IMAGE" \
-          "$CONTEXT"
+         --pull \
+         --no-cache \
+         -f "$DOCKERFILE" \
+         -t "$IMAGE" \
+         "$CONTEXT"
 
         docker push "$IMAGE"
 

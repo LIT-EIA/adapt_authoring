@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM cgr.dev/ssc-spc.gc.ca/mongodb-iamguarded:latest
+FROM cgr.dev/ssc-spc.gc.ca/mongodb:latest-dev
 
 WORKDIR /migration
 
@@ -15,7 +15,7 @@ USER root
 RUN chmod +x ./migrate.sh \
     && chown -R mongodb:mongodb /migration
 
-# Drop privileges (mongodb-iamguarded image uses mongodb user)
+# Drop privileges
 USER mongodb
 
 # Run migration

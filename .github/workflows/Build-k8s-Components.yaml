@@ -43,11 +43,18 @@ jobs:
             -n ${{ env.NAMESPACE }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      # Step 3: Build Kubernetes Components
-      - name: Build Kubernetes Components
-        uses: ./.github/actions/build-components
+      # Step: Build and push chainguard image to ACR
+      - name: Build and push app image to ACR
+        uses: ./.github/actions/chainguard-build
         with:
-          namespace: ${{ env.NAMESPACE }}
+          acr-url: dtsrhpdevscedacr.azurecr.io
+          #app-image-name: cms_adapt_authoring_app_cg
+          mig-image-name: cms_adapt_authoring_mig_cg
+          #app-dockerfile: docker/app/Dockerfile.chainguard
+          mig-dockerfile: docker/migration/Dockerfile.chainguard
+          #app-image-tag: 1
+          mig-image-tag: 1
+          build-context: .
 
       # Step 4: Check Kubernetes Components
       - name: Check Kubernetes Components
