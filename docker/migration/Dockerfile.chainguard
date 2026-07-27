@@ -12,11 +12,13 @@ COPY docker/migration/migrate.sh ./migrate.sh
 
 # Fix permissions + make script executable
 USER root
-RUN chmod +x ./migrate.sh \
-    && chown -R mongodb:mongodb /migration
+RUN apk add bash \
+    && chmod +x ./migrate.sh \
+    && mkdir -p /app/storage /app/data /app/temp \
+    && chown -R 65532:65532 /migration /app
 
-# Drop privileges
-USER mongodb
+# Drop privileges using numeric UID
+USER 65532
 
 # Run migration
-CMD ["./migrate.sh"]
+CMD ["/bin/bash", "./migrate.sh"]
