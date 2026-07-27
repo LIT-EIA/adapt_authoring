@@ -2,9 +2,7 @@ name: Build Kubernetes Individual Components
 
 on:
   workflow_dispatch: # Allows manual triggering
-  push:
-    branches:
-      - main
+
 
 env:
   NAMESPACE: adapt-authoring

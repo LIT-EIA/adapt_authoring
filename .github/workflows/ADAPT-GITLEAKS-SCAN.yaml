@@ -2,9 +2,6 @@ name: Adapt Authoring Repository GitLeaks Scan
 
 on:
   workflow_dispatch: # Allows manual triggering
-  push:
-    branches:
-      - main #so that nothing is runs when the push is to container
   schedule:
     - cron: '0 12 * * 1-5'  # Mon–Fri at 12:00 UTC
 

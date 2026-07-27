@@ -2,9 +2,6 @@ name: Adapt Authoring Repository SonarQube Scan
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - container
   schedule:
     - cron: '0 13 * * 1-5'
 
