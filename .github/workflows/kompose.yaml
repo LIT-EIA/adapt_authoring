@@ -1,4 +1,4 @@
-name: Build Kubernetes Components Using Kompose
+name: Build Adapt-Authoring Components Using Kompose
 
 on:
   workflow_dispatch: # Allows manual triggering
@@ -48,17 +48,17 @@ jobs:
         run: docker system prune -af
 
       # Step: Build and push chainguard image to ACR
-      #- name: Build and push app image to ACR
-        #uses: ./.github/actions/chainguard-build
-        #with:
-          #acr-url: dtsrhpdevscedacr.azurecr.io
+      - name: Build and push app image to ACR
+        uses: ./.github/actions/chainguard-build
+        with:
+          acr-url: dtsrhpdevscedacr.azurecr.io
           #app-image-name: cms_adapt_authoring_app_cg
-          #mig-image-name: cms_adapt_authoring_mig_cg
+          mig-image-name: cms_adapt_authoring_mig_cg
           #app-dockerfile: docker/app/Dockerfile.chainguard
-          #mig-dockerfile: docker/migration/Dockerfile.chainguard
+          mig-dockerfile: docker/migration/Dockerfile.chainguard
           #app-image-tag: 1
-          #mig-image-tag: 1
-          #build-context: .
+          mig-image-tag: 1
+          build-context: .
 
       # Step 3: Build and push app image to ACR
       - name: Build and push app image to ACR
