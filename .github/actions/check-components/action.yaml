@@ -24,6 +24,8 @@ runs:
         ACR_NAME="dtsrhpdevscedacr"
         APP_IMAGE="cms_adapt_authoring_app"
         MIG_IMAGE="cms_adapt_authoring_mig"
+        MIG_IMAGE_CG="cg_cms_adapt_authoring_mig"
+        MIG_IMAGE_CG="cg_cms_adapt_authoring_app"
 
         echo "====================================="
         echo "🔍 Checking Kubernetes components"
@@ -71,6 +73,22 @@ runs:
           az acr repository show-tags \
             --name "$ACR_NAME" \
             --repository "$MIG_IMAGE" \
+            --detail \
+            --orderby time_desc \
+            --output table || true
+
+          echo "🏷️ Chainguard APP image tags ($APP_IMAGE_CG)"
+          az acr repository show-tags \
+            --name "$ACR_NAME" \
+            --repository "$APP_IMAGE_CG" \
+            --detail \
+            --orderby time_desc \
+            --output table || true
+
+          echo "🏷️ Chainguard MIGRATION image tags ($MIG_IMAGE_CG)"
+          az acr repository show-tags \
+            --name "$ACR_NAME" \
+            --repository "$MIG_IMAGE_CG" \
             --detail \
             --orderby time_desc \
             --output table || true
