@@ -1,4 +1,4 @@
-name: Build Kubernetes Components 
+name: Build Kubernetes Individual Components 
 
 on:
   workflow_dispatch: # Allows manual triggering
@@ -27,7 +27,24 @@ jobs:
         with:
           roleId: ${{ env.roleId}}
           secretId: ${{ env.secretId }}
-        
+
+      # Create Pull Secret
+      - name: Log in to Chainguard Registry
+        run: |
+          docker login cgr.dev \
+            --username ${{ secrets.CGR_USERNAME }} \
+            --password ${{ secrets.CGR_PASSWORD }}
+
+      # Chainguard login
+      - name: Create Kubernetes image pull secret
+        run: |
+          kubectl create secret docker-registry regcred \
+            --docker-server=cgr.dev \
+            --docker-username=${{ secrets.CGR_USERNAME }} \
+            --docker-password=${{ secrets.CGR_PASSWORD }} \
+            -n ${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       # Step 3: Build Kubernetes Components
       - name: Build Kubernetes Components
         uses: ./.github/actions/build-components

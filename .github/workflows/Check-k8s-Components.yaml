@@ -28,18 +28,22 @@ jobs:
           roleId: ${{ env.roleId}}
           secretId: ${{ env.secretId }}
       
-      - name: Get Vault Secrets
-        uses: hashicorp/vault-action@v3.4.0
-        id: secrets
-        with:
-          url: https://vault.dev-dp.admin.dts-stn.com
-          method: kubernetes
-          role: adapt-authoring
-          secrets: |
-            adapt-authoring/data/AZURE K8S_CLUSTER_NAME | K8S_CLUSTER_NAME ;
+      # Create Pull Secret
+      - name: Log in to Chainguard Registry
+        run: |
+          docker login cgr.dev \
+            --username ${{ secrets.CGR_USERNAME }} \
+            --password ${{ secrets.CGR_PASSWORD }}
 
-
-          
+      # Chainguard login
+      - name: Create Kubernetes image pull secret
+        run: |
+          kubectl create secret docker-registry regcred \
+            --docker-server=cgr.dev \
+            --docker-username=${{ secrets.CGR_USERNAME }} \
+            --docker-password=${{ secrets.CGR_PASSWORD }} \
+            -n ${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       # Step 3: Check Kubernetes Components
       - name: Check Kubernetes Components
