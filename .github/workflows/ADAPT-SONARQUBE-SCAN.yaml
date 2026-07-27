@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install Dependencies
         run: npm install
@@ -66,6 +66,7 @@ jobs:
 
       - name: Download All Sonar Issues
         run: |
+          rm -f sonar-issues.json
           echo '{"issues":[]}' > sonar-issues.json
 
           PAGE=1
@@ -84,7 +85,7 @@ jobs:
 
             echo "Issues returned: ${COUNT}"
 
-            if [ "$COUNT" -eq 0 ]; then
+            if [ "${COUNT}" -eq 0 ]; then
               break
             fi
 
@@ -100,7 +101,6 @@ jobs:
           done
 
           TOTAL=$(jq '.issues | length' sonar-issues.json)
-
           echo "Total downloaded issues: ${TOTAL}"
 
       - name: Generate CSV Report
@@ -127,4 +127,58 @@ jobs:
             echo "SonarQube Analysis Summary"
             echo "=========================="
             echo
-     
+            echo "Repository: ${{ github.repository }}"
+            echo "Branch: ${{ github.ref_name }}"
+            echo "Commit: ${{ github.sha }}"
+            echo
+            echo "Total Issues: ${TOTAL}"
+            echo "Quality Gate: ${{ steps.qualitygate.outcome }}"
+            echo
+            echo "Issues By Severity"
+            echo "------------------"
+
+            jq -r '
+              .issues
+              | group_by(.severity)
+              | map({severity: .[0].severity, count: length})
+              | sort_by(.count)
+              | reverse
+              | .[]
+              | "\(.severity): \(.count)"
+            ' sonar-issues.json
+
+            echo
+            echo "Issues By Type"
+            echo "--------------"
+
+            jq -r '
+              .issues
+              | group_by(.type)
+              | map({type: .[0].type, count: length})
+              | sort_by(.count)
+              | reverse
+              | .[]
+              | "\(.type): \(.count)"
+            ' sonar-issues.json
+
+          } > sonar-summary.txt
+
+      - name: Publish Workflow Summary
+        run: |
+          TOTAL=$(jq '.issues | length' sonar-issues.json)
+
+          echo "# SonarQube Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project: adapt-authoring" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Total Issues: ${TOTAL}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Quality Gate: ${{ steps.qualitygate.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Sonar Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: adapt-authoring-sonarqube-report
+          path: |
+            sonar-issues.json
+            sonar-issues.csv
+            sonar-summary.txt
+          retention-days: 7
