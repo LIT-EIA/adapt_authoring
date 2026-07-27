@@ -25,7 +25,7 @@ runs:
         APP_IMAGE="cms_adapt_authoring_app"
         MIG_IMAGE="cms_adapt_authoring_mig"
         MIG_IMAGE_CG="cg_cms_adapt_authoring_mig"
-        MIG_IMAGE_CG="cg_cms_adapt_authoring_app"
+        APP_IMAGE_CG="cg_cms_adapt_authoring_app"
 
         echo "====================================="
         echo "🔍 Checking Kubernetes components"
