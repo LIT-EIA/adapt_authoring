@@ -14,5 +14,5 @@ spec:
             - sh
             - -c
             - |
-              echo "Waiting for migration Job to complete..."
+              echo "Waiting for migration Job to complete..app-wait-for-migration..."
               kubectl wait --for=condition=complete job/adapt-migration --timeout=600s

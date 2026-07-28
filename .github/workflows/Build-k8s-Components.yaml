@@ -26,14 +26,14 @@ jobs:
           roleId: ${{ env.roleId}}
           secretId: ${{ env.secretId }}
 
-      # Create Pull Secret
+      # Chainguard login
       - name: Log in to Chainguard Registry
         run: |
           docker login cgr.dev \
             --username ${{ secrets.CGR_USERNAME }} \
             --password ${{ secrets.CGR_PASSWORD }}
 
-      # Chainguard login
+      # Create Pull Secret
       - name: Create Kubernetes image pull secret
         run: |
           kubectl create secret docker-registry regcred \
