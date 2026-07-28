@@ -47,7 +47,7 @@ runs:
         set -euo pipefail
 
         ACR_URL="dtsrhpdevscedacr.azurecr.io"
-        IMAGE_NAME="cg_adapt_authoring_mig"
+        IMAGE_NAME="cg_cms_adapt_authoring_mig"
         IMAGE_TAG="dev"
         DOCKERFILE="docker/migration/Dockerfile.chainguard"
         CONTEXT="."

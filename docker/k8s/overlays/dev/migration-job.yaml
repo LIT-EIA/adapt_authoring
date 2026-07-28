@@ -40,7 +40,7 @@ spec:
 
       containers:
         - name: migrate
-          image: dtsrhpdevscedacr.azurecr.io/cg_adapt_authoring_mig:dev
+          image: dtsrhpdevscedacr.azurecr.io/cg_cms_adapt_authoring_mig:dev
           imagePullPolicy: Always
 
           securityContext:
