@@ -32,36 +32,36 @@ jobs:
             --username ${{ secrets.CGR_USERNAME }} \
             --password ${{ secrets.CGR_PASSWORD }}
 
-      # Chainguard login
+      # Create Pull Secret
       - name: Create Kubernetes image pull secret
         run: |
           kubectl create secret docker-registry regcred \
             --docker-server=cgr.dev \
             --docker-username=${{ secrets.CGR_USERNAME }} \
             --docker-password=${{ secrets.CGR_PASSWORD }} \
-            -n ${{ env.NAMESPACE }} \
+            -n ${{ env.<pii_masked: name> }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
       # Troubleshooting: Search for available mongo packages in Chainguard registry
       - name: Search available mongo packages
         run: |
-          docker run --rm --user root \
+          docker run --rm --user root --entrypoint /bin/sh \
             cgr.dev/ssc-spc.gc.ca/mongodb:latest-dev \
-            /bin/sh -c "apk update && apk search mongo"
+            -c "apk update && apk search mongo"
 
       # Troubleshooting: Find which packages provide mongorestore, mongoimport, mongosh
       - name: Find packages providing mongo tools
         run: |
-          docker run --rm --user root \
+          docker run --rm --user root --entrypoint /bin/sh \
             cgr.dev/ssc-spc.gc.ca/mongodb:latest-dev \
-            /bin/sh -c "apk update && apk search cmd:mongorestore && apk search cmd:mongoimport && apk search cmd:mongosh"
+            -c "apk update && apk search cmd:mongorestore && apk search cmd:mongoimport && apk search cmd:mongosh"
 
       # Troubleshooting: Check which mongo tools are already in the image
       - name: Check pre-installed mongo tools
         run: |
-          docker run --rm --user root \
+          docker run --rm --user root --entrypoint /bin/sh \
             cgr.dev/ssc-spc.gc.ca/mongodb:latest-dev \
-            /bin/sh -c "which mongorestore mongoimport mongosh mongo || true"
+            -c "which mongorestore mongoimport mongosh mongo || true"
 
       # Step: Build and push chainguard image to ACR
       - name: Build and push app image to ACR
@@ -72,7 +72,6 @@ jobs:
           mig-dockerfile: docker/migration/Dockerfile.chainguard
           mig-image-tag: 1
           build-context: .
-
 
       # Step 4: Check Kubernetes Components
       - name: Check Kubernetes Components
