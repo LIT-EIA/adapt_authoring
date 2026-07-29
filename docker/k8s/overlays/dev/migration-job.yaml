@@ -20,7 +20,7 @@ spec:
 
       initContainers:
         - name: fix-permissions
-          image: busybox
+          image: cgr.dev/ssc-spc.gc.ca/busybox-fips:latest
           command:
             - sh
             - -c
