@@ -32,14 +32,14 @@ jobs:
             --username ${{ secrets.CGR_USERNAME }} \
             --password ${{ secrets.CGR_PASSWORD }}
 
-      # Create Pull Secret
+      # Chainguard login
       - name: Create Kubernetes image pull secret
         run: |
           kubectl create secret docker-registry regcred \
             --docker-server=cgr.dev \
             --docker-username=${{ secrets.CGR_USERNAME }} \
             --docker-password=${{ secrets.CGR_PASSWORD }} \
-            -n ${{ env.<pii_masked: name> }} \
+            -n ${{ env.NAMESPACE }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
       # Troubleshooting: Search for available mongo packages in Chainguard registry
