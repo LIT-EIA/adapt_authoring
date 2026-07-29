@@ -13,12 +13,10 @@ COPY new-migrations/framework ./framework
 COPY docker/migration/migrate.sh ./migrate.sh
 
 # Install required tools and fix permissions
-# NOTE: Verify exact package names by running:
-# docker run --rm -it --user root cgr.dev/ssc-spc.gc.ca/mongodb:latest-dev /bin/sh -c "apk update && apk search mongo"
 RUN apk add --no-cache \
         bash \
+        mongo-tools \
         mongosh \
-        mongodb-tools \
     && chmod +x ./migrate.sh \
     && mkdir -p /app/storage /app/data /app/temp \
     && chown -R 65532:65532 /migration /app
