@@ -1,4 +1,4 @@
-name: Build and Push Images to ACR
+name: Build and Push Chainguard Images to ACR
 description: Hard-coded build and push for Adapt app and migration images
 
 runs:
