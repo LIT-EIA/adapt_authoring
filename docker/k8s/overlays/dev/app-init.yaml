@@ -6,6 +6,9 @@ spec:
   template:
     spec:
 
+      imagePullSecrets:
+        - name: regcred
+
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -123,6 +126,3 @@ spec:
           emptyDir: {}
         - name: home
           emptyDir: {}
-
-
-

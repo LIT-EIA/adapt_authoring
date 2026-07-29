@@ -6,6 +6,9 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+        - name: regcred
+
       initContainers:
         - name: init-mongo-data
           # Switched from Docker Hub busybox to Chainguard FIPS-validated busybox
