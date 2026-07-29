@@ -1,4 +1,4 @@
-name: Build Kubernetes Individual Components 
+name: Build & Troubleshoot K8s Components 
 
 on:
   workflow_dispatch: # Allows manual triggering
@@ -8,7 +8,6 @@ env:
   NAMESPACE: adapt-authoring
   roleId: ${{ secrets.APPROLE_ROLE_ID }}
   secretId: ${{ secrets.APPROLE_SECRET_ID }}
-
 
 jobs:
   BuildK8Components:
@@ -33,7 +32,7 @@ jobs:
             --username ${{ secrets.CGR_USERNAME }} \
             --password ${{ secrets.CGR_PASSWORD }}
 
-      # Create Pull Secret
+      # Chainguard login
       - name: Create Kubernetes image pull secret
         run: |
           kubectl create secret docker-registry regcred \
@@ -43,18 +42,37 @@ jobs:
             -n ${{ env.NAMESPACE }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      # Troubleshooting: Search for available mongo packages in Chainguard registry
+      - name: Search available mongo packages
+        run: |
+          docker run --rm --user root \
+            cgr.dev/ssc-spc.gc.ca/mongodb:latest-dev \
+            /bin/sh -c "apk update && apk search mongo"
+
+      # Troubleshooting: Find which packages provide mongorestore, mongoimport, mongosh
+      - name: Find packages providing mongo tools
+        run: |
+          docker run --rm --user root \
+            cgr.dev/ssc-spc.gc.ca/mongodb:latest-dev \
+            /bin/sh -c "apk update && apk search cmd:mongorestore && apk search cmd:mongoimport && apk search cmd:mongosh"
+
+      # Troubleshooting: Check which mongo tools are already in the image
+      - name: Check pre-installed mongo tools
+        run: |
+          docker run --rm --user root \
+            cgr.dev/ssc-spc.gc.ca/mongodb:latest-dev \
+            /bin/sh -c "which mongorestore mongoimport mongosh mongo || true"
+
       # Step: Build and push chainguard image to ACR
       - name: Build and push app image to ACR
         uses: ./.github/actions/chainguard-build
         with:
           acr-url: dtsrhpdevscedacr.azurecr.io
-          #app-image-name: cms_adapt_authoring_app_cg
           mig-image-name: cms_adapt_authoring_mig_cg
-          #app-dockerfile: docker/app/Dockerfile.chainguard
           mig-dockerfile: docker/migration/Dockerfile.chainguard
-          #app-image-tag: 1
           mig-image-tag: 1
           build-context: .
+
 
       # Step 4: Check Kubernetes Components
       - name: Check Kubernetes Components
