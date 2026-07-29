@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 TENANT_ID="68e3f614ba3f6e060810da92"
 FLAG_FILE="/app/storage/migration_done.flag"
