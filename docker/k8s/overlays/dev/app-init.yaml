@@ -8,42 +8,43 @@ spec:
 
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
 
       initContainers:
 
         - name: wait-for-migration
+          # TODO: Replace with Chainguard kubectl if available in your registry
           image: bitnami/kubectl:latest
           command:
             - sh
             - -c
             - |
-              echo "🔍 Checking for migration job..."
-
+              echo "Checking for migration job..."
               if kubectl wait --for=condition=complete job/adapt-migration --timeout=10m; then
-                echo "✅ Migration completed"
+                echo "Migration completed - via app-init.yaml"
               else
-                echo "❌ Migration failed or timed out"
+                echo "Migration failed or timed out - via app-init.yaml"
                 kubectl get job adapt-migration -o wide
                 exit 1
               fi
 
         - name: fix-permissions
-          image: busybox
+          # Switched from Docker Hub busybox to Chainguard FIPS-validated busybox
+          image: cgr.dev/ssc-spc.gc.ca/busybox-fips:latest
           command:
             - sh
             - -c
             - |
               echo "Fixing permissions..."
-              chown -R 1000:1000 /app/temp /app/storage /app/data
-
+              chown -R 65532:65532 /app/temp /app/storage /app/data
           securityContext:
             runAsUser: 0
             runAsNonRoot: false
-            allowPrivilegeEscalation: false         
-
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
           volumeMounts:
             - name: storage
               mountPath: /app/storage
@@ -51,25 +52,26 @@ spec:
               mountPath: /app/temp
             - name: data
               mountPath: /app/data
-            
+
         - name: init-config
-          image: busybox
+          # Switched from Docker Hub busybox to Chainguard FIPS-validated busybox
+          image: cgr.dev/ssc-spc.gc.ca/busybox-fips:latest
           command:
             - sh
             - -c
             - |
               mkdir -p /app/conf
               echo '{}' > /app/conf/config.json
-              chown -R 1000:1000 /app/conf
-
+              chown -R 65532:65532 /app/conf
           securityContext:
             runAsUser: 0
             runAsNonRoot: false
             allowPrivilegeEscalation: false
-
+            capabilities:
+              drop: [ALL]
           volumeMounts:
             - name: app-config
-              mountPath: /app/conf    
+              mountPath: /app/conf
 
         - name: build-translate
           image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_app:dev
@@ -79,21 +81,19 @@ spec:
             - |
               echo "Running translation build..."
               npx grunt build:translate
-
           volumeMounts:
             - name: temp
-              mountPath: /app/temp  
+              mountPath: /app/temp
             - name: app-config
               mountPath: /app/conf
             - name: data
               mountPath: /app/data
             - name: storage
-              mountPath: /app/storage                                                
+              mountPath: /app/storage
 
       containers:
         - name: app
           imagePullPolicy: Always
-
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -102,7 +102,6 @@ spec:
             readOnlyRootFilesystem: true
             seccompProfile:
               type: RuntimeDefault
-
           volumeMounts:
             - name: storage
               mountPath: /app/storage
@@ -111,17 +110,17 @@ spec:
             - name: data
               mountPath: /app/data
             - name: tmp
-              mountPath: /tmp         
+              mountPath: /tmp
             - name: app-config
-              mountPath: /app/conf           
+              mountPath: /app/conf
             - name: home
               mountPath: /home/node
 
       volumes:
         - name: tmp
-          emptyDir: {}          
+          emptyDir: {}
         - name: app-config
-          emptyDir: {}     
+          emptyDir: {}
         - name: home
           emptyDir: {}
 
