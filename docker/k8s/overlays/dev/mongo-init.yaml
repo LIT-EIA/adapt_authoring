@@ -25,6 +25,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
+              add: [CHOWN]
           volumeMounts:
             - mountPath: /data/db
               name: db

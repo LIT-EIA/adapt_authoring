@@ -48,6 +48,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
+              add: [CHOWN]
           volumeMounts:
             - name: storage
               mountPath: /app/storage

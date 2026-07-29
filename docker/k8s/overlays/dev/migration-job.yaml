@@ -51,6 +51,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
+              add: [CHOWN]              
             seccompProfile:
               type: RuntimeDefault
 
