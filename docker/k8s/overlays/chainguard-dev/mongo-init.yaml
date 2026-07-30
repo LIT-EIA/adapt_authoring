@@ -6,13 +6,26 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+        - name: regcred
+
       initContainers:
         - name: init-mongo-data
-          image: busybox
+          # Switched from Docker Hub busybox to Chainguard FIPS-validated busybox
+          image: cgr.dev/ssc-spc.gc.ca/busybox-fips:latest
           command:
             - sh
             - -c
-            - mkdir -p /data/db
+            - |
+              mkdir -p /data/db && \
+              chown -R 65532:65532 /data/db
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+              add: [CHOWN]
           volumeMounts:
             - mountPath: /data/db
               name: db

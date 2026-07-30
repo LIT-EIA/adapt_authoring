@@ -1,0 +1,88 @@
+name: Chainguard Adapt-Authoring Components Using Kompose
+
+on:
+  workflow_dispatch: # Allows manual triggering
+
+
+env:
+  NAMESPACE: adapt-authoring
+  roleId: ${{ secrets.APPROLE_ROLE_ID }}
+  secretId: ${{ secrets.APPROLE_SECRET_ID }}
+
+
+jobs:
+  KomposeK8Components:
+    runs-on: arc-runners-dshp-dev
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Azure + AKS Login     
+      - name: Azure + AKS Login
+        uses: ./.github/actions/actions
+        with:
+          roleId: ${{ env.roleId}}
+          secretId: ${{ env.secretId }}
+
+      # Create Pull Secret
+      - name: Log in to Chainguard Registry
+        run: |
+          docker login cgr.dev \
+            --username ${{ secrets.CGR_USERNAME }} \
+            --password ${{ secrets.CGR_PASSWORD }}
+
+      # Chainguard login
+      - name: Create Kubernetes image pull secret
+        run: |
+          kubectl create secret docker-registry regcred \
+            --docker-server=cgr.dev \
+            --docker-username=${{ secrets.CGR_USERNAME }} \
+            --docker-password=${{ secrets.CGR_PASSWORD }} \
+            -n ${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      # Step: Cleanup Docker Left-Overs        
+      - name: Docker cleanup
+        run: docker system prune -af
+
+      # Step: Build and push chainguard image to ACR
+      - name: Build and push app image to ACR
+        uses: ./.github/actions/chainguard-build
+        with:
+          acr-url: dtsrhpdevscedacr.azurecr.io
+          #app-image-name: cms_adapt_authoring_app_cg
+          mig-image-name: cms_adapt_authoring_mig_cg
+          #app-dockerfile: docker/app/Dockerfile.chainguard
+          mig-dockerfile: docker/migration/Dockerfile.chainguard
+          #app-image-tag: 1
+          mig-image-tag: 1
+          build-context: .
+
+      # Step 3: Build and push app image to ACR
+      - name: Build and push app image to ACR
+        uses: ./.github/actions/docker-build
+        with:
+          acr-url: dtsrhpdevscedacr.azurecr.io
+          app-image-name: cms_adapt_authoring_app
+          mig-image-name: cms_adapt_authoring_mig
+          app-dockerfile: docker/app/Dockerfile
+          mig-dockerfile: docker/migration/Dockerfile
+          app-image-tag: 1
+          mig-image-tag: 1
+          build-context: .
+
+      # Step 4: Build Kubernetes Components Using Kompose
+      - name: Build Kubernetes Components Using Kompose
+        uses: ./.github/actions/kompose
+        with:
+          namespace: ${{ env.NAMESPACE }}
+          compose-file: docker/docker-compose.yml
+          overlay: docker/k8s/overlays/dev
+
+      # Step 5: Check Kubernetes Components
+      - name: Check Kubernetes Components
+        uses: ./.github/actions/check-components
+        with:
+          namespace: ${{ env.NAMESPACE }}

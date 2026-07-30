@@ -12,23 +12,24 @@ spec:
     spec:
       restartPolicy: OnFailure
 
-      #imagePullSecrets:
-      #  - name: regcred
+      imagePullSecrets:
+        - name: regcred
 
       securityContext:
         runAsNonRoot: true
-        runAsUser: 999
-        runAsGroup: 999
-        fsGroup: 999
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
 
       initContainers:
         - name: fix-permissions
-          image: busybox
+          image: cgr.dev/ssc-spc.gc.ca/busybox-fips:latest
           command:
             - sh
             - -c
             - |
-              chown -R 999:999 /app/data /app/storage /app/temp
+              mkdir -p /app/data /app/storage /app/temp && \
+              chown -R 65532:65532 /app/data /app/storage /app/temp
           securityContext:
             runAsUser: 0
             runAsNonRoot: false
@@ -42,14 +43,15 @@ spec:
 
       containers:
         - name: migrate
-          image: dtsrhpdevscedacr.azurecr.io/cms_adapt_authoring_mig:dev
+          image: dtsrhpdevscedacr.azurecr.io/cg_cms_adapt_authoring_mig:dev
           imagePullPolicy: Always
 
           securityContext:
-            runAsUser: 999
+            runAsUser: 65532
             allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
+              add: [CHOWN]              
             seccompProfile:
               type: RuntimeDefault
 
