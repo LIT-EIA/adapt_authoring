@@ -25,4 +25,4 @@ RUN apk add --no-cache \
 USER 65532
 
 # Run migration using absolute path
-CMD ["/bin/bash", "/migration/migrate.sh"]
+CMD ["/bin/bash", "/migration/chainguard-migrate.sh"]

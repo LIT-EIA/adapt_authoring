@@ -28,3 +28,35 @@ spec:
                 name: app
                 port:
                   number: 5000
+
+--- 
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chainguard-adapt-app-ingress
+  namespace: adapt-authoring
+  labels:
+    app: app-cg
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"  # Redirect HTTP to HTTPS
+    nginx.ingress.kubernetes.io/proxy-body-size: "128M"  # Set max upload size for adapt
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"  # Allow CORS for all origins
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"  # Allowed methods for CORS
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"  # Allowed headers for CORS
+spec:
+  ingressClassName: nginx
+  tls:  
+  - hosts:
+    - chainguard-adapt-cms.dev-dp-internal.dts-stn.com
+    secretName: devdpinternaldtsstncom  # TLS secret for the adapt app
+  rules:
+    - host: chainguard-adapt-cms.dev-dp-internal.dts-stn.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-cg
+                port:
+                  number: 5000

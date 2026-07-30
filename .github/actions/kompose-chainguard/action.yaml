@@ -1,0 +1,127 @@
+name: Deploy Docker Compose via Kompose - Chainguard Build
+description: Convert docker-compose to Kubernetes manifests and deploy using Kustomize overlays
+
+inputs:
+  compose-file:
+    description: Path to docker-compose file (relative to repo root)
+    required: true
+
+  namespace:
+    description: Kubernetes namespace to deploy into
+    required: true
+
+  overlay:
+    description: Kustomize overlay path
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install Kompose
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "📦 Installing Kompose"
+        curl -L https://github.com/kubernetes/kompose/releases/latest/download/kompose-linux-amd64 -o kompose
+        chmod +x kompose
+        sudo mv kompose /usr/local/bin/kompose
+        kompose version
+
+    - name: Convert docker-compose to Kubernetes manifests (Kompose)
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "🔄 Converting compose file: ${{ inputs.compose-file }}"
+
+        rm -rf docker/k8s/chainguard-base/kompose-chainguard
+        mkdir -p docker/k8s/chainguard-base/kompose-chainguard
+
+        kompose convert \
+          -f "${{ inputs.compose-file }}" \
+          -o docker/k8s/chainguard-base/kompose-chainguard
+
+    - name: Create kustomization.yaml for Kompose output
+      shell: bash
+      run: |
+       set -euo pipefail
+       echo "🧩 Creating kustomization.yaml for Kompose output"
+
+       shopt -s nullglob
+
+       FILES=(docker/k8s/chainguard-base/kompose-chainguard/*.yaml)
+
+       if [ ${#FILES[@]} -eq 0 ]; then
+       echo "❌ No YAML files found in docker/k8s/chainguard-base/kompose-chainguard"
+       exit 1
+       fi
+
+       cat <<EOF > docker/k8s/chainguard-base/kompose-chainguard/kustomization.yaml
+       apiVersion: kustomize.config.k8s.io/v1beta1
+       kind: Kustomization
+
+       resources:
+       EOF
+
+       for f in "${FILES[@]}"; do
+        chainguard-base=$(basename "$f")
+        if [ "$chainguard-base" != "kustomization.yaml" ]; then
+         echo "  - $chainguard-base" >> docker/k8s/chainguard-base/kompose-chainguard/kustomization.yaml
+        fi
+       done
+
+       echo "✅ Generated docker/k8s/chainguard-base/kompose-chainguard/kustomization.yaml"
+
+    - name: List Kompose output
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "📂 Contents of docker/k8s/chainguard-base/kompose-chainguard:"
+        ls -lah docker/k8s/chainguard-base/kompose-chainguard
+
+    - name: Upload Kompose base manifests (pre-Kustomize)
+      uses: actions/upload-artifact@v4
+      with:
+        name: kompose-base-manifests
+        path: docker/k8s/chainguard-base/kompose-chainguard
+        retention-days: 2
+
+    - name: Render manifests with Kustomize
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "🧩 Rendering overlay: ${{ inputs.overlay }}"
+        mkdir -p docker/k8s/rendered-chainguard
+        kubectl kustomize "${{ inputs.overlay }}" > docker/k8s/rendered-chainguard/all.yaml
+
+    - name: Upload rendered manifests (post-Kustomize)
+      uses: actions/upload-artifact@v4
+      with:
+        name: kustomize-rendered-manifests
+        path: docker/k8s/rendered-chainguard
+        retention-days: 2
+
+    - name: Apply manifests to Kubernetes
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "🚀 Deploying to namespace: ${{ inputs.namespace }}"
+
+        kubectl get namespace "${{ inputs.namespace }}" \
+          || kubectl create namespace "${{ inputs.namespace }}"
+
+        kubectl apply \
+          -n "${{ inputs.namespace }}" \
+          -f docker/k8s/rendered-chainguard/all.yaml
+  
+  
+    - name: Wait for migration Job to complete
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "⏳ Waiting for migration Job to complete..."
+        kubectl wait \
+          -n "${{ inputs.namespace }}" \
+          --for=condition=complete \
+          job/adapt-migration \
+          --timeout=10m
+

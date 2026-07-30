@@ -66,20 +66,20 @@ jobs:
         with:
           acr-url: dtsrhpdevscedacr.azurecr.io
           app-image-name: cms_adapt_authoring_app
-          mig-image-name: cms_adapt_authoring_mig
+          #mig-image-name: cms_adapt_authoring_mig
           app-dockerfile: docker/app/Dockerfile
-          mig-dockerfile: docker/migration/Dockerfile
+          #mig-dockerfile: docker/migration/Dockerfile
           app-image-tag: 1
-          mig-image-tag: 1
+          #mig-image-tag: 1
           build-context: .
 
       # Step 4: Build Kubernetes Components Using Kompose
       - name: Build Kubernetes Components Using Kompose
-        uses: ./.github/actions/kompose
+        uses: ./.github/actions/kompose-chainguard
         with:
           namespace: ${{ env.NAMESPACE }}
-          compose-file: docker/docker-compose.yml
-          overlay: docker/k8s/overlays/dev
+          compose-file: docker/chainguard-docker-compose.yml
+          overlay: docker/k8s/overlays/chainguard-dev
 
       # Step 5: Check Kubernetes Components
       - name: Check Kubernetes Components
