@@ -1,5 +1,5 @@
 // external
-const archiver = require('archiver');
+const { ZipArchive } = require('archiver');
 const async = require('async');
 const fs = require('fs-extra');
 const path = require('path');
@@ -185,7 +185,7 @@ function zipExport(next, error, results) {
   if(error) {
     return next(error);
   }
-  const archive = archiver('zip');
+  const archive = new ZipArchive();
   const output = fs.createWriteStream(EXPORT_DIR +  '.zip');
 
   output.on('close', async.apply(cleanUpExport, next));

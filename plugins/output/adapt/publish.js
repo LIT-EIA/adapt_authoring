@@ -1,5 +1,5 @@
 // external
-const archiver = require('archiver');
+const { ZipArchive } = require('archiver');
 const async = require('async');
 const exec = require('child_process').exec;
 const fs = require('fs-extra');
@@ -295,7 +295,7 @@ function publishCourse(courseId, mode, request, response, next) {
       var filename = path.join(COURSE_FOLDER, Constants.Filenames.Download);
       var zipName = helpers.slugify(outputJson['course'].title);
       var output = fs.createWriteStream(filename);
-      var archive = archiver('zip');
+      var archive = new ZipArchive();
 
       output.on('close', function() {
         resultObject.filename = filename;

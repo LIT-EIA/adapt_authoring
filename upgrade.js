@@ -1,9 +1,9 @@
 var _ = require('underscore');
 var async = require('async');
 var { argv } = require('optimist');
-var chalk = require('chalk');
+var chalk = require('chalk').default;
 var fs = require('fs-extra');
-var inquirer = require('inquirer');
+var inquirer = require('inquirer').default;
 var path = require('path');
 var semver = require('semver');
 var migrateMongoose = require('migrate-mongoose');

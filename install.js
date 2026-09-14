@@ -1,5 +1,5 @@
 var async = require('async');
-var chalk = require('chalk');
+var chalk = require('chalk').default;
 var fs = require('fs-extra');
 var optimist = require('optimist');
 var path = require('path');
@@ -27,11 +27,9 @@ var configOverrides = {};
 
 installHelpers.checkPrimaryDependencies(function (error) {
   if (error) return handleError(null, 1, error);
-  // we need the framework version for the config items, so let's go
-  installHelpers.getLatestFrameworkVersion(function (error, latestFrameworkTag) {
-    if (error) {
-      return handleError(error, 1, 'Failed to get the latest framework version. Check package.json.');
-    }
+  // NOTE: the GitHub check for the latest framework version has been removed to avoid
+  // hitting GitHub's unauthenticated API rate limit during install; defaults to master.
+  (function () {
     inputData = {
       useConfigJSON: [
         {
@@ -86,7 +84,7 @@ installHelpers.checkPrimaryDependencies(function (error) {
           name: 'frameworkRevision',
           type: 'input',
           message: 'Specific git revision to be used for the framework. Accepts any valid revision type (e.g. branch/tag/commit)',
-          default: 'tags/' + latestFrameworkTag
+          default: 'master'
         }
       ],
       database: {
@@ -292,10 +290,8 @@ installHelpers.checkPrimaryDependencies(function (error) {
       USE_CONFIG = result.useJSON;
       start();
     });
-  });
+  })();
 });
-
-// we need the framework version for the config items, so let's go
 
 function generatePromptOverrides() {
   if (USE_CONFIG) {
@@ -381,14 +377,9 @@ function configureServer(callback) {
   } else {
     console.log('We need to configure the tool before install. \nTip: just press ENTER to accept the default value in brackets.');
   }
-  installHelpers.getLatestFrameworkVersion(function (error, latestFrameworkTag) {
-    if (error) {
-      return handleError(error, 1, 'Failed to get latest framework version');
-    }
-    installHelpers.getInput(inputData.server, configOverrides, function (result) {
-      addConfig(result);
-      callback();
-    });
+  installHelpers.getInput(inputData.server, configOverrides, function (result) {
+    addConfig(result);
+    callback();
   });
 }
 

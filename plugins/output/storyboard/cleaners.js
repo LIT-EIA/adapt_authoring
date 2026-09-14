@@ -1,11 +1,13 @@
-const htmlToText = require("html-to-text");
+const { convert } = require("html-to-text");
 
 function cleanHTML(str) {
   if (!str) return "";
-  return htmlToText.fromString(String(str), {
+  return convert(String(str), {
     wordwrap: false,
-    ignoreHref: true,
-    ignoreImage: true,
+    selectors: [
+      { selector: "a", options: { ignoreHref: true } },
+      { selector: "img", format: "skip" },
+    ],
   }).trim();
 }
 

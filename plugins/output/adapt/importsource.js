@@ -9,7 +9,7 @@ const fs = require("fs-extra");
 const glob = require('glob');
 const helpers = require('./outputHelpers');
 const logger = require("../../../lib/logger");
-const mime = require('mime');
+const mime = require('mime').default;
 const path = require("path");
 const { promisify } = require('util');
 
