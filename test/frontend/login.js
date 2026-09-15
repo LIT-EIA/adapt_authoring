@@ -10,10 +10,7 @@ describe('login process', function () {
     browser.navigateTo(`http://localhost:${config.serverPort}`);
   });
 
-  MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, db) {
-    if (err) {
-      browser.assert.fail("Database connection failed: " + err.message);
-    }
+  MongoClient.connect(url).then(function (db) {
 
     var database = db.db(config.dbName);
 
@@ -780,6 +777,8 @@ describe('login process', function () {
       browser.assert.urlContains('#user/loginMfa');
     });
 
+  }).catch(function (err) {
+    browser.assert.fail("Database connection failed: " + err.message);
   });
 
   after(function (browser) {

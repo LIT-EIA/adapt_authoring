@@ -133,21 +133,14 @@ function removeTestData(done) {
     function dumpOldDb(cb) {
       var MongoClient = mongodb.MongoClient;
       var connStr = 'mongodb://' + testConfig.dbHost + ':' + testConfig.dbPort + '/' + testConfig.dbName;
-      MongoClient.connect(connStr, {
-        domainsEnabled: true,
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      }, function (error, client) {
-        if (error) return cb(error);
-
+      MongoClient.connect(connStr).then(function (client) {
         var db = client.db(testConfig.dbName);
-
-        db.dropDatabase(function (error, result) {
-          if (error) return cb(error);
-          client.close();
-          return cb();
+        return db.dropDatabase().then(function () {
+          return client.close();
         });
-      });
+      }).then(function () {
+        cb();
+      }, cb);
     },
     function removeData(cb) {
       fs.remove(testConfig.dataRoot, cb);
