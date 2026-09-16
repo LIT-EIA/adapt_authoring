@@ -286,6 +286,11 @@ LocalAuth.prototype.validateMfaToken = function (req, res, next) {
                     if (error) {
                       return next(error);
                     }
+                    usermanager.updateMfaToken({ _id: result._id }, { sessionId: req.sessionID }, function (error) {
+                      if (error) {
+                        logger.log('error', error);
+                      }
+                    });
                     usermanager.logAccess(user, function (error) {
                       if (error) {
                         return next(error);
