@@ -15,52 +15,11 @@ const origin = require('../../../');
 const outputHelpers = require('./outputHelpers');
 const usermanager = require('../../../lib/usermanager');
 
-/**
- * Runs a grunt task using the framework's own locally-installed grunt-cli
- * binary (invoked directly via `node`), rather than relying on a `grunt`
- * executable being resolvable on the system PATH. This avoids failures such
- * as "'grunt' is not recognized as an internal or external command", which
- * occur when grunt-cli isn't installed globally - a requirement that varies
- * between local dev machines and production servers.
- *
- * If the framework's local grunt-cli is missing (e.g. a partial/corrupted
- * framework install), this will automatically attempt a one-off `npm install`
- * in the framework directory to self-heal, then retry once before failing
- * with an actionable error message.
- *
- * @param {string} cwd - the framework root directory to run the task in
- * @param {string} command - the grunt task + args, e.g. 'server-build:prod --foo=bar'
- * @param {function} callback - function (error, stdout, stderr)
- */
-function runGruntTask(cwd, command, callback) {
-  const gruntCliBin = path.join(cwd, 'node_modules', 'grunt-cli', 'bin', 'grunt');
-
-  function exec_(retryOnMissing) {
-    if (!fs.existsSync(gruntCliBin)) {
-      if (!retryOnMissing) {
-        return callback(new Error(
-          `grunt-cli could not be found at "${gruntCliBin}". ` +
-          `Please run "npm install" in "${cwd}" to repair the framework install.`
-        ), '', '');
-      }
-      logger.log('warn', `grunt-cli not found at ${gruntCliBin}, attempting to repair via npm install...`);
-      return exec('npm install --loglevel error --production', { cwd: cwd }, (installError) => {
-        if (installError) {
-          return callback(new Error(
-            `grunt-cli could not be found and the automatic repair (npm install) failed: ${installError.message}`
-          ), '', '');
-        }
-        exec_(false);
-      });
-    }
-    // quote the binary path so it's safe even if it contains spaces (common on Windows)
-    exec(`node "${gruntCliBin}" ${command}`, { cwd: cwd }, function (error, stdout, stderr) {
-      callback(error, stdout || '', stderr || '');
-    });
-  }
-
-  exec_(true);
-}
+// grunt-cli's usual local install location for this app (a direct dependency
+// of adapt_authoring's own package.json), used instead of a bare `grunt` on
+// PATH since that requires a global grunt-cli install that varies between
+// environments.
+const GRUNT_CLI_BIN = path.join(configuration.serverRoot, 'node_modules', 'grunt-cli', 'bin', 'grunt');
 
 function publishCourse(courseId, mode, request, response, next) {
   let app = origin();
@@ -247,7 +206,7 @@ function publishCourse(courseId, mode, request, response, next) {
 
         logger.log('info', 'grunt server-build:' + buildMode + ' ' + args.join(' '));
 
-        runGruntTask(FRAMEWORK_ROOT_FOLDER, 'server-build:' + buildMode + ' ' + args.join(' '),
+        exec('node "' + GRUNT_CLI_BIN + '" server-build:' + buildMode + ' ' + args.join(' '), { cwd: path.join(FRAMEWORK_ROOT_FOLDER) },
           function(error, stdout, stderr) {
             if (error !== null) {
               logger.log('error', 'exec error: ' + error);
