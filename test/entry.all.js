@@ -94,16 +94,14 @@ after(function (done) {
 
   var options = {
     config: './test/nightwatch.conf.js',
-    env: 'default'
+    env: 'chrome'
   };
 
   Nightwatch.runner(options, function (success) {
     destroyInstance();
-    done();
   }, function (err) {
     console.error('Error running Nightwatch:', err);
     destroyInstance();
-    done();
   });
 
   function destroyInstance() {
