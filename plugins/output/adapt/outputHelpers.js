@@ -376,6 +376,94 @@ function cleanUpImport(dirs, doneCleanUp) {
   async.each(dirs, fs.remove, doneCleanUp);
 };
 
+function cleanCourseHierarchy(data, enableLogging = false) {
+  const log = (level, message) => {
+    if (enableLogging) {
+      logger.log(level, message);
+    }
+  };
+
+  log('info', 'Cleaning course hierarchy');
+
+  // Pages
+  const pageIds = new Set(
+    (data.contentobject || [])
+      .filter(item => item._type === 'page')
+      .map(item => item._id.toString())
+  );
+
+  // Articles
+  const originalArticleCount = (data.article || []).length;
+
+  data.article = (data.article || []).filter(article => {
+    const valid = pageIds.has(article._parentId?.toString());
+
+    if (!valid) {
+      log(
+        'warn',
+        `Removing orphaned article "${article.title || article._id}" ` +
+        `(id=${article._id}, parent=${article._parentId})`
+      );
+    }
+
+    return valid;
+  });
+
+  // Blocks
+  const articleIds = new Set(
+    data.article.map(article => article._id.toString())
+  );
+
+  const originalBlockCount = (data.block || []).length;
+
+  data.block = (data.block || []).filter(block => {
+    const valid = articleIds.has(block._parentId?.toString());
+
+    if (!valid) {
+      log(
+        'warn',
+        `Removing orphaned block "${block.title || block._id}" ` +
+        `(id=${block._id}, parent=${block._parentId})`
+      );
+    }
+
+    return valid;
+  });
+
+  // Components
+  const blockIds = new Set(
+    data.block.map(block => block._id.toString())
+  );
+
+  const originalComponentCount = (data.component || []).length;
+
+  data.component = (data.component || []).filter(component => {
+    const valid = blockIds.has(component._parentId?.toString());
+
+    if (!valid) {
+      log(
+        'warn',
+        `Removing orphaned component "${component.title || component._id}" ` +
+        `(id=${component._id}, parent=${component._parentId})`
+      );
+    }
+
+    return valid;
+  });
+
+  log(
+    'info',
+    [
+      'Course hierarchy cleanup complete:',
+      `Articles: ${originalArticleCount} -> ${data.article.length}`,
+      `Blocks: ${originalBlockCount} -> ${data.block.length}`,
+      `Components: ${originalComponentCount} -> ${data.component.length}`
+    ].join(' ')
+  );
+
+  return data;
+}
+
 exports = module.exports = {
   unzip: unzip,
   importPlugin: importPlugin,
@@ -386,5 +474,6 @@ exports = module.exports = {
   PartialImportError: PartialImportError,
   sortContentObjects: sortContentObjects,
   cleanUpImport: cleanUpImport,
-  validateCourse: validateCourse
+  validateCourse: validateCourse,
+  cleanCourseHierarchy: cleanCourseHierarchy
 };
