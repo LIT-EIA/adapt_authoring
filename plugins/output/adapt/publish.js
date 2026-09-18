@@ -66,6 +66,15 @@ function publishCourse(courseId, mode, request, response, next) {
         callback(null);
       });
     },
+    // remove orphaned contents from the course data
+    function(callback) {
+      const ENABLE_HIERARCHY_CLEANUP_LOGGING = true;
+      outputJson = outputHelpers.cleanCourseHierarchy(
+        outputJson,
+        ENABLE_HIERARCHY_CLEANUP_LOGGING
+      );
+      callback(null);
+    },
     // validate the course data
     function(callback) {
       outputHelpers.validateCourse(outputJson, function(error, isValid) {
