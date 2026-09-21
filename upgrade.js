@@ -1,12 +1,11 @@
 var _ = require('underscore');
 var async = require('async');
-var { argv } = require('optimist');
+var argv = require('minimist')(process.argv.slice(2));
 var chalk = require('chalk').default;
 var fs = require('fs-extra');
 var inquirer = require('inquirer').default;
 var path = require('path');
 var semver = require('semver');
-var migrateMongoose = require('migrate-mongoose');
 
 var configuration = require('./lib/configuration');
 var logger = require('./lib/logger');
@@ -172,45 +171,6 @@ function doUpdate(data) {
         console.log(`Adapt framework upgraded to ${data.adapt_framework}`);
         cb();
       });
-    },
-    function runMigrations(callback) {
-      installHelpers.syncMigrations(function(err, migrations) {
-        if(err) {
-          return callback(err);
-        }
-        installHelpers.getMigrationConfig(function(err, config) {
-          if(err){
-            return callback(err);
-          }
-          var migrator = new migrateMongoose({
-            migrationsPath: config.migrationsDir,
-            dbConnectionUri: config.dbConnectionUri,
-            autosync: true
-          });
-          migrator.list().then(function(migrations) {
-            var migrationsDone = 0;
-            async.eachSeries(migrations, function(migration, callback) {
-              if(migration.state === 'up') {
-                return callback();
-              }
-              console.log(`Running ${migration.name} migration`);
-              migrationsDone++;
-              migrator.run('up', migration.name).then(v => callback()).catch(callback);
-
-            }, function(err, data) {
-              if(err) {
-                return callback(err);
-              }
-              if(migrationsDone > 0) {
-                console.log(`${migrationsDone} migration${migrationsDone > 1 ? 's' : ''} ran successfully`);
-              } else {
-                console.log(`No migrations to run`);
-              }
-              callback();
-            });
-          }).catch(callback);
-        });
-      })
     }
   ], function(error) {
     if(error) {
