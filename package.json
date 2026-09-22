@@ -16,7 +16,6 @@
     "node": "20 || 22"
   },
   "scripts": {
-
     "test": "cross-env NODE_ENV=test grunt test && node test/output/reportserver || node test/output/reportserver",
     "server": "%node12% server",
     "build:prod": "grunt build:prod",
@@ -50,6 +49,7 @@
     "consolidate": "^1.0.4",
     "cookie-parser": "^1.4.7",
     "docx": "^9.7.1",
+    "dotenv": "^18.0.2",
     "email-templates": "^13.0.1",
     "errorhandler": "^1.5.2",
     "express": "^5.2.1",

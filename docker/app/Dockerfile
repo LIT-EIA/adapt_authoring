@@ -11,7 +11,7 @@ RUN apk add --no-cache git python3 make g++
 
 # Install dependencies first (better caching)
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm install --omit=dev
 
 # Copy application source
 COPY . .
