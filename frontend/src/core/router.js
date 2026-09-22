@@ -19,7 +19,7 @@ define(function(require) {
         var fragments = Backbone.history.getFragment().split('/');
         var route = fragments[0] + '/' + fragments[1];
         if(route && route !== 'user/login' && route !== 'user/loginMfa' && route !== 'user/logout' && route !== 'user/forgot' && route !== 'user/reset'){
-          if(xhr.status === 403 && xhr.responseJSON.statusCode === 'not-authenticated'){
+          if(xhr.status === 403 && xhr.responseJSON && xhr.responseJSON.statusCode === 'not-authenticated'){
             self.blockUserAccess(Origin.l10n.t('app.errorsessionexpired'), true);
           }
         }
@@ -137,6 +137,12 @@ define(function(require) {
     },
 
     navigateTo: function(route) {
+      const ownData = {
+        featurePermissions: ["{{tenantid}}/content/course/own:read"]
+      };
+      if(route === "dashboard" && !Origin.permissions.hasPermissions(ownData.featurePermissions)){
+        route = "dashboard/shared";
+      }
       // use Origin.router.navigate in case we don't have a valid 'this' reference
       Origin.router.navigate(this.formatRoute(route), { trigger: true });
     },

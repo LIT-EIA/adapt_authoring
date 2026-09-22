@@ -1,6 +1,9 @@
 // LICENCE https://github.com/adaptlearning/adapt_authoring/blob/master/LICENSE
 module.exports = function(grunt) {
-  require('matchdep').filterAll('grunt-*').forEach(grunt.loadNpmTasks);
+  const pkgJson = grunt.file.readJSON('package.json');
+  Object.keys(Object.assign({}, pkgJson.dependencies, pkgJson.devDependencies))
+    .filter(name => name.indexOf('grunt-') === 0)
+    .forEach(name => grunt.loadNpmTasks(name));
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -149,45 +152,6 @@ module.exports = function(grunt) {
         dest: 'frontend/src/plugins/plugins.js'
       }
     }
-  });
-
-  grunt.registerTask('migration-conf', 'Creating migration Conf', function() {
-    var mongoUri = require('mongodb-uri');
-    var config = grunt.file.readJSON('conf/config.json');
-    var connectionString = '';
-
-    if (config.dbConnectionUri) {
-      connectionString = config.dbConnectionUri;
-
-      var dbConnectionUriParsed = mongoUri.parse(connectionString);
-      dbConnectionUriParsed.database = config.dbName;
-      connectionString = mongoUri.format(dbConnectionUriParsed);
-
-    } else {
-      // Construct the authentication part of the connection string.
-      var authenticationString = config.dbUser && config.dbPass ? config.dbUser + ':' + config.dbPass + '@' : '';
-
-      // Check if a MongoDB replicaset array has been specified.
-      if (config.dbReplicaset && Array.isArray(config.dbReplicaset) && config.dbReplicaset.length !== 0) {
-        // The replicaset should contain an array of hosts and ports
-        connectionString = 'mongodb://' + authenticationString + config.dbReplicaset.join(',') + '/' + config.dbName
-      } else {
-        // Get the host and port number from the configuration.
-
-        var portString = config.dbPort ? ':' + config.dbPort : '';
-
-        connectionString = 'mongodb://' + authenticationString + config.dbHost + portString + '/' + config.dbName;
-      }
-      if (typeof config.dbAuthSource === 'string' && config.dbAuthSource !== '' ) {
-        connectionString += '?authSource=' + config.dbAuthSource
-      }
-    }
-    var migrateConf = {
-      migrationsDir : 'migrations/lib',
-      es6 : false,
-      dbConnectionUri: connectionString
-    };
-    grunt.file.write('conf/migrate.json', JSON.stringify(migrateConf, null, 2));
   });
 
   // Compiles frontend plugins
@@ -355,7 +319,7 @@ module.exports = function(grunt) {
       config.isProduction = isProduction;
       grunt.file.write(configFile, JSON.stringify(config, null, 2));
       // run the task
-      grunt.task.run(['migration-conf', 'requireBundle', 'generate-lang-json', 'copy', 'less:' + compilation, 'handlebars', 'requirejs:'+ compilation, 'update-build-number']);
+      grunt.task.run(['requireBundle', 'generate-lang-json', 'copy', 'less:' + compilation, 'handlebars', 'requirejs:'+ compilation, 'update-build-number']);
 
     } catch(e) {
       grunt.task.run(['requireBundle', 'copy', 'less:' + compilation, 'handlebars', 'requirejs:' + compilation]);

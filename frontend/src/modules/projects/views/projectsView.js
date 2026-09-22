@@ -110,7 +110,11 @@ define(function(require){
     },
 
     convertFilterTextToPattern: function(filterText) {
-      var pattern = '.*' + filterText.toLowerCase() + '.*';
+      const escapeRegex = function (str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+      
+      var pattern = '.*' + escapeRegex(filterText.toLowerCase()) + '.*';
       return { title: pattern };
     },
 

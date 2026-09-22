@@ -1,8 +1,13 @@
 var mongo = require('mongodb');
 var MongoClient = mongo.MongoClient;
-var url = "mongodb://localhost:27017/";
-var config = require('../testConfig.json');
+var config = require('../.testcache/testConfig.generated.json');
 var testData = require('../testData.json');
+var authString = config.dbUser && config.dbPass ?
+  encodeURIComponent(config.dbUser) + ':' + encodeURIComponent(config.dbPass) + '@' : '';
+var url = 'mongodb://' + authString + config.dbHost + ':' + config.dbPort + '/';
+if (config.dbAuthSource) {
+  url += '?authSource=' + config.dbAuthSource;
+}
 
 describe('login process', function () {
 
@@ -10,10 +15,7 @@ describe('login process', function () {
     browser.navigateTo(`http://localhost:${config.serverPort}`);
   });
 
-  MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, db) {
-    if (err) {
-      browser.assert.fail("Database connection failed: " + err.message);
-    }
+  MongoClient.connect(url).then(function (db) {
 
     var database = db.db(config.dbName);
 
@@ -51,13 +53,9 @@ describe('login process', function () {
       browser.assert.elementPresent('#loginErrorMessage');
       browser.expect.element('#loginErrorMessage').text.to.equal('This account has been locked because of too many failed login attempts.');
 
-      browser.perform(() => {
-        database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { failedLoginCount: 0 } }, function (err, commandResult) {
-          if (err) {
-            browser.assert.fail("Failed to reset count " + err.message);
-          }
-          browser.assert.equal(commandResult.result.nModified, 1);
-        });
+      browser.perform(async () => {
+        const commandResult = await database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { failedLoginCount: 0 } });
+        browser.assert.equal(commandResult.modifiedCount, 1);
       });
       browser.setValue('#login-input-username', '');
     });
@@ -69,8 +67,8 @@ describe('login process', function () {
         { field: 'mfaResetCount', value: 3 }
       ];
 
-      const resetAllFields = (done) => {
-        database.collection("users").updateOne(
+      const resetAllFields = async () => {
+        const commandResult = await database.collection("users").updateOne(
           { email: testData.testUser.email },
           {
             $set: {
@@ -78,42 +76,34 @@ describe('login process', function () {
               failedMfaCount: 0,
               mfaResetCount: 0
             }
-          },
-          function (err, commandResult) {
-            if (err) {
-              browser.assert.fail("Failed to reset all fields: " + err.message);
-            } else {
-              browser.assert.strictEqual(commandResult.matchedCount, 1, "Expected 1 document to match for reset");
-            }
-            done();
           }
         );
+        browser.assert.strictEqual(commandResult.matchedCount, 1, "Expected 1 document to match for reset");
       };
 
       updates.forEach(({ field, value }, index) => {
+        // The login form's submit handler is debounced (leading-edge, 300ms) to guard
+        // against double-submits, so successive rapid submits in this loop (with no
+        // page reload in between) must be spaced out past that window or they get
+        // silently dropped, leaving #loginErrorMessage unchanged from its prior state.
+        browser.pause(500);
+
         // Reset all fields before each iteration
-        browser.perform((done) => resetAllFields(done));
+        browser.perform(resetAllFields);
 
         // Set the current field to 3
-        browser.perform((done) => {
+        browser.perform(async () => {
           const update = {};
           update[field] = value;
 
-          database.collection("users").updateOne(
+          const commandResult = await database.collection("users").updateOne(
             { email: testData.testUser.email },
-            { $set: update },
-            function (err, commandResult) {
-              if (err) {
-                browser.assert.fail(`Failed to update ${field}: ${err.message}`);
-              } else {
-                browser.assert.strictEqual(
-                  commandResult.matchedCount,
-                  1,
-                  `Expected 1 document to match for ${field}`
-                );
-              }
-              done();
-            }
+            { $set: update }
+          );
+          browser.assert.strictEqual(
+            commandResult.matchedCount,
+            1,
+            `Expected 1 document to match for ${field}`
           );
         });
 
@@ -131,10 +121,10 @@ describe('login process', function () {
 
       });
 
-      browser.perform((done) => resetAllFields(done));
+      browser.perform(resetAllFields);
       // Final check: all fields should be 0
-      browser.perform((done) => {
-        database.collection("users").findOne(
+      browser.perform(async () => {
+        const user = await database.collection("users").findOne(
           { email: testData.testUser.email },
           {
             projection: {
@@ -143,18 +133,11 @@ describe('login process', function () {
               mfaResetCount: 1,
               _id: 0
             }
-          },
-          function (err, user) {
-            if (err) {
-              browser.assert.fail("Failed to fetch user data: " + err.message);
-            } else {
-              browser.assert.strictEqual(user.failedLoginCount, 0, 'failedLoginCount should be 0');
-              browser.assert.strictEqual(user.failedMfaCount, 0, 'failedMfaCount should be 0');
-              browser.assert.strictEqual(user.mfaResetCount, 0, 'mfaResetCount should be 0');
-            }
-            done();
           }
         );
+        browser.assert.strictEqual(user.failedLoginCount, 0, 'failedLoginCount should be 0');
+        browser.assert.strictEqual(user.failedMfaCount, 0, 'failedMfaCount should be 0');
+        browser.assert.strictEqual(user.mfaResetCount, 0, 'mfaResetCount should be 0');
       });
     });
 
@@ -175,39 +158,25 @@ describe('login process', function () {
     });
 
     it('should accept password reset page with valid token', function (browser) {
-      browser.perform((done) => {
-        database.collection("users").findOne({ email: testData.testUser.email }, function (err, user) {
-          if (err) {
-            browser.assert.fail("Failed to get user " + err.message);
-          }
-          database.collection("userpasswordresets").findOne({ user: user._id }, function (err, result) {
-            if (err) {
-              browser.assert.fail("Failed to get user " + err.message);
-            }
-            browser.navigateTo(`http://localhost:${config.serverPort}/#user/reset/${result.token}`);
-            browser.assert.urlContains('#user/reset');
-            browser.assert.elementPresent('.reset-password');
-            browser.assert.elementPresent('#password');
-            browser.sendKeys('#password', testData.testUser.newpassword);
-            browser.assert.elementPresent('#confirmPassword');
-            browser.sendKeys('#confirmPassword', [testData.testUser.newpassword]);
-            browser.assert.elementPresent('.submit');
-            browser.click('.submit');
-            browser.keys(browser.Keys.ENTER);
-            browser.assert.elementPresent('.return');
-            browser.pause(2000);
-            browser.perform((cb) => {
-              browser.pause(2000);
-              database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { lastPasswordChange: new Date("2020-01-01T00:00:00Z") } }, function (err, commandResult) {
-                if (err) {
-                  browser.assert.fail("Failed to reset count " + err.message);
-                }
-                console.log(commandResult)
-                cb()
-              });
-            })
-            done();
-          });
+      browser.perform(async () => {
+        const user = await database.collection("users").findOne({ email: testData.testUser.email });
+        const result = await database.collection("userpasswordresets").findOne({ user: user._id });
+        browser.navigateTo(`http://localhost:${config.serverPort}/#user/reset/${result.token}`);
+        browser.assert.urlContains('#user/reset');
+        browser.assert.elementPresent('.reset-password');
+        browser.assert.elementPresent('#password');
+        browser.sendKeys('#password', testData.testUser.newpassword);
+        browser.assert.elementPresent('#confirmPassword');
+        browser.sendKeys('#confirmPassword', [testData.testUser.newpassword]);
+        browser.assert.elementPresent('.submit');
+        browser.click('.submit');
+        browser.keys(browser.Keys.ENTER);
+        browser.assert.elementPresent('.return');
+        browser.pause(2000);
+        browser.perform(async () => {
+          browser.pause(2000);
+          const commandResult = await database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { lastPasswordChange: new Date("2020-01-01T00:00:00Z") } });
+          console.log(commandResult)
         });
       });
     });
@@ -222,37 +191,26 @@ describe('login process', function () {
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
-      browser.getCookie(cookieName, function callback(result) {
+      browser.getCookie(cookieName, async function callback(result) {
         this.assert.equal(result.name, cookieName);
         var sessionID = result.value.split('.')[0].substring(4);
         var validationTokenId;
         const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000); // 15 minutes ago
         browser.pause(2000);
-        database.collection("mfatokens").findOneAndUpdate(
+        const updatedDoc = await database.collection("mfatokens").findOneAndUpdate(
           { sessionId: sessionID, verified: false },
-          { $set: { validationTokenIssueDate: fifteenMinutesAgo } },
-          function (err, result) {
-            if (err) {
-              browser.assert.fail("Failed to update issue date: " + err.message);
-            }
-
-            const updatedDoc = result.value;
-            if (updatedDoc && updatedDoc.validationToken) {
-              validationTokenId = updatedDoc.validationToken;
-            }
-            browser.perform(() => {
-              browser.assert.elementPresent('#login-mfa-input-verificationcode');
-              browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
-              browser.assert.elementPresent('#loginErrorMessage');
-              browser.expect.element('#loginErrorMessage').text.to.equal('Invalid one-time password');
-              database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { failedMfaCount: 0 } }, function (err, commandResult) {
-                if (err) {
-                  browser.assert.fail("Failed to reset count " + err.message);
-                }
-              });
-            });
-          }
+          { $set: { validationTokenIssueDate: fifteenMinutesAgo } }
         );
+        if (updatedDoc && updatedDoc.validationToken) {
+          validationTokenId = updatedDoc.validationToken;
+        }
+        browser.perform(async () => {
+          browser.assert.elementPresent('#login-mfa-input-verificationcode');
+          browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
+          browser.assert.elementPresent('#loginErrorMessage');
+          browser.expect.element('#loginErrorMessage').text.to.equal('Invalid one-time password');
+          await database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { failedMfaCount: 0 } });
+        });
       });
     });
 
@@ -266,21 +224,16 @@ describe('login process', function () {
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
-      browser.getCookie(cookieName, function callback(result) {
+      browser.getCookie(cookieName, async function callback(result) {
         this.assert.equal(result.name, cookieName);
         var sessionID = result.value.split('.')[0].substring(4);
         var validationTokenId;
-        database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false }, function (err, result) {
-          if (err) {
-            browser.assert.fail("Failed to query validation token: " + err.message);
-          }
-          if (result && result.validationToken) {
-            validationTokenId = result.validationToken;
-          }
-          browser.assert.elementPresent('#login-mfa-input-verificationcode');
-          browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
-        });
-
+        const result2 = await database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false });
+        if (result2 && result2.validationToken) {
+          validationTokenId = result2.validationToken;
+        }
+        browser.assert.elementPresent('#login-mfa-input-verificationcode');
+        browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
       });
       browser.assert.urlContains('#dashboard');
     });
@@ -356,79 +309,77 @@ describe('login process', function () {
 
     it('locked account should return the right message in usermanager', function (browser) {
       browser.pause(1000);
-      browser.perform(() => {
-        database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 3, passwordResetCount: 0, failedMfaCount: 0, mfaResetCount: 0 } }, function (err, commandResult) {
-          if (err) {
-            browser.assert.fail("Failed to reset count " + err.message);
+      browser.perform(async () => {
+        // The previous test submits the "create user" form without waiting for the
+        // POST to complete, so secondUser may not exist in Mongo yet. Poll for it
+        // before locking, otherwise this updateOne silently matches 0 documents.
+        let user = null;
+        for (let i = 0; i < 20 && !user; i++) {
+          user = await database.collection("users").findOne({ email: testData.secondUser.email });
+          if (!user) {
+            await new Promise((resolve) => setTimeout(resolve, 250));
           }
-        });
+        }
+        const commandResult = await database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 3, passwordResetCount: 0, failedMfaCount: 0, mfaResetCount: 0 } });
+        browser.assert.strictEqual(commandResult.matchedCount, 1, 'Expected secondUser to exist before locking');
       });
       browser.pause(1000);
       browser.navigateTo(`http://localhost:${config.serverPort}/#userManagement`);
       browser.pause(1000);
+      // This is the first hard refresh() in the whole suite, so the SPA bundle loads
+      // cold here (every prior navigateTo was a same-page hash change); give it a
+      // generous timeout to finish loading before checking the locked-user label.
       browser.refresh();
-      browser.pause(1000);
+      browser.waitForElementPresent('.users', 15000);
       browser.useXpath().assert.containsText(
-        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-20')][.//text()[contains(., 'Locked')]]",
+        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-10')][.//text()[contains(., 'Locked')]]",
         'Locked'
       ).useCss();
     });
 
     it('email password locked account should return the right message in usermanager', function (browser) {
       browser.pause(1000);
-      browser.perform(() => {
-        database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 0, passwordResetCount: 3, failedMfaCount: 0, mfaResetCount: 0 } }, function (err, commandResult) {
-          if (err) {
-            browser.assert.fail("Failed to reset count " + err.message);
-          }
-        });
+      browser.perform(async () => {
+        await database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 0, passwordResetCount: 3, failedMfaCount: 0, mfaResetCount: 0 } });
       });
       browser.pause(1000);
       browser.navigateTo(`http://localhost:${config.serverPort}/#userManagement`);
       browser.pause(1000);
       browser.refresh();
-      browser.pause(1000);
+      browser.waitForElementPresent('.users', 15000);
       browser.useXpath().assert.containsText(
-        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-20')][.//text()[contains(., 'Password Mail Locked')]]",
+        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-10')][.//text()[contains(., 'Password Mail Locked')]]",
         'Locked'
       ).useCss();
     });
 
     it('mfa locked account should return the right message in usermanager', function (browser) {
       browser.pause(1000);
-      browser.perform(() => {
-        database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 0, passwordResetCount: 0, failedMfaCount: 3, mfaResetCount: 0 } }, function (err, commandResult) {
-          if (err) {
-            browser.assert.fail("Failed to reset count " + err.message);
-          }
-        });
+      browser.perform(async () => {
+        await database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 0, passwordResetCount: 0, failedMfaCount: 3, mfaResetCount: 0 } });
       });
       browser.pause(1000);
       browser.navigateTo(`http://localhost:${config.serverPort}/#userManagement`);
       browser.pause(1000);
       browser.refresh();
-      browser.pause(1000);
+      browser.waitForElementPresent('.users', 15000);
       browser.useXpath().assert.containsText(
-        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-20')][.//text()[contains(., 'Mfa Locked')]]",
+        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-10')][.//text()[contains(., 'Mfa Locked')]]",
         'Locked'
       ).useCss();
     });
     it('mfa email locked account should return the right message in usermanager', function (browser) {
       browser.pause(1000);
-      browser.perform(() => {
-        database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 0, passwordResetCount: 0, failedMfaCount: 0, mfaResetCount: 3 } }, function (err, commandResult) {
-          if (err) {
-            browser.assert.fail("Failed to reset count " + err.message);
-          }
-        });
+      browser.perform(async () => {
+        await database.collection("users").updateOne({ email: testData.secondUser.email }, { $set: { failedLoginCount: 0, passwordResetCount: 0, failedMfaCount: 0, mfaResetCount: 3 } });
       });
       browser.pause(1000);
       browser.navigateTo(`http://localhost:${config.serverPort}/#userManagement`);
       browser.pause(1000);
       browser.refresh();
-      browser.pause(1000);
+      browser.waitForElementPresent('.users', 15000);
       browser.useXpath().assert.containsText(
-        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-20')][.//text()[contains(., 'Mfa Mail Locked')]]",
+        "//div[contains(@class, 'user-item') and contains(@class, 'locked')]//div[contains(@class, 'col-10')][.//text()[contains(., 'Mfa Mail Locked')]]",
         'Locked'
       ).useCss();
     });
@@ -503,21 +454,16 @@ describe('login process', function () {
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
-      browser.getCookie(cookieName, function callback(result) {
+      browser.getCookie(cookieName, async function callback(result) {
         this.assert.equal(result.name, cookieName);
         var sessionID = result.value.split('.')[0].substring(4);
         var validationTokenId;
-        database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false }, function (err, result) {
-          if (err) {
-            browser.assert.fail("Failed to query validation token: " + err.message);
-          }
-          if (result && result.validationToken) {
-            validationTokenId = result.validationToken;
-          }
-          browser.assert.elementPresent('#login-mfa-input-verificationcode');
-          browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
-        });
-
+        const result2 = await database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false });
+        if (result2 && result2.validationToken) {
+          validationTokenId = result2.validationToken;
+        }
+        browser.assert.elementPresent('#login-mfa-input-verificationcode');
+        browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
       });
       browser.assert.elementPresent('#passwordResetModal');
       browser.sendKeys('#passwordResetModal', testData.secondUser.thirdpassword);
@@ -556,21 +502,16 @@ describe('login process', function () {
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
-      browser.getCookie(cookieName, function callback(result) {
+      browser.getCookie(cookieName, async function callback(result) {
         this.assert.equal(result.name, cookieName);
         var sessionID = result.value.split('.')[0].substring(4);
         var validationTokenId;
-        database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false }, function (err, result) {
-          if (err) {
-            browser.assert.fail("Failed to query validation token: " + err.message);
-          }
-          if (result && result.validationToken) {
-            validationTokenId = result.validationToken;
-          }
-          browser.assert.elementPresent('#login-mfa-input-verificationcode');
-          browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
-        });
-
+        const result2 = await database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false });
+        if (result2 && result2.validationToken) {
+          validationTokenId = result2.validationToken;
+        }
+        browser.assert.elementPresent('#login-mfa-input-verificationcode');
+        browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
       });
       browser.assert.urlContains('#dashboard');
     });
@@ -629,13 +570,9 @@ describe('login process', function () {
         });
       }
       browser.expect.element('#loginErrorMessage').text.to.equal('You have exceeded the maximum number of attempts to enter your one-time password. For your security, please reset your password by selecting the "Forgot Password?" option.');
-      browser.perform(() => {
-        database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { failedMfaCount: 0 } }, function (err, commandResult) {
-          if (err) {
-            browser.assert.fail("Failed to reset count " + err.message);
-          }
-          browser.assert.equal(commandResult.result.nModified, 1);
-        });
+      browser.perform(async () => {
+        const commandResult = await database.collection("users").updateOne({ email: testData.testUser.email }, { $set: { failedMfaCount: 0 } });
+        browser.assert.equal(commandResult.modifiedCount, 1);
       });
     });
 
@@ -652,23 +589,19 @@ describe('login process', function () {
       browser.assert.urlContains('#user/loginMfa');
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.sid` : `connect.sid`;
-      browser.getCookie(cookieName, function callback(result) {
+      browser.getCookie(cookieName, async function callback(result) {
         this.assert.equal(result.name, cookieName);
         storedCookie = result;
         var sessionID = result.value.split('.')[0].substring(4);
         var validationTokenId;
-        database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false }, function (err, result) {
-          if (err) {
-            browser.assert.fail("Failed to query validation token: " + err.message);
-          }
-          if (result && result.validationToken) {
-            validationTokenId = result.validationToken;
-          }
-          browser.assert.elementPresent('#skip-mfa');
-          browser.element('#skip-mfa').check();
-          browser.assert.elementPresent('#login-mfa-input-verificationcode');
-          browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
-        });
+        const result2 = await database.collection("mfatokens").findOne({ sessionId: sessionID, verified: false });
+        if (result2 && result2.validationToken) {
+          validationTokenId = result2.validationToken;
+        }
+        browser.assert.elementPresent('#skip-mfa');
+        browser.element('#skip-mfa').check();
+        browser.assert.elementPresent('#login-mfa-input-verificationcode');
+        browser.sendKeys('#login-mfa-input-verificationcode', [validationTokenId, browser.Keys.ENTER]);
       });
       browser.assert.urlContains('#dashboard');
       var cookieName2 = devEnv ? `connect-${devEnv}.fid` : `connect.fid`;
@@ -705,39 +638,27 @@ describe('login process', function () {
     it('should reject login with stored mfa cookie that is expired', function (browser) {
       var devEnv = config.devEnv;
       var cookieName = devEnv ? `connect-${devEnv}.fid` : `connect.fid`;
-      browser.getCookie(cookieName, function callback(result) {
+      browser.getCookie(cookieName, async function callback(result) {
         this.assert.equal(result.name, cookieName);
         var tokenID = result.value.split('.')[0].substring(6);
         const fortyFiveDaysAgo = new Date();
         fortyFiveDaysAgo.setDate(fortyFiveDaysAgo.getDate() - 45);
-        database.collection("mfatokens").updateOne(
+        await database.collection("mfatokens").updateOne(
           { tokenId: tokenID, verified: true }, // filter
-          { $set: { validationDate: fortyFiveDaysAgo } }, // update
-          function (err, result) {
-            if (err) {
-              browser.assert.fail("Failed to update validation date: " + err.message);
-              return;
-            }
-            browser.navigateTo(`http://localhost:${config.serverPort}`);
-            browser.pause(500);
-            browser.assert.urlContains('#user/login');
-            browser.waitForElementPresent('#login-input-username', 5000);
-            browser.sendKeys('#login-input-username', testData.testUser.email);
-            browser.waitForElementPresent('#login-input-password', 5000);
-            browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
-            browser.pause(2000);
-            browser.assert.urlContains('#user/loginMfa');
-            database.collection("mfatokens").updateOne(
-              { tokenId: tokenID, verified: true }, // filter
-              { $set: { validationDate: new Date() } }, // update
-              function (err, result) {
-                if (err) {
-                  browser.assert.fail("Failed to update validation date: " + err.message);
-                  return;
-                }
-              }
-            );
-          }
+          { $set: { validationDate: fortyFiveDaysAgo } } // update
+        );
+        browser.navigateTo(`http://localhost:${config.serverPort}`);
+        browser.pause(500);
+        browser.assert.urlContains('#user/login');
+        browser.waitForElementPresent('#login-input-username', 5000);
+        browser.sendKeys('#login-input-username', testData.testUser.email);
+        browser.waitForElementPresent('#login-input-password', 5000);
+        browser.sendKeys('#login-input-password', [testData.testUser.lastpassword, browser.Keys.ENTER]);
+        browser.pause(2000);
+        browser.assert.urlContains('#user/loginMfa');
+        await database.collection("mfatokens").updateOne(
+          { tokenId: tokenID, verified: true }, // filter
+          { $set: { validationDate: new Date() } } // update
         );
       });
     });
@@ -780,6 +701,8 @@ describe('login process', function () {
       browser.assert.urlContains('#user/loginMfa');
     });
 
+  }).catch(function (err) {
+    browser.assert.fail("Database connection failed: " + err.message);
   });
 
   after(function (browser) {

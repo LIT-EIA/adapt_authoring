@@ -92,9 +92,14 @@ define(function(require){
           this.model.set({title: title, description: description, hideAsset: privateAsset});
           this.model.save(null, {
             error: function(model, response, options) {
+              console.log('asset update error: ', response);
+              let errorText = response && response.responseJSON && response.responseJSON.message || Origin.l10n.t('app.errorassetupdate');
+              if (response.status === 403) {
+                errorText = Origin.l10n.t('app.errorpermission');
+              }
               Origin.Notify.alert({
                 type: 'error',
-                text: Origin.l10n.t('app.errorassetupdate')
+                text: errorText
               });
             },
             success: function(model, response, options) {
@@ -125,9 +130,13 @@ define(function(require){
 
         error: function(xhr, status, error) {
           Origin.trigger('sidebar:resetButtons');
+          let errorText = xhr.status === 413 ? Origin.l10n.t('app.uploadsizeerror') : xhr.responseJSON.message
+          if (xhr.status === 403) {
+            errorText = Origin.l10n.t('app.errorpermission');
+          }
           Origin.Notify.alert({
             type: 'error',
-            text: xhr.status === 413 ? Origin.l10n.t('app.uploadsizeerror') : xhr.responseJSON.message
+            text: errorText
           });
         },
 

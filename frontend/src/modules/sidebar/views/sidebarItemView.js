@@ -21,8 +21,11 @@ define(function(require) {
       'click button.editor-common-sidebar-preview': 'previewProject',
       'click button.editor-common-sidebar-preview-force': 'forcePreviewProject',
       'click button.editor-common-sidebar-export': 'exportProject',
+      'click button.editor-common-sidebar-storyboard': 'generateStoryboard',
       'click button.editor-common-sidebar-close': 'closeProject',
-      'click .editor-common-sidebar-preview-wrapper .dropdown button': 'toggleDropdown'
+      'click .editor-common-sidebar-preview-wrapper .dropdown button': 'toggleDropdown',
+      'click .editor-common-sidebar-exports': 'toggleExportsDropdown',
+      'click .editor-common-sidebar-exports-wrapper .exports-dropdown button': 'toggleExportsDropdown',
     },
 
     initialize: function(options) {
@@ -46,6 +49,7 @@ define(function(require) {
     postRender: function() {
       this._onWindowClick = this.onWindowClick.bind(this);
       this.$dropdown = this.$('.dropdown');
+      this.$exportsDropdown = this.$('.exports-dropdown');
       $(window).on('click', this._onWindowClick);
     },
 
@@ -143,6 +147,10 @@ define(function(require) {
       Origin.trigger('editorCommon:export');
     },
 
+    generateStoryboard: function() {
+      Origin.trigger('editorCommon:generateStoryboard');
+    },
+
     closeProject: function() {
       Origin.router.navigateTo('dashboard');
     },
@@ -152,8 +160,14 @@ define(function(require) {
       this.$dropdown.toggleClass('active');
     },
 
+    toggleExportsDropdown: function(event) {
+      event.stopPropagation();
+      this.$exportsDropdown.toggleClass('active');
+    },
+
     onWindowClick: function() {
       this.$dropdown.removeClass('active');
+      this.$exportsDropdown.removeClass('active');
     },
 
     remove: function() {

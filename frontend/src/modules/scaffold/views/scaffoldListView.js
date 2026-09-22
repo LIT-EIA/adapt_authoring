@@ -129,8 +129,11 @@ define([
               }
             });
           },
-          error: function () {
-            Origin.Notify.alert({ type: 'error', text: Origin.l10n.t('app.errorduplication') });
+          error: function (error) {
+            console.log('clone asset error', error);
+            var errorMessage = error && error.responseJSON && error.responseJSON.message || Origin.l10n.t('app.errorcloneasset');
+
+            Origin.Notify.alert({ type: 'error', text: errorMessage });
           }
         });
       });

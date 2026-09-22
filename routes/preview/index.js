@@ -19,11 +19,14 @@ function PreviewPermissionError(message, httpCode) {
 }
 util.inherits(PreviewPermissionError, Error);
 
-server.get('/preview/:tenant/:course/*', (req, res, next) => {
+server.get('/preview/:tenant/:course{/*splat}', (req, res, next) => {
   const courseId = req.params.course;
   const tenantId = req.params.tenant;
   const user = usermanager.getCurrentUser();
-  const file = req.params[0] || Constants.Filenames.Main;
+  // Express 5 represents named wildcards as an array of path segments rather
+  // than a single joined string, so it must be re-joined before use as a file path.
+  const splat = req.params.splat;
+  const file = (Array.isArray(splat) ? splat.join('/') : splat) || Constants.Filenames.Main;
   const masterTenantId = configuration.getConfig('masterTenantID');
   const previewKey = `${tenantId}-${courseId}`;
 

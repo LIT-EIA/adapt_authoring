@@ -9,7 +9,7 @@ const fs = require("fs-extra");
 const glob = require('glob');
 const helpers = require('./outputHelpers');
 const logger = require("../../../lib/logger");
-const mime = require('mime');
+const mime = require('mime').default;
 const path = require("path");
 const { promisify } = require('util');
 
@@ -149,17 +149,18 @@ function ImportSource(req, done) {
         logger.log('error', 'Framework import error. Cannot find folder: ' + assetDirPath);
         return doneAssetFolder();
       }
-      var assetsGlob = path.join(COURSE_JSON_PATH, COURSE_LANG, assetDir, '*');
+      // glob patterns always use forward slashes, regardless of OS - path.join()
+      // produces backslashes on Windows, which glob would otherwise interpret
+      // as escape characters and fail to match any files
+      var assetsGlob = path.join(COURSE_JSON_PATH, COURSE_LANG, assetDir, '*').split(path.sep).join('/');
       var assetsJsonFilename = path.join(COURSE_JSON_PATH, COURSE_LANG, Constants.Filenames.Assets);
       var assetsJson = {};
 
       if (fs.existsSync(assetsJsonFilename)) {
         assetsJson = fs.readJSONSync(assetsJsonFilename);
       }
-      glob(assetsGlob, function (error, assets) {
-        if(error) {
-          return doneAssetFolder(error);
-        }
+      glob.glob(assetsGlob).then(function (assets) {
+        var error;
         var repository = configuration.getConfig('filestorage') || 'localfs';
         async.eachSeries(assets, function iterator(assetPath, doneAsset) {
           if (error) {
@@ -198,6 +199,8 @@ function ImportSource(req, done) {
             helpers.importAsset(fileMeta, metadata, doneAsset);
           });
         }, doneAssetFolder);
+      }).catch(function (error) {
+        return doneAssetFolder(error);
       });
     }, done);
   }

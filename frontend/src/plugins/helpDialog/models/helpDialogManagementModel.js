@@ -62,7 +62,7 @@ define(function(require) {
                 title: `${Origin.l10n.t('app.title')} FR`,
                 titleLabel: `${Origin.l10n.t('app.title')} FR`
               },
-              atptRepresentative: {
+              digitRepresentative: {
                 type: "UsersWithEmail",
                 inputType: "UsersWithEmail",
                 items: {
@@ -72,8 +72,8 @@ define(function(require) {
                   editorOnly: true,
                   ref: "user"
                 },
-                title: `${Origin.l10n.t('app.representative.atpt')}`,
-                titleLabel: `${Origin.l10n.t('app.representative.atpt')}`
+                title: `${Origin.l10n.t('app.representative.digit')}`,
+                titleLabel: `${Origin.l10n.t('app.representative.digit')}`
               },
               a11yTeamRepresentative: {
                 type: "UsersWithEmail",

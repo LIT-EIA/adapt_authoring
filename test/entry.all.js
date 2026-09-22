@@ -20,6 +20,28 @@ var Folders = require('../lib/outputmanager').Constants.Folders;
 
 var TEST_CACHE_DIR = path.join(__dirname, '.testcache');
 var EXTENDED_TIMEOUT = 600000;
+var MASTER_CONFIG_FILE = path.join(__dirname, '..', 'conf', 'config.json');
+var GENERATED_TEST_CONFIG_FILE = path.join(TEST_CACHE_DIR, 'testConfig.generated.json');
+
+// Pull DB auth credentials from the local (gitignored) master config, so the
+// mocha suite can authenticate against a secured Mongo instance without
+// committing credentials to test/testConfig.json. The test-specific dbName/
+// dbHost/etc are always kept, only the auth fields are borrowed.
+function getDbAuthConfig() {
+  try {
+    var masterConfig = JSON.parse(fs.readFileSync(MASTER_CONFIG_FILE, 'utf8'));
+    return {
+      dbUser: masterConfig.dbUser || '',
+      dbPass: masterConfig.dbPass || '',
+      dbAuthSource: masterConfig.dbAuthSource || ''
+    };
+  } catch (e) {
+    return { dbUser: '', dbPass: '', dbAuthSource: '' };
+  }
+}
+
+var dbAuthConfig = getDbAuthConfig();
+var mergedTestConfig = Object.assign({}, testConfig, dbAuthConfig);
 
 before(function (done) {
   this.timeout(EXTENDED_TIMEOUT);
@@ -30,7 +52,9 @@ before(function (done) {
     createCacheData,
     function startApp(cb) {
       logger.level('console', 'error'); // only show errors
-      app.use({ configFile: path.join('test', 'testConfig.json') });
+      fs.ensureDirSync(TEST_CACHE_DIR);
+      fs.writeJsonSync(GENERATED_TEST_CONFIG_FILE, mergedTestConfig, { spaces: 2 });
+      app.use({ configFile: path.relative(process.cwd(), GENERATED_TEST_CONFIG_FILE) });
       app.once('modulesReady', function () {
         app.configuration.setConfig('masterTenantID', testData.testTenant._id);
       });
@@ -70,16 +94,14 @@ after(function (done) {
 
   var options = {
     config: './test/nightwatch.conf.js',
-    env: 'default'
+    env: 'chrome'
   };
 
   Nightwatch.runner(options, function (success) {
     destroyInstance();
-    done();
   }, function (err) {
     console.error('Error running Nightwatch:', err);
     destroyInstance();
-    done();
   });
 
   function destroyInstance() {
@@ -132,22 +154,20 @@ function removeTestData(done) {
   async.parallel([
     function dumpOldDb(cb) {
       var MongoClient = mongodb.MongoClient;
-      var connStr = 'mongodb://' + testConfig.dbHost + ':' + testConfig.dbPort + '/' + testConfig.dbName;
-      MongoClient.connect(connStr, {
-        domainsEnabled: true,
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      }, function (error, client) {
-        if (error) return cb(error);
-
+      var authString = dbAuthConfig.dbUser && dbAuthConfig.dbPass ?
+        encodeURIComponent(dbAuthConfig.dbUser) + ':' + encodeURIComponent(dbAuthConfig.dbPass) + '@' : '';
+      var connStr = 'mongodb://' + authString + testConfig.dbHost + ':' + testConfig.dbPort + '/' + testConfig.dbName;
+      if (dbAuthConfig.dbAuthSource) {
+        connStr += '?authSource=' + dbAuthConfig.dbAuthSource;
+      }
+      MongoClient.connect(connStr).then(function (client) {
         var db = client.db(testConfig.dbName);
-
-        db.dropDatabase(function (error, result) {
-          if (error) return cb(error);
-          client.close();
-          return cb();
+        return db.dropDatabase().then(function () {
+          return client.close();
         });
-      });
+      }).then(function () {
+        cb();
+      }, cb);
     },
     function removeData(cb) {
       fs.remove(testConfig.dataRoot, cb);

@@ -1,5 +1,5 @@
 // external
-const archiver = require('archiver');
+const { ZipArchive } = require('archiver');
 const async = require('async');
 const exec = require('child_process').exec;
 const fs = require('fs-extra');
@@ -14,6 +14,12 @@ const logger = require('../../../lib/logger');
 const origin = require('../../../');
 const outputHelpers = require('./outputHelpers');
 const usermanager = require('../../../lib/usermanager');
+
+// grunt-cli's usual local install location for this app (a direct dependency
+// of adapt_authoring's own package.json), used instead of a bare `grunt` on
+// PATH since that requires a global grunt-cli install that varies between
+// environments.
+const GRUNT_CLI_BIN = path.join(configuration.serverRoot, 'node_modules', 'grunt-cli', 'bin', 'grunt');
 
 function publishCourse(courseId, mode, request, response, next) {
   let app = origin();
@@ -59,6 +65,15 @@ function publishCourse(courseId, mode, request, response, next) {
         outputJson = data;
         callback(null);
       });
+    },
+    // remove orphaned contents from the course data
+    function(callback) {
+      const ENABLE_HIERARCHY_CLEANUP_LOGGING = true;
+      outputJson = outputHelpers.cleanCourseHierarchy(
+        outputJson,
+        ENABLE_HIERARCHY_CLEANUP_LOGGING
+      );
+      callback(null);
     },
     // validate the course data
     function(callback) {
@@ -200,7 +215,7 @@ function publishCourse(courseId, mode, request, response, next) {
 
         logger.log('info', 'grunt server-build:' + buildMode + ' ' + args.join(' '));
 
-        child = exec('grunt server-build:' + buildMode + ' ' + args.join(' '), {cwd: path.join(FRAMEWORK_ROOT_FOLDER)},
+        exec('node "' + GRUNT_CLI_BIN + '" server-build:' + buildMode + ' ' + args.join(' '), { cwd: path.join(FRAMEWORK_ROOT_FOLDER) },
           function(error, stdout, stderr) {
             if (error !== null) {
               logger.log('error', 'exec error: ' + error);
@@ -248,7 +263,7 @@ function publishCourse(courseId, mode, request, response, next) {
       var filename = path.join(COURSE_FOLDER, Constants.Filenames.Download);
       var zipName = helpers.slugify(outputJson['course'].title);
       var output = fs.createWriteStream(filename);
-      var archive = archiver('zip');
+      var archive = new ZipArchive();
 
       output.on('close', function() {
         resultObject.filename = filename;

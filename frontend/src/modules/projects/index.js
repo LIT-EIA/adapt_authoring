@@ -77,13 +77,25 @@ define(function(require) {
     };
     const { titleKey, Coll } = typeMappings[type] || typeMappings.default;
 
+
     // Data for permissions check
-    const data = {
+    const ownData = {
+      featurePermissions: ["{{tenantid}}/content/course/own:read"]
+    };
+
+    // Block user access if required permissions are not met
+    if (type === 'own' && !Origin.permissions.hasPermissions(ownData.featurePermissions)) {
+      Origin.router.blockUserAccess();
+      return;
+    }
+
+    // Data for permissions check
+    const allData = {
       featurePermissions: ["{{tenantid}}/content/*:read"]
     };
 
     // Block user access if required permissions are not met
-    if (type === 'all' && !Origin.permissions.hasPermissions(data.featurePermissions)) {
+    if (type === 'all' && !Origin.permissions.hasPermissions(allData.featurePermissions)) {
       Origin.router.blockUserAccess();
       return;
     }
@@ -98,7 +110,9 @@ define(function(require) {
   });
 
   Origin.on('origin:dataReady login:changed', function() {
+
     Origin.router.setHomeRoute('dashboard');
+
     Origin.globalMenu.addItem({
       "location": "global",
       "text": Origin.l10n.t('app.dashboard'),

@@ -11,7 +11,11 @@ const path = require('path');
 const ffprobe = require('ffprobe');
 const util = require('util');
 
-ffmpeg.setFfmpegPath(ffmpegStatic.path);
+// ffmpeg-static exports the resolved binary path directly as a string
+// (unlike ffprobe-static, which exports an { path } object) - accessing
+// `.path` on it is undefined, silently leaving fluent-ffmpeg without a valid
+// ffmpeg binary path, so every thumbnail generation attempt fails quietly.
+ffmpeg.setFfmpegPath(ffmpegStatic);
 
 const configuration = require('../../../lib/configuration');
 const FileStorage = require('../../../lib/filestorage').FileStorage;
