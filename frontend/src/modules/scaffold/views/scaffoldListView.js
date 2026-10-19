@@ -38,8 +38,18 @@ define([
 
         if (!item.$el.is(ui.item)) continue;
 
+        // Capture reorder info
+        var oldIndex = i;
+
         this.items.splice(i, 1);
         this.items.splice(newIndex, 0, item);
+
+        Origin.trigger('list:reordered', {
+          oldIndex: oldIndex,
+          newIndex: newIndex,
+          listName: this.$el.attr('name'),
+          items: this.getValue()
+        });
 
         this.trigger('change', this);
         return; // found our match, end here
