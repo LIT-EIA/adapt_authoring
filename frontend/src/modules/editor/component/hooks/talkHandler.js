@@ -118,9 +118,17 @@ define(function(require) {
 
   const after = function(model, form) {
     const onCharactersReordered = function(data) {
-      if (data.listName !== '_characters') return;      
+      if (data.listName !== '_characters') return;    
+      const currentModel = Origin.scaffold.getCurrentModel();
 
-      const properties = getProperties(model);
+      if (!currentModel) return;
+
+      if (currentModel.get('_id') !== model.get('_id')) {
+        return;
+      }  
+
+      const formData = form.getValue();
+      const properties = formData.properties || getProperties(model);
       if (!properties) return;
 
       var items = properties['_items'];
